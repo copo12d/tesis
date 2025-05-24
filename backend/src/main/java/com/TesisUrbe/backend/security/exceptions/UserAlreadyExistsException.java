@@ -1,4 +1,4 @@
-package com.luisjuarez.security.exceptions;
+package com.TesisUrbe.backend.security.exceptions;
 
 public class UserAlreadyExistsException extends RuntimeException {
     public UserAlreadyExistsException(String message) {

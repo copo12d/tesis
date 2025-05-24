@@ -1,23 +1,19 @@
-package com.luisjuarez.security.services;
+package com.TesisUrbe.backend.security.services;
 
-import com.luisjuarez.security.repository.UserRepository;
-import com.luisjuarez.security.model.User;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.TesisUrbe.backend.security.model.User;
+import com.TesisUrbe.backend.security.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
-@NoArgsConstructor
 @Service
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -26,21 +22,21 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         User user = userRepository.findByUserName(userName)
-                .orElseThrow(()-> new UsernameNotFoundException("Usuario no encontrado"));
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().toString());
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
 
         return new org.springframework.security.core.userdetails.User(
-            user.getUserName(),
-            user.getPassword(),
-            Collections.singleton(authority)
+                user.getUserName(),
+                user.getPassword(),
+                Collections.singletonList(authority)
         );
     }
 
-    public boolean existByUserName(String userName){
+    public boolean existByUserName(String userName) {
         return userRepository.existsByUserName(userName);
     }
 
-    public void save(User user){
+    public void save(User user) {
         userRepository.save(user);
     }
 }

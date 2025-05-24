@@ -1,4 +1,4 @@
-package com.luisjuarez.security.model;
+package com.TesisUrbe.backend.security.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

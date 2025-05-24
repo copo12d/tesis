@@ -1,6 +1,6 @@
-package com.luisjuarez.security.model;
+package com.TesisUrbe.backend.security.model;
 
-import com.luisjuarez.security.enums.RoleList;
+import com.TesisUrbe.backend.security.enums.RoleList;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +15,6 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private RoleList name;
 }

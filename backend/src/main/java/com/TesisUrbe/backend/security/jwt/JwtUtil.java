@@ -1,4 +1,4 @@
-package com.luisjuarez.security.jwt;
+package com.TesisUrbe.backend.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -23,13 +23,32 @@ public class JwtUtil {
 
     private final Duration expiration;
 
-
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public JwtUtil(@Value("${jwt.expiration}") Duration expiration) {
-        this.expiration = expiration;
+    public JwtUtil(@Value("${jwt.expiration}") String expiration) {
+        this.expiration = parseDuration(expiration);
+    }
+
+    private Duration parseDuration(String value) {
+        try {
+            if (value.matches("\\d+")) {
+                return Duration.ofMillis(Long.parseLong(value));
+            } else if (value.endsWith("ms")) {
+                return Duration.ofMillis(Long.parseLong(value.replace("ms", "")));
+            } else if (value.endsWith("s")) {
+                return Duration.ofSeconds(Long.parseLong(value.replace("s", "")));
+            } else if (value.endsWith("m")) {
+                return Duration.ofMinutes(Long.parseLong(value.replace("m", "")));
+            } else if (value.endsWith("h")) {
+                return Duration.ofHours(Long.parseLong(value.replace("h", "")));
+            } else {
+                return Duration.parse(value);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Formato de expiración de JWT inválido: " + value, e);
+        }
     }
 
     public String generateToken(Authentication authentication) {
