@@ -1,15 +1,20 @@
 package com.TesisUrbe.backend.security.config;
 
+import com.TesisUrbe.backend.security.enums.RoleList;
 import com.TesisUrbe.backend.security.jwt.JwtAuthenticationFilter;
 import com.TesisUrbe.backend.security.jwt.JwtEntryPoint;
 import com.TesisUrbe.backend.security.jwt.JwtUtil;
+import com.TesisUrbe.backend.security.model.Role;
+import com.TesisUrbe.backend.security.repository.RoleRepository;
 import com.TesisUrbe.backend.security.services.UserService;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,10 +35,15 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)  // Protección contra Clickjacking
+                        .contentSecurityPolicy(policy -> policy.policyDirectives("default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; frame-ancestors 'none'")) // CSP mejorada
+                );
         return http.build();
     }
+
+
 
     @Bean
     public JwtAuthenticationFilter jwtTokenFilter(JwtUtil jwtUtil, UserService userService) {
@@ -58,5 +68,18 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public CommandLineRunner initRoles(RoleRepository roleRepository) {
+        return args -> {
+            for (RoleList roleList : RoleList.values()) {
+                roleRepository.findByName(roleList).orElseGet(() -> {
+                    Role role = new Role();
+                    role.setName(roleList);
+                    return roleRepository.save(role);
+                });
+            }
+        };
     }
 }

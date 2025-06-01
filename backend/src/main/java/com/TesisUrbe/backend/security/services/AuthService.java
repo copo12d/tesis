@@ -56,15 +56,28 @@ public class AuthService {
         }
     }
 
-    public void registerUser(NewUserDto newUserDto) {
+    public void registerUser(NewUserDto newUserDto, Authentication authentication) {
         if (userService.existByUserName(newUserDto.getUserName())) {
             throw new UserAlreadyExistsException("El nombre de usuario ya existe");
         }
-
-        Role roleUser = roleRepository.findByName(RoleList.ROLE_USER)
-                .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-
-        User user = new User(newUserDto.getUserName(), passwordEncoder.encode(newUserDto.getPassword()), roleUser);
-        userService.save(user);
+        if (userService.existByEmail(newUserDto.getEmail())) {
+            throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
+        }
+        try {
+            RoleList requestedRole = RoleList.valueOf(newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER");
+            if (requestedRole == RoleList.ROLE_ADMIN) {
+                if (authentication == null || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                    throw new org.springframework.security.access.AccessDeniedException("Solo un administrador puede crear usuarios administradores");
+                }
+            }
+            Role role = roleRepository.findByName(requestedRole)
+                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
+            User user = new User(newUserDto.getUserName(), passwordEncoder.encode(newUserDto.getPassword()), newUserDto.getEmail(), role);
+            userService.save(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new UserAlreadyExistsException("El correo electrónico o nombre de usuario ya está registrado");
+        }
     }
+
+
 }
