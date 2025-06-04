@@ -1,13 +1,8 @@
 package com.TesisUrbe.backend.security.services;
 
-import com.TesisUrbe.backend.security.dto.NewUserDto;
-import com.TesisUrbe.backend.security.enums.RoleList;
-import com.TesisUrbe.backend.security.exceptions.RoleNotFoundException;
-import com.TesisUrbe.backend.security.exceptions.UserAlreadyExistsException;
+import com.TesisUrbe.backend.Users.Services.UserService;
 import com.TesisUrbe.backend.security.jwt.JwtUtil;
-import com.TesisUrbe.backend.security.model.Role;
-import com.TesisUrbe.backend.security.model.User;
-import com.TesisUrbe.backend.security.repository.RoleRepository;
+import com.TesisUrbe.backend.Users.repository.RoleRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,18 +17,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class AuthService {
 
-    private final UserService userService;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final ConcurrentHashMap<String, Integer> failedAttempts = new ConcurrentHashMap<>();
     private static final int MAX_ATTEMPTS = 3;
 
-    public AuthService(UserService userService, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
-        this.userService = userService;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
+    public AuthService(JwtUtil jwtUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.jwtUtil = jwtUtil;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
@@ -55,29 +44,5 @@ public class AuthService {
             throw new BadCredentialsException("Credenciales incorrectas");
         }
     }
-
-    public void registerUser(NewUserDto newUserDto, Authentication authentication) {
-        if (userService.existByUserName(newUserDto.getUserName())) {
-            throw new UserAlreadyExistsException("El nombre de usuario ya existe");
-        }
-        if (userService.existByEmail(newUserDto.getEmail())) {
-            throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
-        }
-        try {
-            RoleList requestedRole = RoleList.valueOf(newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER");
-            if (requestedRole == RoleList.ROLE_ADMIN) {
-                if (authentication == null || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                    throw new org.springframework.security.access.AccessDeniedException("Solo un administrador puede crear usuarios administradores");
-                }
-            }
-            Role role = roleRepository.findByName(requestedRole)
-                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-            User user = new User(newUserDto.getUserName(), passwordEncoder.encode(newUserDto.getPassword()), newUserDto.getEmail(), role);
-            userService.save(user);
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            throw new UserAlreadyExistsException("El correo electrónico o nombre de usuario ya está registrado");
-        }
-    }
-
 
 }

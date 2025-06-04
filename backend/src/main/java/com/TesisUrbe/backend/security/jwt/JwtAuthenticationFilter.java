@@ -1,6 +1,6 @@
 package com.TesisUrbe.backend.security.jwt;
 
-import com.TesisUrbe.backend.security.services.UserService;
+import com.TesisUrbe.backend.Users.Services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

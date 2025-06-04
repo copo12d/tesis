@@ -1,8 +1,8 @@
 package com.TesisUrbe.backend.security.controllers;
 
 import com.TesisUrbe.backend.security.dto.LoginUserDto;
-import com.TesisUrbe.backend.security.dto.NewUserDto;
-import com.TesisUrbe.backend.security.exceptions.UserAlreadyExistsException;
+import com.TesisUrbe.backend.Users.dto.NewUserDto;
+import com.TesisUrbe.backend.Users.exceptions.UserAlreadyExistsException;
 import com.TesisUrbe.backend.security.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,11 +28,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @GetMapping("/saludo")
-    public String hola(){
-        return "hola";
-    }
-
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginUserDto loginUserDto, BindingResult bindingResult) {
         if(bindingResult.hasGlobalErrors()){
@@ -47,23 +42,6 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody NewUserDto newUserDto, BindingResult bindingResult, Authentication authentication) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(errorMap(bindingResult));
-        }
-        try {
-            authService.registerUser(newUserDto, authentication);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Usuario registrado con éxito"));
-        } catch (UserAlreadyExistsException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (org.springframework.security.access.AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno: " + e.getMessage()));
-        }
-    }
-
     @GetMapping("/check-auth")
     public ResponseEntity<Map<String, String>> checkAuth() {
         return ResponseEntity.ok(Map.of("status", "Autenticado"));
@@ -74,7 +52,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autorizado"));
     }
 
-    private Map<String, String> errorMap(BindingResult bindingResult) {
+    public Map<String, String> errorMap(BindingResult bindingResult) {
         Map<String, String> errors = new HashMap<>();
         bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return errors;
