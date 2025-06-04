@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.exceptions;
+package com.TesisUrbe.backend.Users.exceptions;
 
 public class RoleNotFoundException extends RuntimeException {
     public RoleNotFoundException(String message) {

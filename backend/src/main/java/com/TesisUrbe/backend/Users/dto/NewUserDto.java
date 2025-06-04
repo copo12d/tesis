@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.dto;
+package com.TesisUrbe.backend.Users.dto;
 
 public class NewUserDto {
     private String userName;

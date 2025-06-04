@@ -1,12 +1,12 @@
 package com.TesisUrbe.backend.security.config;
 
-import com.TesisUrbe.backend.security.enums.RoleList;
+import com.TesisUrbe.backend.Users.enums.RoleList;
 import com.TesisUrbe.backend.security.jwt.JwtAuthenticationFilter;
 import com.TesisUrbe.backend.security.jwt.JwtEntryPoint;
 import com.TesisUrbe.backend.security.jwt.JwtUtil;
-import com.TesisUrbe.backend.security.model.Role;
-import com.TesisUrbe.backend.security.repository.RoleRepository;
-import com.TesisUrbe.backend.security.services.UserService;
+import com.TesisUrbe.backend.Users.model.Role;
+import com.TesisUrbe.backend.Users.repository.RoleRepository;
+import com.TesisUrbe.backend.Users.Services.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,7 +33,7 @@ public class SecurityConfig {
     protected SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtTokenFilter, JwtEntryPoint jwtEntryPoint) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/login", "/auth/register", "/auth/saludo").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))

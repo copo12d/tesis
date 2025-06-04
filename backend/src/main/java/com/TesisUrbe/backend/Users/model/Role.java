@@ -1,6 +1,6 @@
-package com.TesisUrbe.backend.security.model;
+package com.TesisUrbe.backend.Users.model;
 
-import com.TesisUrbe.backend.security.enums.RoleList;
+import com.TesisUrbe.backend.Users.enums.RoleList;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

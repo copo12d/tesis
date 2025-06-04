@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.enums;
+package com.TesisUrbe.backend.Users.enums;
 
 public enum RoleList {
     ROLE_USER, ROLE_ADMIN
