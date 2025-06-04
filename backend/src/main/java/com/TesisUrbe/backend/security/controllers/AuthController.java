@@ -7,6 +7,8 @@ import com.TesisUrbe.backend.security.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("status", "Autenticado"));
     }
 
-    @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class, org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class})
+    @ExceptionHandler({AccessDeniedException.class, AuthenticationCredentialsNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleAuthException(Exception ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autorizado"));
     }
