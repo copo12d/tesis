@@ -9,14 +9,16 @@ import com.TesisUrbe.backend.Users.model.User;
 import com.TesisUrbe.backend.Users.repository.RoleRepository;
 import com.TesisUrbe.backend.Users.repository.UserRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -53,9 +55,9 @@ public class UserService implements UserDetailsService {
         }
         try {
             RoleList requestedRole = RoleList.valueOf(newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER");
-            if (requestedRole == RoleList.ROLE_ADMIN) {
+            if (requestedRole == RoleList.ROLE_SUPERUSER) {
                 if (authentication == null || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                    throw new org.springframework.security.access.AccessDeniedException("Solo un administrador puede crear usuarios administradores");
+                    throw new AccessDeniedException("Solo un administrador puede crear usuarios administradores");
                 }
             }
             Role role = roleRepository.findByName(requestedRole)
@@ -66,6 +68,31 @@ public class UserService implements UserDetailsService {
             throw new UserAlreadyExistsException("El correo electrónico o nombre de usuario ya está registrado");
         }
     }
+
+    public void deactivateUserById(Long id, Authentication authentication ) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        RoleList requestedRole = RoleList.valueOf(authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) ? "ROLE_ADMIN" : "ROLE_USER");
+        if (requestedRole == RoleList.ROLE_ADMIN) {
+            if (authentication == null || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                throw new AccessDeniedException("Solo un administrador puede eliminar usuarios");
+            }
+        }
+        userRepository.DeactivateUser(id);
+    }
+
+    public User findById(Long id){
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+    }
+
+    public List<User> findAll() {
+        if(userRepository.findAll().isEmpty()) {
+            throw new UsernameNotFoundException("No hay usuarios registrados");
+        }
+        return userRepository.findAll();
+    }
+
 
     public boolean existByUserName(String userName) {
         return userRepository.existsByUserName(userName);

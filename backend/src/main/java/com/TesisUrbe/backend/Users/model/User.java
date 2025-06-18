@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @AllArgsConstructor
@@ -30,6 +31,14 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
+    @Value("true")
+    private boolean active;
+
+    @Column(nullable = false)
+    @Value("false")
+    private boolean isVerified;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
