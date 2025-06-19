@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.jwt;
+package com.tesisUrbe.backend.auth.jwt;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

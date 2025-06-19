@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.dto;
+package com.tesisUrbe.backend.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
