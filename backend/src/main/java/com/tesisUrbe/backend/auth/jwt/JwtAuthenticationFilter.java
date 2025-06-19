@@ -18,7 +18,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final com.tesisUrbe.backend.auth.jwt.JwtUtil jwtUtil;
     private final UserService userService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {

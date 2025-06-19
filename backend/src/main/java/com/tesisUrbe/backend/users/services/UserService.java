@@ -6,7 +6,6 @@ import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
 import com.tesisUrbe.backend.users.model.Role;
 import com.tesisUrbe.backend.users.model.User;
-import com.tesisUrbe.backend.users.repository.RoleRepository;
 import com.tesisUrbe.backend.users.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
