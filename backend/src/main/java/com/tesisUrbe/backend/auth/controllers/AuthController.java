@@ -1,15 +1,12 @@
-package com.TesisUrbe.backend.security.controllers;
+package com.tesisUrbe.backend.auth.controllers;
 
-import com.TesisUrbe.backend.security.dto.LoginUserDto;
-import com.TesisUrbe.backend.Users.dto.NewUserDto;
-import com.TesisUrbe.backend.Users.exceptions.UserAlreadyExistsException;
-import com.TesisUrbe.backend.security.services.AuthService;
+import com.tesisUrbe.backend.auth.dto.LoginUserDto;
+import com.tesisUrbe.backend.auth.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,9 +49,4 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autorizado"));
     }
 
-    public Map<String, String> errorMap(BindingResult bindingResult) {
-        Map<String, String> errors = new HashMap<>();
-        bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        return errors;
-    }
 }

@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend;
+package com.tesisUrbe.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

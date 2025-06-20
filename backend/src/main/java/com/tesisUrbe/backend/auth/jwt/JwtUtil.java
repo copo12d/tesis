@@ -1,4 +1,4 @@
-package com.TesisUrbe.backend.security.jwt;
+package com.tesisUrbe.backend.auth.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

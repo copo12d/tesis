@@ -1,12 +1,12 @@
-package com.TesisUrbe.backend.security.config;
+package com.tesisUrbe.backend.auth.config;
 
-import com.TesisUrbe.backend.Users.enums.RoleList;
-import com.TesisUrbe.backend.security.jwt.JwtAuthenticationFilter;
-import com.TesisUrbe.backend.security.jwt.JwtEntryPoint;
-import com.TesisUrbe.backend.security.jwt.JwtUtil;
-import com.TesisUrbe.backend.Users.model.Role;
-import com.TesisUrbe.backend.Users.repository.RoleRepository;
-import com.TesisUrbe.backend.Users.Services.UserService;
+import com.tesisUrbe.backend.users.enums.RoleList;
+import com.tesisUrbe.backend.auth.jwt.JwtAuthenticationFilter;
+import com.tesisUrbe.backend.auth.jwt.JwtEntryPoint;
+import com.tesisUrbe.backend.auth.jwt.JwtUtil;
+import com.tesisUrbe.backend.users.model.Role;
+import com.tesisUrbe.backend.users.repository.RoleRepository;
+import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,6 @@
-package com.TesisUrbe.backend.security.jwt;
+package com.tesisUrbe.backend.auth.jwt;
 
-import com.TesisUrbe.backend.Users.Services.UserService;
+import com.tesisUrbe.backend.users.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +18,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final com.tesisUrbe.backend.auth.jwt.JwtUtil jwtUtil;
     private final UserService userService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {
