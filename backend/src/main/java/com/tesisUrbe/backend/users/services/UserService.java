@@ -33,19 +33,6 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getUserName(),
-                user.getPassword(),
-                Collections.singletonList(authority)
-        );
-    }
-
     public void registerUser(NewUserDto newUserDto, Authentication authentication) {
         if (existByUserName(newUserDto.getUserName())) {
             throw new UserAlreadyExistsException("El nombre de usuario ya existe");
@@ -69,6 +56,66 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        User user = userRepository.findOptionalUserByUserName(userName)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUserName(),
+                user.getPassword(),
+                Collections.singletonList(authority)
+        );
+    }
+
+    public User findByUserName(String userName) {
+        return userRepository.findByUserName(userName);
+    }
+
+    public List<User> findAll() {
+        if(userRepository.findAll().isEmpty()) {
+            throw new UsernameNotFoundException("No hay usuarios registrados");
+        }
+        return userRepository.findAll();
+    }
+
+    public User findById(Long id){
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+    }
+
+    public boolean isActive(Long id) {
+        return userRepository.isActive(id);
+    }
+
+    public boolean isBlocked(Long id) {
+        return userRepository.isBlocked(id);
+    }
+
+    public boolean isVerified(Long id) {
+        return userRepository.isVerified(id);
+    }
+
+    public boolean existByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean existByUserName(String userName) {
+        return userRepository.existsByUserName(userName);
+    }
+
+    public void blockUser(Long id) {
+        User user = findById(id);
+        user.setBlocked(true);
+        save(user);
+        userRepository.save(user);
+    }
+
     public void deactivateUserById(Long id, Authentication authentication ) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
@@ -81,28 +128,11 @@ public class UserService implements UserDetailsService {
         userRepository.DeactivateUser(id);
     }
 
-    public User findById(Long id){
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-    }
-
-    public List<User> findAll() {
-        if(userRepository.findAll().isEmpty()) {
-            throw new UsernameNotFoundException("No hay usuarios registrados");
-        }
-        return userRepository.findAll();
-    }
 
 
-    public boolean existByUserName(String userName) {
-        return userRepository.existsByUserName(userName);
-    }
 
-    public boolean existByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
 
-    public void save(User user) {
-        userRepository.save(user);
-    }
+
+
+
 }
