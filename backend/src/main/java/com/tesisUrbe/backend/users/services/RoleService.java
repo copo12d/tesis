@@ -25,5 +25,9 @@ public class RoleService {
     public Optional<Role> findByName(RoleList role) {
         return roleRepository.findByName(role);
     }
+<<<<<<< HEAD:backend/src/main/java/com/TesisUrbe/backend/Users/Services/RoleService.java
 
 }
+=======
+}
+>>>>>>> e6f8111644142c390c8d851dddf2cccba9c273d7:backend/src/main/java/com/tesisUrbe/backend/users/services/RoleService.java
