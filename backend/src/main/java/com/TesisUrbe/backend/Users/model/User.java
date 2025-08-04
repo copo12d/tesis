@@ -22,7 +22,7 @@ public class User {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String userName;
 
     @NotBlank
@@ -34,11 +34,15 @@ public class User {
 
     @Column(nullable = false)
     @Value("true")
-    private boolean active;
+    private boolean isActive;
 
     @Column(nullable = false)
     @Value("false")
     private boolean isVerified;
+
+    @Column(nullable = false)
+    @Value("false")
+    private boolean isBlocked;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "role_id", nullable = false)

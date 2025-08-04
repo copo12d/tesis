@@ -1,6 +1,8 @@
 package com.tesisUrbe.backend.auth.services;
 
 import com.tesisUrbe.backend.auth.jwt.JwtUtil;
+import com.tesisUrbe.backend.users.model.User;
+import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,15 +22,19 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final ConcurrentHashMap<String, Integer> failedAttempts = new ConcurrentHashMap<>();
+    private final UserService userService;
     private static final int MAX_ATTEMPTS = 3;
 
-    public AuthService(JwtUtil jwtUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthService(JwtUtil jwtUtil, AuthenticationManagerBuilder authenticationManagerBuilder, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.userService = userService;
     }
 
     public String Authenticate(String userName, String password) {
         if (failedAttempts.getOrDefault(userName, 0) >= MAX_ATTEMPTS) {
+            User user = userService.findByUserName(userName);
+            userService.blockUser(user.getId());
             throw new LockedException("Cuenta bloqueada por demasiados intentos fallidos");
         }
 
