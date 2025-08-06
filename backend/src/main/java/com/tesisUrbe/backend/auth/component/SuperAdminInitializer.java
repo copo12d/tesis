@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.auth.component;
 import com.tesisUrbe.backend.users.enums.RoleList;
 import com.tesisUrbe.backend.users.model.Role;
 import com.tesisUrbe.backend.users.model.User;
+import com.tesisUrbe.backend.users.repository.UserRepository;
 import com.tesisUrbe.backend.users.services.RoleService;
 import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.boot.CommandLineRunner;
@@ -12,19 +13,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class SuperAdminInitializer implements CommandLineRunner {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
 
-    public SuperAdminInitializer(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
+    public SuperAdminInitializer(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
         this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
     }
 
+
     @Override
     public void run(String... args) {
-        if (userService.contarUsuarios() == 0) {
+        if (userRepository.count() == 0) {
             Role superRole = roleService.findByName(RoleList.ROLE_SUPERUSER)
                     .orElseThrow(() -> new RuntimeException("Rol SUPERUSER no encontrado"));
             User superAdmin = new User();
@@ -35,6 +37,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
             superAdmin.setActive(true);
             superAdmin.setVerified(false);
             superAdmin.setBlocked(false);
+            userRepository.save(superAdmin);
             System.out.println("Superusuario inicial creado: \nUsuario: superadmin\nContraseña: superadmin");
         } else {
             System.out.println("🟢 Usuarios ya existen. No se necesita creación automática.");

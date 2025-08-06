@@ -215,9 +215,5 @@ public class UserService implements UserDetailsService {
             throw new AccessDeniedException("Solo un Administrador o Super Usuario tiene permiso para realizar esta acción");
         }
     }
-
-    public long contarUsuarios() {
-        return userRepository.count();
-    }
-
+    
 }
