@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
@@ -38,19 +39,46 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody NewUserDto newUserDto, BindingResult bindingResult, Authentication authentication) {
+    public ResponseEntity<Map<String, String>> registerPublicUser(
+            @Valid @RequestBody NewUserDto newUserDto,
+            BindingResult bindingResult
+    ) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
         }
+        newUserDto.setRole("ROLE_USER");
+        try {
+            userService.registerUser(newUserDto, null); // Sin Authentication
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Usuario registrado exitosamente"));
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/admin/create-user")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_SUPERUSER')")
+    public ResponseEntity<Map<String, String>> createPrivilegedUser(
+            @Valid @RequestBody NewUserDto newUserDto,
+            BindingResult bindingResult,
+            Authentication authentication
+    ) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
+        }
+
         try {
             userService.registerUser(newUserDto, authentication);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Usuario registrado con éxito"));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "Usuario con rol [" + newUserDto.getRole() + "] registrado exitosamente"));
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (org.springframework.security.access.AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno: " + e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno: " + e.getMessage()));
         }
     }
 
