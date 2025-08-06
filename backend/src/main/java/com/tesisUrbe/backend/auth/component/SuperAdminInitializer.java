@@ -38,9 +38,9 @@ public class SuperAdminInitializer implements CommandLineRunner {
             superAdmin.setVerified(false);
             superAdmin.setBlocked(false);
             userRepository.save(superAdmin);
-            System.out.println("Superusuario inicial creado: \nUsuario: superadmin\nContraseña: superadmin");
+            System.out.println("Superusuario inicial creado: \nUsuario: superuser\nContraseña: superuser");
         } else {
-            System.out.println("🟢 Usuarios ya existen. No se necesita creación automática.");
+            System.out.println("Usuarios ya existen. No se necesita creación automática.");
         }
     }
 }

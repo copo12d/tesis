@@ -46,7 +46,6 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
         }
-        newUserDto.setRole("ROLE_USER");
         try {
             userService.registerUser(newUserDto, null); // Sin Authentication
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Usuario registrado exitosamente"));
@@ -57,7 +56,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/admin/create-user")
+    @PostMapping("/admin/register")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_SUPERUSER')")
     public ResponseEntity<Map<String, String>> createPrivilegedUser(
             @Valid @RequestBody NewUserDto newUserDto,

@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,25 +37,44 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public void registerUser(NewUserDto newUserDto, Authentication authentication) {
         if (existByUserName(newUserDto.getUserName())) {
             throw new UserAlreadyExistsException("El nombre de usuario ya existe");
         }
+
         if (existByEmail(newUserDto.getEmail())) {
             throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
         }
+
         try {
-            RoleList requestedRole = RoleList.valueOf(newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER");
+            RoleList requestedRole = RoleList.valueOf(
+                    newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER"
+            );
+
             if (requestedRole == RoleList.ROLE_SUPERUSER) {
                 validarSuperUsuario(authentication);
             }
+
             if (requestedRole == RoleList.ROLE_ADMIN) {
                 validarAdmin(authentication);
             }
+
             Role role = roleService.findByName(requestedRole)
                     .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-            User user = new User(newUserDto.getUserName(), passwordEncoder.encode(newUserDto.getPassword()), newUserDto.getEmail(), role);
-            save(user);
+
+            User user = new User(
+                    newUserDto.getUserName(),
+                    passwordEncoder.encode(newUserDto.getPassword()),
+                    newUserDto.getEmail(),
+                    role
+            );
+
+            user.setActive(true);
+            userRepository.save(user);
+
+        } catch (IllegalArgumentException e) {
+            throw new RoleNotFoundException("Rol inválido");
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("El correo electrónico o nombre de usuario ya está registrado");
         }
@@ -215,5 +235,5 @@ public class UserService implements UserDetailsService {
             throw new AccessDeniedException("Solo un Administrador o Super Usuario tiene permiso para realizar esta acción");
         }
     }
-    
+
 }
