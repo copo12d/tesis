@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.users.controllers;
 import com.tesisUrbe.backend.auth.services.AuthService;
 import com.tesisUrbe.backend.users.dto.RoleUpdateDto;
 import com.tesisUrbe.backend.users.dto.UpdateUserDto;
+import com.tesisUrbe.backend.users.dto.UserDto;
 import com.tesisUrbe.backend.users.enums.RoleList;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.model.Role;
@@ -47,7 +48,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
         }
         try {
-            userService.registerUser(newUserDto, null); // Sin Authentication
+            userService.registerUser(newUserDto, null);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Usuario registrado exitosamente"));
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -82,12 +83,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id, Authentication authentication) {
         try {
-            User user = userService.findById(id);
+            UserDto user = userService.findById(id, authentication);
             return ResponseEntity.ok(user);
         } catch (UsernameNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()+"xdd"));
+        }catch (AccessDeniedException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno"));
         }
@@ -96,10 +99,12 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getAllUsers(Authentication authentication) {
         try {
-            List<User> users = userService.findAll(authentication);
+            List<UserDto> users = userService.findAll(authentication);
             return ResponseEntity.ok(users);
         } catch (UsernameNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (AccessDeniedException ex){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los usuarios");
         }
