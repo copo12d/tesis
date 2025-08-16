@@ -30,7 +30,9 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtTokenFilter, JwtEntryPoint jwtEntryPoint) throws Exception {
+    protected SecurityFilterChain filterChain(
+            HttpSecurity http, JwtAuthenticationFilter jwtTokenFilter, JwtEntryPoint jwtEntryPoint
+    ) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**","/users/register").permitAll()
@@ -40,7 +42,13 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)  // Protección contra Clickjacking
-                        .contentSecurityPolicy(policy -> policy.policyDirectives("default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; frame-ancestors 'none'")) // CSP mejorada
+                        .contentSecurityPolicy(
+                                policy -> policy.policyDirectives(
+                                        "default-src 'self'; " +
+                                                "script-src 'self'; " +
+                                                "style-src 'self'; " +
+                                                "object-src 'none'; " +
+                                                "frame-ancestors 'none'")) // CSP mejorada
                 );
         return http.build();
     }

@@ -9,6 +9,43 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      EXP: ${EXP}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy  # Espera a que la DB esté lista
+    #volumes:
+      #- ./backend:/app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5175:5173"
+    #volumes:
+      #- ./frontend:/app
+      #- /app/node_modules
+    environment:
+      - VITE_API_URL=/api
+    networks:
+        - tesis-network
+
+networks:
+  tesis-network:
+    driver: bridge
 
 volumes:
   postgres-data:
