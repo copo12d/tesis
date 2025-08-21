@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,17 +29,23 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginUserDto loginUserDto, BindingResult bindingResult) {
-        if(bindingResult.hasGlobalErrors()){
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error","Revise sus credenciales"));
+        if (bindingResult.hasGlobalErrors()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Revise sus credenciales"));
         }
-        try{
+
+        try {
             String jwt = authService.Authenticate(loginUserDto.getUserName(), loginUserDto.getPassword());
             return ResponseEntity.ok(Collections.singletonMap("token", jwt));
-        } catch (Exception e){
+        } catch (LockedException e) {
+            return ResponseEntity.status(HttpStatus.LOCKED).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Credenciales incorrectas"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error interno"));
         }
     }
+
 
     @GetMapping("/check-auth")
     public ResponseEntity<Map<String, String>> checkAuth() {

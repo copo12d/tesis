@@ -122,18 +122,16 @@ public class UserService implements UserDetailsService {
             throw new UsernameNotFoundException("No hay usuarios registrados");
         }
 
-        // Filtrar según el rol del solicitante
         List<User> filtrados = usuarios.stream()
                 .filter(user -> {
                     RoleList targetRole = user.getRole().getName();
                     if (requesterRole == RoleList.ROLE_ADMIN) {
                         return targetRole == RoleList.ROLE_USER || targetRole == RoleList.ROLE_ADMIN;
                     }
-                    return true; // SUPERUSER ve todo
+                    return true;
                 })
                 .toList();
 
-        // Mapear a DTO
         return filtrados.stream()
                 .map(user -> new UserDto(
                         user.getId(),
