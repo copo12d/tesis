@@ -1,5 +1,6 @@
 package com.tesisUrbe.backend.users.dto;
 
+import com.tesisUrbe.backend.users.model.Role;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -14,5 +15,6 @@ public class UpdateAdminUserDto {
     private Boolean isActive;
     private Boolean isVerified;
     private Boolean isBlocked;
-    private RoleDto role;
+    private Role role;
 }
+

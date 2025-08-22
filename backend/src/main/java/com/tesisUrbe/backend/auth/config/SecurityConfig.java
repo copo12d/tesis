@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -53,8 +54,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-
     @Bean
     public JwtAuthenticationFilter jwtTokenFilter(JwtUtil jwtUtil, UserService userService) {
         return new JwtAuthenticationFilter(jwtUtil, userService);
@@ -81,6 +80,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Transactional
     public CommandLineRunner initRoles(RoleRepository roleRepository) {
         return args -> {
             for (RoleList roleList : RoleList.values()) {

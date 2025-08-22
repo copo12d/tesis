@@ -12,7 +12,7 @@ public class UserDto {
     private String userName;
     private String email;
     private String role;
-    private boolean active;
-    private boolean verified;
-    private boolean blocked;
+    private boolean isActive;
+    private boolean isVerified;
+    private boolean isBlocked;
 }
