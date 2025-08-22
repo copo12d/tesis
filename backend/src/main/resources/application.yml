@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: postgres
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher

@@ -1,15 +1,17 @@
-FROM maven:3.9-eclipse-temurin-21 as build
+# Usa una imagen base que tenga Maven
+FROM maven:3.9-eclipse-temurin-21
+
+# Establece el directorio de trabajo
 WORKDIR /app
+
+# Copia los archivos de configuración de Maven
 COPY pom.xml .
-RUN mvn dependency:go-offline
 
+# Copia todo el código fuente del proyecto
 COPY src ./src
-RUN mvn package -DskipTests
 
-RUN ls -la /app/target/
-
-FROM eclipse-temurin:21-jre-jammy
-WORKDIR /app
-COPY --from=build /app/target/*.jar ./app.jar
+# Expone el puerto por defecto de Spring Boot
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Este es el comando que inicia la aplicación en modo desarrollo
+CMD ["./mvnw", "spring-boot:run"]

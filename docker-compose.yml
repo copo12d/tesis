@@ -29,8 +29,11 @@ services:
       SUPERUSER_NAME: ${SUPERUSER_NAME}
       SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
       SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
+      SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"
+    volumes:
+      - ./backend:/app
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +44,9 @@ services:
     build: ./frontend
     ports:
       - "5175:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     environment:
       - VITE_API_URL=/api
     networks:

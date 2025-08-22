@@ -26,4 +26,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query("update User u set u.active = false where u.id = :id")
     void DeactivateUser(Long id);
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.isActive = true where u.id = :id")
+    void ReactivateUser(Long id);
 }
