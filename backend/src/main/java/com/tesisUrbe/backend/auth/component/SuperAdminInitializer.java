@@ -8,10 +8,12 @@ import com.tesisUrbe.backend.users.services.RoleService;
 import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@DependsOn("initRoles")
 public class SuperAdminInitializer implements CommandLineRunner {
 
     @Value("${SUPERUSER_NAME}")
