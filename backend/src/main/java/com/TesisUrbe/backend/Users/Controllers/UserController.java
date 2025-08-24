@@ -232,4 +232,43 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
+    @PutMapping("/admin/user/{id}/unlock")
+    public ResponseEntity<?> unlockUserAccount(
+            @PathVariable("id") Long userId,
+            Authentication authentication
+    ) {
+        try {
+            userService.unlockUserAccount(userId, authentication);
+            return ResponseEntity.ok(Map.of("message", "Usuario desbloqueado exitosamente"));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (UsernameNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno: " + e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
+    @DeleteMapping("/admin/{userId}/delete")
+    public ResponseEntity<Map<String, String>> softDeleteUser(
+            @PathVariable Long userId,
+            Authentication authentication
+    ) {
+        try {
+            userService.softDeleteUser(userId, authentication);
+            return ResponseEntity
+                    .ok(Map.of("message", "Usuario eliminado con éxito"));
+        } catch (UsernameNotFoundException | IllegalArgumentException | AccessDeniedException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno: " + e.getMessage()));
+        }
+    }
+
 }

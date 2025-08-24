@@ -146,6 +146,40 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void unlockUserAccount(Long userId, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (targetUser.getRole().getName() == RoleList.ROLE_SUPERUSER &&
+                requestingUser.getRole().getName() != RoleList.ROLE_SUPERUSER) {
+            throw new AccessDeniedException("Solo un Super Usuario puede desbloquear a otro Super Usuario");
+        }
+        if (targetUser.isBlocked()) {
+            targetUser.setBlocked(false);
+            userRepository.save(targetUser);
+        }
+    }
+
+    public void softDeleteUser(Long userId, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (targetUser.getRole().getName() == RoleList.ROLE_SUPERUSER &&
+                requestingUser.getRole().getName() != RoleList.ROLE_SUPERUSER) {
+            throw new AccessDeniedException("Solo un Super Usuario puede eliminar a otro Super Usuario");
+        }
+        targetUser.setActive(false);
+        targetUser.setBlocked(true);
+        targetUser.setDeleted(true);
+        userRepository.save(targetUser);
+    }
+
     public void updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto, Authentication authentication) {
         if (authentication == null) {
             throw new AccessDeniedException("Autenticación requerida");
@@ -319,5 +353,7 @@ public class UserService implements UserDetailsService {
         }
         return result;
     }
+
+
 
 }
