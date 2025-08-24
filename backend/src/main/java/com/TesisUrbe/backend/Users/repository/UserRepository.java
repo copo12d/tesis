@@ -16,14 +16,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserName(String userName);
     boolean existsByUserName(String userName);
     boolean existsByEmail(String email);
-    @Query("SELECT u.isActive FROM User u WHERE u.id = :id")
+    @Query("SELECT u.active FROM User u WHERE u.id = :id")
     boolean isActive(@Param("id") Long id);
-    @Query("SELECT u.isBlocked FROM User u WHERE u.id = :id")
+    @Query("SELECT u.blocked FROM User u WHERE u.id = :id")
     boolean isBlocked(@Param("id") Long id);
-    @Query("SELECT u.isVerified FROM User u WHERE u.id = :id")
+    @Query("SELECT u.verified FROM User u WHERE u.id = :id")
     boolean isVerified(@Param("id") Long id);
     @Modifying
     @Transactional
-    @Query("update User u set u.isActive = false where u.id = :id")
+    @Query("update User u set u.active = false where u.id = :id")
     void DeactivateUser(Long id);
 }
