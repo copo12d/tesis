@@ -113,7 +113,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
-    @GetMapping("/admin/user/{id}")
+    @GetMapping("/admin/{id}")
     public ResponseEntity<?> getAdminUserById(
             @PathVariable("id") Long userId,
             Authentication authentication
@@ -137,7 +137,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
-    @GetMapping("/admin/users")
+    @GetMapping("/admin")
     public ResponseEntity<?> getAllAdminUsers(Authentication authentication) {
         try {
             List<UserDto> users = userService.findAllAdminUsers(authentication);
@@ -184,7 +184,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
-    @PutMapping("/admin/user/{id}")
+    @PutMapping("/admin/{id}")
     public ResponseEntity<Map<String, String>> updateAdminUser(
             @PathVariable("id") Long userId,
             @Valid @RequestBody UpdateAdminUserDto updateUserDto,
@@ -233,7 +233,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
-    @PutMapping("/admin/user/{id}/unlock")
+    @PutMapping("/admin/{id}/unlock")
     public ResponseEntity<?> unlockUserAccount(
             @PathVariable("id") Long userId,
             Authentication authentication
