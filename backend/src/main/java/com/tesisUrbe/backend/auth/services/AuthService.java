@@ -31,22 +31,20 @@ public class AuthService {
         this.userService = userService;
     }
 
-    public String Authenticate(String userName, String password) {
-        if (failedAttempts.getOrDefault(userName, 0) >= MAX_ATTEMPTS) {
-            User user = userService.findByUserName(userName);
-            userService.blockUser(user.getId());
+    public String authenticate(String userName, String password) {
+        int intentos = failedAttempts.getOrDefault(userName, 0);
+        if (intentos >= MAX_ATTEMPTS) {
+            userService.lockUserAccount(userService.getUserIdByUserName(userName));
             throw new LockedException("Cuenta bloqueada por demasiados intentos fallidos");
         }
-
         try {
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName, password);
-            Authentication authResult = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            var authToken = new UsernamePasswordAuthenticationToken(userName, password);
+            var authResult = authenticationManagerBuilder.getObject().authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authResult);
-
             failedAttempts.remove(userName);
             return jwtUtil.generateToken(authResult);
         } catch (BadCredentialsException e) {
-            failedAttempts.put(userName, failedAttempts.getOrDefault(userName, 0) + 1);
+            failedAttempts.put(userName, intentos + 1);
             throw new BadCredentialsException("Credenciales incorrectas");
         }
     }
