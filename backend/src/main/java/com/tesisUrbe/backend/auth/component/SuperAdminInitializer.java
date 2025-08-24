@@ -26,12 +26,20 @@ public class SuperAdminInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        for (RoleList roleName : RoleList.values()) {
+            roleService.findByName(roleName).orElseGet(() -> {
+                Role role = new Role();
+                role.setName(roleName);
+                return roleService.save(role);
+            });
+        }
+
         if (userRepository.count() == 0) {
             Role superRole = roleService.findByName(RoleList.ROLE_SUPERUSER)
                     .orElseThrow(() -> new RuntimeException("Rol SUPERUSER no encontrado"));
             User superAdmin = new User();
-            superAdmin.setUserName("superadmin");
-            superAdmin.setPassword(passwordEncoder.encode("superadmin"));
+            superAdmin.setUserName("superuser");
+            superAdmin.setPassword(passwordEncoder.encode("superuser"));
             superAdmin.setEmail("superadmin@tesis.com");
             superAdmin.setRole(superRole);
             superAdmin.setActive(true);
