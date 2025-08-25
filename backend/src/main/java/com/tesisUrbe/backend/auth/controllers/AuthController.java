@@ -28,24 +28,30 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginUserDto loginUserDto, BindingResult bindingResult) {
-        if (bindingResult.hasGlobalErrors()) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Revise sus credenciales"));
+    public ResponseEntity<Map<String, String>> login(
+            @Valid @RequestBody LoginUserDto dto,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Revise sus credenciales"));
         }
-
         try {
-            String jwt = authService.Authenticate(loginUserDto.getUserName(), loginUserDto.getPassword());
-            return ResponseEntity.ok(Collections.singletonMap("token", jwt));
+            String jwt = authService.authenticate(dto.getUserName(), dto.getPassword());
+            return ResponseEntity.ok(Map.of("token", jwt));
+
         } catch (LockedException e) {
-            return ResponseEntity.status(HttpStatus.LOCKED).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.LOCKED)
+                    .body(Map.of("error", e.getMessage()));
+
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error interno"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno"));
         }
     }
-
 
     @GetMapping("/check-auth")
     public ResponseEntity<Map<String, String>> checkAuth() {

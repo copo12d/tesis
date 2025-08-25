@@ -33,16 +33,16 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    @Value("true")
-    private boolean isActive;
+    private boolean active = true;
 
     @Column(nullable = false)
-    @Value("false")
-    private boolean isVerified;
+    private boolean verified = false;
 
     @Column(nullable = false)
-    @Value("false")
-    private boolean isBlocked;
+    private boolean blocked = false;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
