@@ -1,4 +1,3 @@
-# Usa una imagen base que tenga Maven
 FROM maven:3.9-eclipse-temurin-21
 
 # Establece el directorio de trabajo
@@ -10,7 +9,6 @@ COPY pom.xml .
 # Copia todo el código fuente del proyecto
 COPY src ./src
 
-# Expone el puerto por defecto de Spring Boot
 EXPOSE 8080
 
 # Este es el comando que inicia la aplicación en modo desarrollo
