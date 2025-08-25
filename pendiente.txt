@@ -1,0 +1,3 @@
+1 recuperacion contraseña, en caso de olvidada
+2 desbloqueo de cuenta por token en email
+3 verificar email

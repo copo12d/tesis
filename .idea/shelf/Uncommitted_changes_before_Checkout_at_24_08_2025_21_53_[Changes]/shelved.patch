@@ -1,0 +1,21 @@
+Index: backend/Dockerfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Usa una imagen base que tenga Maven\r\nFROM maven:3.9-eclipse-temurin-21\r\n\r\n# Establece el directorio de trabajo\r\nWORKDIR /app\r\n\r\n# Copia los archivos de configuración de Maven\r\nCOPY pom.xml .\r\n\r\n# Copia todo el código fuente del proyecto\r\nCOPY src ./src\r\n\r\n# Expone el puerto por defecto de Spring Boot\r\nEXPOSE 8080\r\n\r\n# Este es el comando que inicia la aplicación en modo desarrollo\r\nCMD [\"./mvnw\", \"spring-boot:run\"]\r\n
+===================================================================
+diff --git a/backend/Dockerfile b/backend/Dockerfile
+--- a/backend/Dockerfile	(revision 0b3345445a4b4289c36bfe051de2745b6c793128)
++++ b/backend/Dockerfile	(date 1756085881743)
+@@ -1,4 +1,3 @@
+-# Usa una imagen base que tenga Maven
+ FROM maven:3.9-eclipse-temurin-21
+ 
+ # Establece el directorio de trabajo
+@@ -10,7 +9,6 @@
+ # Copia todo el código fuente del proyecto
+ COPY src ./src
+ 
+-# Expone el puerto por defecto de Spring Boot
+ EXPOSE 8080
+ 
+ # Este es el comando que inicia la aplicación en modo desarrollo
