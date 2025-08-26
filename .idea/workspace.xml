@@ -6,10 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ade5cdcb-1885-44f3-938b-9aa4394e37fb" name="Changes" comment="Cambios de posicion en funciones">
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Services/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/dto/UpdateAdminUserDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/dto/UpdateAdminUserDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/component/SuperAdminInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/component/SuperAdminInitializer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

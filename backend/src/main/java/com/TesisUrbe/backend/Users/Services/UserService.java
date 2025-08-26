@@ -235,15 +235,10 @@ public class UserService implements UserDetailsService {
         }
         targetUser.setUserName(updateUserDto.getUserName());
         targetUser.setEmail(updateUserDto.getEmail());
-        if (updateUserDto.getIsActive() != null) {
-            targetUser.setActive(updateUserDto.getIsActive());
-        }
-        if (updateUserDto.getIsVerified() != null) {
-            targetUser.setVerified(updateUserDto.getIsVerified());
-        }
-        if (updateUserDto.getIsBlocked() != null) {
-            targetUser.setBlocked(updateUserDto.getIsBlocked());
-        }
+        //if (updateUserDto.getIsActive!= null) {targetUser.setActive(updateUserDto.getIsActive());}
+        //if (updateUserDto.getIsVerified() != null) {targetUser.setVerified(updateUserDto.getIsVerified());}
+        //if (updateUserDto.getIsBlocked() != null) {targetUser.setBlocked(updateUserDto.getIsBlocked());}
+
         if (updateUserDto.getRole() != null) {
             RoleList requestedRole = updateUserDto.getRole().getName();
             if (requestedRole == RoleList.ROLE_SUPERUSER) {
