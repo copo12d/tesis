@@ -1,2 +1,0 @@
-2 desbloqueo de cuenta por token en email
-3 verificar email
