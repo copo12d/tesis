@@ -4,33 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ade5cdcb-1885-44f3-938b-9aa4394e37fb" name="Changes" comment="Cambios de posicion en funciones">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/dto/NewPassword.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/model/PasswordRecovery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/repository/PasswordRecoveryRepostory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/config/EmailConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/controllers/EmailController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/dto/UserPassRecovery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/enums/EmailList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/model/Email.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/service/EmailService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/email/service/IEmailService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="ade5cdcb-1885-44f3-938b-9aa4394e37fb" name="Changes" comment="Internal Changes">
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_21_08_2025_13_21_[Changes]/shelved.patch" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_21_08_2025_13_21__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Controllers/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Controllers/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/Services/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/dto/UpdateAdminUserDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/dto/UpdateAdminUserDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/utils/UserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/TesisUrbe/backend/Users/utils/UserUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/jwt/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/jwt/JwtAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/services/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/tesisUrbe/backend/auth/services/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pendiente.txt" beforeDir="false" afterPath="$PROJECT_DIR$/pendiente.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,6 +61,9 @@
     &quot;accountId&quot;: &quot;9e036a73-d218-4bbe-b78f-99622d4aabbc&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -257,7 +237,31 @@
       <option name="project" value="LOCAL" />
       <updated>1756233831777</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Add password recovery process&#10;&#10;Email the user with a link, with a token, and save it in a new table, password_recovery. The token has a 24h and can only be used 1 time.&#10;passwordRecovery end point add to UserController, used passwordRecovery in user service &#10;passwordRecovery check the id in the url, the token and the expiration date, later take the new password and validate it and updated into the user table.&#10;All the password recovery end points were habilitate to be used by all user, without authorization">
+      <option name="closed" value="true" />
+      <created>1756490442637</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1756490442637</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Internal Changes">
+      <option name="closed" value="true" />
+      <created>1756490627045</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1756490627045</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Internal Changes">
+      <option name="closed" value="true" />
+      <created>1756490806095</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1756490806095</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -276,7 +280,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="jose-branch" />
+                        <option value="origin/jose-branch" />
                       </list>
                     </value>
                   </entry>
@@ -294,7 +298,9 @@
     <MESSAGE value="actualizacion en caliente de back y front" />
     <MESSAGE value="cambio de rol con autorizaciones completas" />
     <MESSAGE value="Cambios de posicion en funciones" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cambios de posicion en funciones" />
+    <MESSAGE value="Add password recovery process&#10;&#10;Email the user with a link, with a token, and save it in a new table, password_recovery. The token has a 24h and can only be used 1 time.&#10;passwordRecovery end point add to UserController, used passwordRecovery in user service &#10;passwordRecovery check the id in the url, the token and the expiration date, later take the new password and validate it and updated into the user table.&#10;All the password recovery end points were habilitate to be used by all user, without authorization" />
+    <MESSAGE value="Internal Changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Internal Changes" />
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
 </project>
