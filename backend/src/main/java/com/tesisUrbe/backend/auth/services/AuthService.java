@@ -1,13 +1,11 @@
 package com.tesisUrbe.backend.auth.services;
 
 import com.tesisUrbe.backend.auth.jwt.JwtUtil;
-import com.tesisUrbe.backend.users.model.User;
 import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -53,6 +51,10 @@ public class AuthService {
         Map<String, String> errors = new HashMap<>();
         bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return errors;
+    }
+
+    public String randomToken() {
+        return java.util.UUID.randomUUID().toString();
     }
 
 }

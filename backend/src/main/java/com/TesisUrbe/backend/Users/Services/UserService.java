@@ -7,8 +7,10 @@ import com.tesisUrbe.backend.users.dto.UserDto;
 import com.tesisUrbe.backend.users.enums.RoleList;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
+import com.tesisUrbe.backend.users.model.PasswordRecovery;
 import com.tesisUrbe.backend.users.model.Role;
 import com.tesisUrbe.backend.users.model.User;
+import com.tesisUrbe.backend.users.repository.PasswordRecoveryRepostory;
 import com.tesisUrbe.backend.users.repository.UserRepository;
 import com.tesisUrbe.backend.users.utils.UserUtils;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,10 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import javax.swing.text.Utilities;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -33,11 +34,13 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordRecoveryRepostory passwordRecoveryRepostory;
 
-    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder, PasswordRecoveryRepostory passwordRecoveryRepostory) {
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
+        this.passwordRecoveryRepostory = passwordRecoveryRepostory;
     }
 
     public void registerPublicUser(NewUserDto newUserDto) {
@@ -235,9 +238,6 @@ public class UserService implements UserDetailsService {
         }
         targetUser.setUserName(updateUserDto.getUserName());
         targetUser.setEmail(updateUserDto.getEmail());
-        //if (updateUserDto.getIsActive!= null) {targetUser.setActive(updateUserDto.getIsActive());}
-        //if (updateUserDto.getIsVerified() != null) {targetUser.setVerified(updateUserDto.getIsVerified());}
-        //if (updateUserDto.getIsBlocked() != null) {targetUser.setBlocked(updateUserDto.getIsBlocked());}
 
         if (updateUserDto.getRole() != null) {
             RoleList requestedRole = updateUserDto.getRole().getName();
@@ -347,6 +347,29 @@ public class UserService implements UserDetailsService {
             }
         }
         return result;
+    }
+
+    public void passwordRecovery(Long userId, String token, String password){
+        PasswordRecovery passwordRecovery = passwordRecoveryRepostory.findLatestByUserId(userId)
+                .orElseThrow(()-> new UsernameNotFoundException("Usuario no encontrado"));
+        if (!Objects.equals(passwordRecovery.getRecovery_token(), token)){
+            throw new AccessDeniedException("No tiene el acceso a esta operacion");
+        }
+        if (LocalDateTime.now().isAfter(passwordRecovery.getExpiration_date())){
+            throw new AccessDeniedException("Token Vencido, Solicite otro");
+        }
+        if (passwordRecovery.isUsed()){
+            throw new AccessDeniedException("Token Usado, Solicite otro");
+        }
+
+        UserUtils.validatePassword(password);
+
+        try {
+            userRepository.NewPassport(userId, passwordEncoder.encode(password));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 

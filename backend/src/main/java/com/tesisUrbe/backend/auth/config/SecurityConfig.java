@@ -36,7 +36,12 @@ public class SecurityConfig {
     ) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**","/users/register").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                        "/auth/**",
+                                "/users/register",
+                                "/email-request/password-recovery",
+                                "/users/password-recovery/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))

@@ -1,11 +1,11 @@
 package com.tesisUrbe.backend.users.dto;
 
 import com.tesisUrbe.backend.users.model.Role;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateAdminUserDto {

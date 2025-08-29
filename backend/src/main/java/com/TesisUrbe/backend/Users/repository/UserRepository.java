@@ -14,14 +14,16 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserName(String userName);
+    Optional<User> findByEmail(String email);
     boolean existsByUserName(String userName);
     boolean existsByEmail(String email);
     @Query("SELECT u.active FROM User u WHERE u.id = :id")
-    boolean isActive(@Param("id") Long id);
+    boolean active(@Param("id") Long id);
     @Query("SELECT u.blocked FROM User u WHERE u.id = :id")
-    boolean isBlocked(@Param("id") Long id);
+    boolean blocked(@Param("id") Long id);
     @Query("SELECT u.verified FROM User u WHERE u.id = :id")
-    boolean isVerified(@Param("id") Long id);
+    boolean verified(@Param("id") Long id);
+
     @Modifying
     @Transactional
     @Query("update User u set u.active = false where u.id = :id")
@@ -29,6 +31,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query("update User u set u.isActive = true where u.id = :id")
+    @Query("update User u set u.active = true where u.id = :id")
     void ReactivateUser(Long id);
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.password = :newPassword where u.id = :id")
+    void NewPassport(Long id, String newPassword);
+
+
 }

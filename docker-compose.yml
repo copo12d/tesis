@@ -21,14 +21,22 @@ services:
   backend:
     build: ./backend
     environment:
+      DOMAIN: ${DOMAIN}
+
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+
       SECRET_KEY: ${SECRET_KEY}
       EXP: ${EXP}
+
       SUPERUSER_NAME: ${SUPERUSER_NAME}
       SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
       SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
+
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+
       SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"

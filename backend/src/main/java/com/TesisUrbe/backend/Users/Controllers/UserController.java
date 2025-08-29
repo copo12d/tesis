@@ -1,15 +1,13 @@
 package com.tesisUrbe.backend.users.controllers;
 
 import com.tesisUrbe.backend.auth.services.AuthService;
-import com.tesisUrbe.backend.users.dto.UpdateAdminUserDto;
-import com.tesisUrbe.backend.users.dto.UpdatePublicUserDto;
-import com.tesisUrbe.backend.users.dto.UserDto;
+import com.tesisUrbe.backend.users.dto.*;
 import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.services.UserService;
-import com.tesisUrbe.backend.users.dto.NewUserDto;
 import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
 import jakarta.validation.Valid;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -268,6 +266,30 @@ public class UserController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error interno: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/password-recovery/{id}")
+    public ResponseEntity<?> passwordRecovery(
+            @RequestParam(name = "token") String token,
+            @PathVariable Long id,
+            @Valid @RequestBody NewPassword newPassword,
+            BindingResult bindingResult
+    ){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
+        }
+        try {
+            userService.passwordRecovery(id, token, newPassword.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Usuario actualizado exitosamente"));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (UserAlreadyExistsException | InvalidUserDataException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno"));
         }
     }
 
