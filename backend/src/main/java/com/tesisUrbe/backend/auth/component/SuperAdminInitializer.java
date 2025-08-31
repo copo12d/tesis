@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@DependsOn("initRoles")
 public class SuperAdminInitializer implements CommandLineRunner {
 
     @Value("${SUPERUSER_NAME}")
@@ -34,7 +33,6 @@ public class SuperAdminInitializer implements CommandLineRunner {
         this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
     }
-
 
     @Override
     public void run(String... args) {

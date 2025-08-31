@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PasswordRecoveryRepostory extends JpaRepository<PasswordRecovery, Long> {
+public interface PasswordRecoveryRepository extends JpaRepository<PasswordRecovery, Long> {
 
     Optional<PasswordRecovery> findByUserId(Long userId);
-    @Query(value = "SELECT * FROM password_recoverys WHERE user_id = :userId ORDER BY id DESC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM PasswordRecovery WHERE user_id = :userId ORDER BY id DESC LIMIT 1", nativeQuery = true)
     Optional<PasswordRecovery> findLatestByUserId(@Param("userId") Long userId);
 
     @Modifying

@@ -1,13 +1,10 @@
 package com.tesisUrbe.backend.auth.config;
 
-import com.tesisUrbe.backend.users.enums.RoleList;
+
 import com.tesisUrbe.backend.auth.jwt.JwtAuthenticationFilter;
 import com.tesisUrbe.backend.auth.jwt.JwtEntryPoint;
 import com.tesisUrbe.backend.auth.jwt.JwtUtil;
-import com.tesisUrbe.backend.users.model.Role;
-import com.tesisUrbe.backend.users.repository.RoleRepository;
 import com.tesisUrbe.backend.users.services.UserService;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,15 +32,24 @@ public class SecurityConfig {
     ) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers(
                         "/auth/**",
                                 "/users/register",
                                 "/email-request/password-recovery",
-                                "/users/password-recovery/**"
-                        ).permitAll()
-                        .anyRequest().authenticated())
+                                "/users/password-recovery/**",
+                                "/email-request/account-recovery",
+                                "/users/account-recovery/**"
+                        )
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated()
+                )
                 .httpBasic(Customizer.withDefaults())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))
+                .exceptionHandling(
+                        exception ->
+                                exception.authenticationEntryPoint(jwtEntryPoint)
+                )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)  // Protección contra Clickjacking
@@ -54,7 +59,9 @@ public class SecurityConfig {
                                                 "script-src 'self'; " +
                                                 "style-src 'self'; " +
                                                 "object-src 'none'; " +
-                                                "frame-ancestors 'none'")) // CSP mejorada
+                                                "frame-ancestors 'none'"
+                                )
+                        ) // CSP mejorada
                 );
         return http.build();
     }
@@ -82,19 +89,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    @Transactional
-    public CommandLineRunner initRoles(RoleRepository roleRepository) {
-        return args -> {
-            for (RoleList roleList : RoleList.values()) {
-                roleRepository.findByName(roleList).orElseGet(() -> {
-                    Role role = new Role();
-                    role.setName(roleList);
-                    return roleRepository.save(role);
-                });
-            }
-        };
     }
 }

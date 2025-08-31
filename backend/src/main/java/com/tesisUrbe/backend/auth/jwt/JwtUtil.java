@@ -53,6 +53,7 @@ public class JwtUtil {
 
     public String generateToken(Authentication authentication) {
         UserDetails mainUser = (UserDetails) authentication.getPrincipal();
+        System.out.println(mainUser);
         SecureDigestAlgorithm<SecretKey, ?> algorithm = Jwts.SIG.HS256;
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration.toMillis());

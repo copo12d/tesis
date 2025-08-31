@@ -2,12 +2,9 @@ package com.tesisUrbe.backend.users.controllers;
 
 import com.tesisUrbe.backend.auth.services.AuthService;
 import com.tesisUrbe.backend.users.dto.*;
-import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
-import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
+import com.tesisUrbe.backend.users.exceptions.*;
 import com.tesisUrbe.backend.users.services.UserService;
-import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
 import jakarta.validation.Valid;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,6 +29,7 @@ public class UserController {
         this.authService = authService;
     }
 
+    //POST
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerPublicUser(
             @Valid @RequestBody NewUserDto newUserDto,
@@ -47,7 +45,11 @@ public class UserController {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(Map.of("message", "Usuario registrado exitosamente"));
-        } catch (UserAlreadyExistsException e) {
+        }catch (InvalidUserPasswordException e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("password error", e.getMessage()));
+        } catch (UserAlreadyExistsException | InvalidUserDataException e ) {
             return ResponseEntity
                     .badRequest()
                     .body(Map.of("error", e.getMessage()));
@@ -59,7 +61,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
-    @PutMapping("/admin/register")
+    @PostMapping("/admin/register")
     public ResponseEntity<Map<String, String>> registerAdminUser(
             @Valid @RequestBody NewUserDto newUserDto,
             BindingResult bindingResult,
@@ -75,6 +77,14 @@ public class UserController {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(Map.of("message", "Usuario registrado exitosamente"));
+        }catch (BlockedUserException e){
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (InvalidUserPasswordException e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("password error", e.getMessage()));
         } catch (UserAlreadyExistsException | RoleNotFoundException e) {
             return ResponseEntity
                     .badRequest()
@@ -86,6 +96,7 @@ public class UserController {
         }
     }
 
+    //GET
     @PreAuthorize("hasAnyRole('USER','ADMIN','SUPERUSER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<?> getPublicUserById(
@@ -95,7 +106,7 @@ public class UserController {
         try {
             UserDto userDto = userService.findPublicUserById(userId, authentication);
             return ResponseEntity.ok(userDto);
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
@@ -119,7 +130,7 @@ public class UserController {
         try {
             UserDto userDto = userService.findAdminUserById(userId, authentication);
             return ResponseEntity.ok(userDto);
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
@@ -140,7 +151,7 @@ public class UserController {
         try {
             List<UserDto> users = userService.findAllAdminUsers(authentication);
             return ResponseEntity.ok(users);
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
@@ -155,6 +166,7 @@ public class UserController {
         }
     }
 
+    //PUT
     @PutMapping("/user/{id}")
     public ResponseEntity<Map<String, String>> updatePublicUser(
             @PathVariable("id") Long userId,
@@ -168,14 +180,12 @@ public class UserController {
         try {
             userService.updatePublicUser(userId, updateUserDto, authentication);
             return ResponseEntity.ok(Map.of("message", "Usuario actualizado exitosamente"));
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (UserAlreadyExistsException e) {
+        } catch (UserAlreadyExistsException | InvalidUserDataException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        } catch (InvalidUserDataException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno"));
         }
@@ -199,29 +209,21 @@ public class UserController {
             userService.updateAdminUser(userId, updateUserDto, authentication);
             return ResponseEntity
                     .ok(Map.of("message", "Usuario actualizado exitosamente"));
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
-        } catch (UserAlreadyExistsException e) {
+        } catch (
+                UserAlreadyExistsException |
+                InvalidUserDataException |
+                IllegalArgumentException e
+        ) {
             return ResponseEntity
                     .badRequest()
                     .body(Map.of("error", e.getMessage()));
-        } catch (RoleNotFoundException e) {
+        } catch (RoleNotFoundException | UsernameNotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (InvalidUserDataException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .badRequest()
                     .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity
@@ -237,9 +239,9 @@ public class UserController {
             Authentication authentication
     ) {
         try {
-            userService.unlockUserAccount(userId, authentication);
+            userService.unlockUserAccountManual(userId, authentication);
             return ResponseEntity.ok(Map.of("message", "Usuario desbloqueado exitosamente"));
-        } catch (AccessDeniedException e) {
+        } catch (AccessDeniedException | BlockedUserException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (UsernameNotFoundException | IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
@@ -248,6 +250,63 @@ public class UserController {
         }
     }
 
+    @PutMapping("/password-recovery/{id}")
+    public ResponseEntity<?> passwordRecovery(
+            @RequestParam(name = "token") String token,
+            @PathVariable Long id,
+            @Valid @RequestBody NewPasswordDto newPasswordDto,
+            BindingResult bindingResult
+    ){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
+        }
+        try {
+            userService.passwordRecovery(id, token, newPasswordDto.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Usuario actualizado exitosamente"));
+        } catch (AccessDeniedException | BlockedUserException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (UserAlreadyExistsException | InvalidUserDataException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno"));
+        }
+    }
+
+    @PutMapping("/account-recovery/{id}")
+    public ResponseEntity<?> accountRecovery (
+            @RequestParam(name = "token") String token,
+            @PathVariable Long id,
+            @Valid @RequestBody NewPasswordDto newPasswordDto,
+            BindingResult bindingResult
+    ){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
+        }
+        try {
+            userService.accountRecovery(id, token, newPasswordDto.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Usuario recuperado exitosamente"));
+        } catch (AccessDeniedException | BlockedUserException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (UserAlreadyExistsException | InvalidUserDataException | IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno"));
+        }
+    }
+
+    //DELETE
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERUSER')")
     @DeleteMapping("/admin/{userId}/delete")
     public ResponseEntity<Map<String, String>> softDeleteUser(
@@ -269,28 +328,5 @@ public class UserController {
         }
     }
 
-    @PutMapping("/password-recovery/{id}")
-    public ResponseEntity<?> passwordRecovery(
-            @RequestParam(name = "token") String token,
-            @PathVariable Long id,
-            @Valid @RequestBody NewPassword newPassword,
-            BindingResult bindingResult
-    ){
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(authService.errorMap(bindingResult));
-        }
-        try {
-            userService.passwordRecovery(id, token, newPassword.getNewPassword());
-            return ResponseEntity.ok(Map.of("message", "Usuario actualizado exitosamente"));
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (UserAlreadyExistsException | InvalidUserDataException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno"));
-        }
-    }
 
 }

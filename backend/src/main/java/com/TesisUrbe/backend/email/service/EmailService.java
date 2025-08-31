@@ -1,13 +1,17 @@
 package com.tesisUrbe.backend.email.service;
 
 import com.tesisUrbe.backend.auth.services.AuthService;
-import com.tesisUrbe.backend.email.dto.UserPassRecovery;
+import com.tesisUrbe.backend.users.dto.UserRecovery;
 import com.tesisUrbe.backend.email.enums.EmailList;
+import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
+import com.tesisUrbe.backend.users.model.AccountRecovery;
 import com.tesisUrbe.backend.users.model.PasswordRecovery;
 import com.tesisUrbe.backend.users.model.User;
-import com.tesisUrbe.backend.users.repository.PasswordRecoveryRepostory;
+import com.tesisUrbe.backend.users.repository.AccountRecoveryRepository;
+import com.tesisUrbe.backend.users.repository.PasswordRecoveryRepository;
 import com.tesisUrbe.backend.users.repository.UserRepository;
 import com.tesisUrbe.backend.users.services.UserService;
+import com.tesisUrbe.backend.users.utils.UserUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,8 @@ public class EmailService implements IEmailService{
 
     private final UserRepository userRepository;
     private final AuthService authService;
-    private final PasswordRecoveryRepostory passwordRecoveryRepostory;
+    private final PasswordRecoveryRepository passwordRecoveryRepository;
+    private final AccountRecoveryRepository accountRecoveryRepository;
 
     @Value("${EMAIL_USER}")
     private String emailUser;
@@ -37,10 +42,11 @@ public class EmailService implements IEmailService{
     @Autowired
     private JavaMailSender mailSender;
 
-    public EmailService(UserService userService, UserRepository userRepository, AuthService authService, PasswordRecoveryRepostory passwordRecoveryRepostory) {
+    public EmailService(UserService userService, UserRepository userRepository, AuthService authService, PasswordRecoveryRepository passwordRecoveryRepository, AccountRecoveryRepository accountRecoveryRepository) {
         this.userRepository = userRepository;
         this.authService = authService;
-        this.passwordRecoveryRepostory = passwordRecoveryRepostory;
+        this.passwordRecoveryRepository = passwordRecoveryRepository;
+        this.accountRecoveryRepository = accountRecoveryRepository;
     }
 
     @Override
@@ -83,25 +89,14 @@ public class EmailService implements IEmailService{
         }
     }
 
-    public void PasswordRecovery(UserPassRecovery userPassRecovery){
-        if (userPassRecovery.getUserName() == null && userPassRecovery.getEmail() == null) {
-            throw new IllegalArgumentException("Ningun parametro de busqueda ingresado");
-        }
-        User user;
-        if (userPassRecovery.getUserName() != null) {
-            user = userRepository.findByUserName(userPassRecovery.getUserName())
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
-        } else {
-            user = userRepository.findByEmail(userPassRecovery.getEmail())
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        }
-
+    public void passwordRecovery(UserRecovery userRecovery){
+        User user = this.userExists(userRecovery);
+        UserUtils.checkBlock(user);
         try {
             String token = authService.randomToken();
             PasswordRecovery passwordRecovery = new PasswordRecovery(user, token);
 
-            passwordRecoveryRepostory.save(passwordRecovery);
+            passwordRecoveryRepository.save(passwordRecovery);
             String link = UriComponentsBuilder.fromUriString(domain)
                     .path("/users/password-recovery/"+ user.getId())
                     .queryParam("token", token)
@@ -116,7 +111,59 @@ public class EmailService implements IEmailService{
             );
 
         }  catch (Exception e) {
-            throw new RuntimeException("Ocurrió un error inesperado al tratar de recuperar la contraseña." + e.getMessage(), e);
+            throw new RuntimeException(
+                    "Ocurrió un error inesperado al tratar de recuperar la contraseña." +
+                            e.getMessage(), e
+            );
         }
+    }
+
+    public void accountRecovery(UserRecovery userRecovery){
+        User user = this.userExists(userRecovery);
+        UserUtils.checkActive(user);
+        if (!user.isBlocked()){
+            throw new InvalidUserDataException("Usuario no bloqueado");
+        }
+        try{
+
+            String token = authService.randomToken();
+            AccountRecovery accountRecovery = new AccountRecovery(user, token);
+
+            accountRecoveryRepository.save(accountRecovery);
+            String link = UriComponentsBuilder.fromUriString(domain)
+                    .path("/users/account-recovery/"+ user.getId())
+                    .queryParam("token", token)
+                    .toUriString();
+            sendEmail(user.getEmail(),
+                    EmailList.ACCOUNT_RECOVERY.getSubject(),
+                    EmailList.ACCOUNT_RECOVERY.getMessage(
+                            user.getUserName(),
+                            link
+                    )
+            );
+        }catch (Exception e){
+            throw new RuntimeException(
+                    "Ocurrió un error inesperado al tratar de recuperar la cuenta." +
+                            e.getMessage(), e
+            );
+        }
+
+    }
+
+    private User userExists(UserRecovery userRecovery){
+        if (userRecovery.getUserName() == null && userRecovery.getEmail() == null) {
+            throw new IllegalArgumentException("Ningun parametro de busqueda ingresado");
+        }
+        User user;
+        if (userRecovery.getUserName() != null) {
+            user = userRepository.findByUserName(userRecovery.getUserName())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        } else {
+            user = userRepository.findByEmail(userRecovery.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        }
+
+        return user;
     }
 }

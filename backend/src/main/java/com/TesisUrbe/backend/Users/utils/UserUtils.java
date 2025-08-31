@@ -3,7 +3,10 @@ package com.tesisUrbe.backend.users.utils;
 import com.tesisUrbe.backend.users.dto.NewUserDto;
 import com.tesisUrbe.backend.users.dto.UpdateAdminUserDto;
 import com.tesisUrbe.backend.users.dto.UpdatePublicUserDto;
+import com.tesisUrbe.backend.users.exceptions.BlockedUserException;
 import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
+import com.tesisUrbe.backend.users.exceptions.InvalidUserPasswordException;
+import com.tesisUrbe.backend.users.model.User;
 import lombok.NoArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -37,33 +40,33 @@ public class UserUtils {
 
     public static void validatePassword(String password) {
         if (password == null || password.trim().isEmpty()) {
-            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+            throw new InvalidUserDataException("La contraseña no puede estar vacía");
         }
 
         if (password.length() < 8) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
+            throw new InvalidUserPasswordException("La contraseña debe tener al menos 8 caracteres");
         }
 
         if (password.chars().noneMatch(Character::isUpperCase)) {
-            throw new IllegalArgumentException("La contraseña debe contener al menos una letra mayúscula");
+            throw new InvalidUserPasswordException("La contraseña debe contener al menos una letra mayúscula");
         }
 
         if (password.chars().noneMatch(Character::isLowerCase)) {
-            throw new IllegalArgumentException("La contraseña debe contener al menos una letra minúscula");
+            throw new InvalidUserPasswordException("La contraseña debe contener al menos una letra minúscula");
         }
 
         if (password.chars().noneMatch(Character::isDigit)) {
-            throw new IllegalArgumentException("La contraseña debe contener al menos un número");
+            throw new InvalidUserPasswordException("La contraseña debe contener al menos un número");
         }
 
         if (password.contains(" ")) {
-            throw new IllegalArgumentException("La contraseña no debe contener espacios");
+            throw new InvalidUserPasswordException("La contraseña no debe contener espacios");
         }
 
         boolean hasSpecial = password.chars()
                 .anyMatch(c -> !Character.isLetterOrDigit(c));
         if (!hasSpecial) {
-            throw new IllegalArgumentException("La contraseña debe contener al menos un carácter especial");
+            throw new InvalidUserPasswordException("La contraseña debe contener al menos un carácter especial");
         }
     }
 
@@ -89,6 +92,18 @@ public class UserUtils {
         if (authentication == null || authentication.getAuthorities().stream().noneMatch(a ->
                 a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERUSER"))) {
             throw new AccessDeniedException("Solo un Administrador o Super Usuario tiene permiso para realizar esta acción");
+        }
+    }
+
+    public static void checkBlock(User user){
+        if (user.isBlocked()){
+            throw new BlockedUserException("Usuario Bloqueado");
+        }
+    }
+
+    public static void checkActive(User user){
+        if (!user.isActive()){
+            throw new BlockedUserException("Usuario Inactivo");
         }
     }
 
