@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.auth.controllers;
 
 import com.tesisUrbe.backend.auth.dto.LoginUserDto;
 import com.tesisUrbe.backend.auth.services.AuthService;
+import com.tesisUrbe.backend.users.exceptions.BlockedUserException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +12,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -29,27 +27,27 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(
-            @Valid @RequestBody LoginUserDto dto,
+            @Valid @RequestBody LoginUserDto user,
             BindingResult result) {
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(Map.of("error", "Revise sus credenciales"));
         }
         try {
-            String jwt = authService.authenticate(dto.getUserName(), dto.getPassword());
+            String jwt = authService.authenticate(user.getUserName(), user.getPassword());
             return ResponseEntity.ok(Map.of("token", jwt));
 
         } catch (LockedException e) {
             return ResponseEntity.status(HttpStatus.LOCKED)
                     .body(Map.of("error", e.getMessage()));
 
-        } catch (BadCredentialsException e) {
+        } catch (BadCredentialsException | BlockedUserException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error interno"));
+                    .body(Map.of("error", "Error interno" + e));
         }
     }
 

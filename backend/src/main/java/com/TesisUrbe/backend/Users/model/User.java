@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @AllArgsConstructor
@@ -48,10 +47,14 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    public User(String userName, String password, String email, Role role) {
+    public User (String userName, String password, String email, Role role) {
         this.userName = userName;
         this.password = password;
         this.email = email;
         this.role = role;
+        this.active = true;
+        this.verified = false;
+        this.blocked = false;
+        this.deleted = false;
     }
 }

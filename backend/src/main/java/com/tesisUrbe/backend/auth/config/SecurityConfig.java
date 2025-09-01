@@ -1,13 +1,10 @@
 package com.tesisUrbe.backend.auth.config;
 
-import com.tesisUrbe.backend.users.enums.RoleList;
+
 import com.tesisUrbe.backend.auth.jwt.JwtAuthenticationFilter;
 import com.tesisUrbe.backend.auth.jwt.JwtEntryPoint;
 import com.tesisUrbe.backend.auth.jwt.JwtUtil;
-import com.tesisUrbe.backend.users.model.Role;
-import com.tesisUrbe.backend.users.repository.RoleRepository;
 import com.tesisUrbe.backend.users.services.UserService;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -30,22 +27,45 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtTokenFilter, JwtEntryPoint jwtEntryPoint) throws Exception {
+    protected SecurityFilterChain filterChain(
+            HttpSecurity http, JwtAuthenticationFilter jwtTokenFilter, JwtEntryPoint jwtEntryPoint
+    ) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**","/users/register").permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers(
+                        "/auth/**",
+                                "/users/register",
+                                "/email-request/password-recovery",
+                                "/users/password-recovery/**",
+                                "/email-request/account-recovery",
+                                "/users/account-recovery/**",
+                                "/email-request/verified/**"
+                        )
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated()
+                )
                 .httpBasic(Customizer.withDefaults())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))
+                .exceptionHandling(
+                        exception ->
+                                exception.authenticationEntryPoint(jwtEntryPoint)
+                )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)  // Protección contra Clickjacking
-                        .contentSecurityPolicy(policy -> policy.policyDirectives("default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; frame-ancestors 'none'")) // CSP mejorada
+                        .contentSecurityPolicy(
+                                policy -> policy.policyDirectives(
+                                        "default-src 'self'; " +
+                                                "script-src 'self'; " +
+                                                "style-src 'self'; " +
+                                                "object-src 'none'; " +
+                                                "frame-ancestors 'none'"
+                                )
+                        ) // CSP mejorada
                 );
         return http.build();
     }
-
-
 
     @Bean
     public JwtAuthenticationFilter jwtTokenFilter(JwtUtil jwtUtil, UserService userService) {
@@ -70,18 +90,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public CommandLineRunner initRoles(RoleRepository roleRepository) {
-        return args -> {
-            for (RoleList roleList : RoleList.values()) {
-                roleRepository.findByName(roleList).orElseGet(() -> {
-                    Role role = new Role();
-                    role.setName(roleList);
-                    return roleRepository.save(role);
-                });
-            }
-        };
     }
 }
