@@ -1,15 +1,18 @@
 package com.tesisUrbe.backend.users.services;
 
 import com.tesisUrbe.backend.users.dto.NewUserDto;
-import com.tesisUrbe.backend.users.dto.RoleUpdateDto;
-import com.tesisUrbe.backend.users.dto.UpdateUserDto;
+import com.tesisUrbe.backend.users.dto.UpdateAdminUserDto;
+import com.tesisUrbe.backend.users.dto.UpdatePublicUserDto;
+import com.tesisUrbe.backend.users.dto.UserDto;
 import com.tesisUrbe.backend.users.enums.RoleList;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
 import com.tesisUrbe.backend.users.model.Role;
 import com.tesisUrbe.backend.users.model.User;
 import com.tesisUrbe.backend.users.repository.UserRepository;
+import com.tesisUrbe.backend.users.utils.UserUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,8 +20,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +40,36 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void registerUser(NewUserDto newUserDto, Authentication authentication) {
+    public void registerPublicUser(NewUserDto newUserDto) {
+        UserUtils.normalizeUsername(newUserDto.getUserName());
+        UserUtils.normalizeEmail(newUserDto.getEmail());
+        UserUtils.validateRequiredFields(newUserDto);
+        UserUtils.validatePassword(newUserDto.getPassword());
+        if (existByUserName(newUserDto.getUserName())) {
+            throw new UserAlreadyExistsException("El nombre de usuario ya existe");
+        }
+        if (existByEmail(newUserDto.getEmail())) {
+            throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
+        }
+        Role role = roleService.findByName(RoleList.ROLE_USER).orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
+        User user = new User(
+                newUserDto.getUserName(),
+                passwordEncoder.encode(newUserDto.getPassword()),
+                newUserDto.getEmail(),
+                role
+        );
+        user.setActive(true);
+        user.setVerified(false);
+        user.setBlocked(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void registerAdminUser(NewUserDto newUserDto, Authentication authentication) {
+        UserUtils.normalizeUsername(newUserDto.getUserName());
+        UserUtils.normalizeEmail(newUserDto.getEmail());
+        UserUtils.validateRequiredFields(newUserDto);
+        UserUtils.validatePassword(newUserDto.getPassword());
         if (existByUserName(newUserDto.getUserName())) {
             throw new UserAlreadyExistsException("El nombre de usuario ya existe");
         }
@@ -44,32 +77,41 @@ public class UserService implements UserDetailsService {
             throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
         }
         try {
-            RoleList requestedRole = RoleList.valueOf(newUserDto.getRole() != null ? newUserDto.getRole() : "ROLE_USER");
+            RoleList requestedRole = (newUserDto.getRole() != null)
+                    ? RoleList.valueOf(newUserDto.getRole())
+                    : RoleList.ROLE_USER;
             if (requestedRole == RoleList.ROLE_SUPERUSER) {
-                validarSuperUsuario(authentication);
-            }
-            if (requestedRole == RoleList.ROLE_ADMIN) {
-                validarAdmin(authentication);
+                UserUtils.validarSuperUsuario(authentication);
+            } else if (requestedRole == RoleList.ROLE_ADMIN) {
+                UserUtils.validarAdmin(authentication);
+            } else if (requestedRole != RoleList.ROLE_USER) {
+                throw new RoleNotFoundException("Rol no permitido en este contexto");
             }
             Role role = roleService.findByName(requestedRole)
                     .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-            User user = new User(newUserDto.getUserName(), passwordEncoder.encode(newUserDto.getPassword()), newUserDto.getEmail(), role);
-            save(user);
+
+            User user = new User(
+                    newUserDto.getUserName(),
+                    passwordEncoder.encode(newUserDto.getPassword()),
+                    newUserDto.getEmail(),
+                    role
+            );
+            user.setActive(true);
+            user.setVerified(false);
+            user.setBlocked(false);
+            userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+            throw new RoleNotFoundException("Rol inválido");
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("El correo electrónico o nombre de usuario ya está registrado");
         }
     }
 
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        User user = userRepository.findOptionalUserByUserName(userName)
+        User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
-
         return new org.springframework.security.core.userdetails.User(
                 user.getUserName(),
                 user.getPassword(),
@@ -77,108 +119,13 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    public User findByUserName(String userName) {
-        return userRepository.findByUserName(userName);
-    }
-
-    public List<User> findAll(Authentication authentication) {
-        validarAdmin(authentication);
-        List<User> usuarios = userRepository.findAll();
-        if (usuarios.isEmpty()) {
-            throw new UsernameNotFoundException("No hay usuarios registrados");
+    public Long getUserIdByUserName(String userName) {
+        Optional<User> optionalUser = userRepository.findByUserName(userName);
+        if (optionalUser.isEmpty()) {
+            throw new IllegalArgumentException("Usuario no encontrado: " + userName);
         }
-        return usuarios;
-    }
-
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-    }
-
-    public void updateUser(Long userId, UpdateUserDto updateUserDto, Authentication authentication) {
-        if (authentication == null) {
-            throw new AccessDeniedException("Autenticación requerida");
-        }
-        User user = findById(userId);
-        if (existByUserName(updateUserDto.getUserName()) &&
-                !user.getUserName().equals(updateUserDto.getUserName())) {
-            throw new IllegalArgumentException("Nombre de usuario ya está en uso");
-        }
-
-        if (existByEmail(updateUserDto.getEmail()) &&
-                !user.getEmail().equals(updateUserDto.getEmail())) {
-            throw new IllegalArgumentException("Correo electrónico ya está en uso");
-        }
-
-        if (updateUserDto.getRole() != null) {
-            RoleList requestedRole = updateUserDto.getRole().getName();
-            if (requestedRole == RoleList.ROLE_SUPERUSER) {
-                validarSuperUsuario(authentication);
-            }
-            if (requestedRole == RoleList.ROLE_ADMIN) {
-                validarAdmin(authentication);
-            }
-            Role role = roleService.findByName(requestedRole)
-                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-            user.setRole(role);
-        }
-        user.setUserName(updateUserDto.getUserName());
-        user.setEmail(updateUserDto.getEmail());
-        user.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
-        try {
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("Error al actualizar el usuario. Posiblemente el correo o nombre de usuario ya estén registrados.");
-        } catch (Exception e) {
-            throw new RuntimeException("Ocurrió un error inesperado al actualizar el usuario.", e);
-        }
-
-    }
-
-    public void updateRoleById(Long id, RoleUpdateDto roleUpdateDto, Authentication authentication) {
-        if (authentication == null) {
-            throw new AccessDeniedException("Autenticación requerida");
-        }
-
-        validarSuperUsuario(authentication);
-
-        try {
-            RoleList requestedRole = RoleList.valueOf(roleUpdateDto.getRoleName());
-            Optional<Role> optionalRole = roleService.findByName(requestedRole);
-
-            Role role = optionalRole.orElseThrow(() ->
-                    new RoleNotFoundException("Rol no encontrado: " + roleUpdateDto.getRoleName())
-            );
-
-            User user = findById(id);
-
-            if (user.getRole().getName() == requestedRole) {
-                throw new IllegalArgumentException("El usuario ya tiene el rol especificado");
-            }
-
-            user.setRole(role);
-            save(user);
-
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Nombre de rol inválido: " + roleUpdateDto.getRoleName(), e);
-        } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("Error al actualizar el rol del usuario. Posible conflicto de datos.", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Ocurrió un error inesperado al actualizar el rol.", e);
-        }
-    }
-
-
-    public boolean isActive(Long id) {
-        return userRepository.isActive(id);
-    }
-
-    public boolean isBlocked(Long id) {
-        return userRepository.isBlocked(id);
-    }
-
-    public boolean isVerified(Long id) {
-        return userRepository.isVerified(id);
+        User user = optionalUser.get();
+        return user.getId();
     }
 
     public boolean existByEmail(String email) {
@@ -189,31 +136,224 @@ public class UserService implements UserDetailsService {
         return userRepository.existsByUserName(userName);
     }
 
-    public void blockUser(Long id) {
-        User user = findById(id);
-        user.setBlocked(true);
-        save(user);
-        userRepository.save(user);
+    public void lockUserAccount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Usuario no encontrado"));
+        if (!user.isBlocked()) {
+            user.setBlocked(true);
+            userRepository.save(user);
+        }
     }
 
-    public void deactivateUserById(Long id, Authentication authentication ) {
-        User user = userRepository.findById(id)
+    public void unlockUserAccount(Long userId, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (targetUser.getRole().getName() == RoleList.ROLE_SUPERUSER &&
+                requestingUser.getRole().getName() != RoleList.ROLE_SUPERUSER) {
+            throw new AccessDeniedException("Solo un Super Usuario puede desbloquear a otro Super Usuario");
+        }
+        if (targetUser.isBlocked()) {
+            targetUser.setBlocked(false);
+            userRepository.save(targetUser);
+        }
+    }
+
+    public void softDeleteUser(Long userId, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (targetUser.getRole().getName() == RoleList.ROLE_SUPERUSER &&
+                requestingUser.getRole().getName() != RoleList.ROLE_SUPERUSER) {
+            throw new AccessDeniedException("Solo un Super Usuario puede eliminar a otro Super Usuario");
+        }
+        targetUser.setActive(false);
+        targetUser.setBlocked(true);
+        targetUser.setDeleted(true);
+        userRepository.save(targetUser);
+    }
+
+    public void updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto, Authentication authentication) {
+        if (authentication == null) {
+            throw new AccessDeniedException("Autenticación requerida");
+        }
+        String currentUsername = authentication.getName();
+        User currentUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        if (!currentUser.getId().equals(userId)) {
+            throw new AccessDeniedException("No tienes permisos para modificar otro usuario");
+        }
+        UserUtils.normalizeUsername(updateUserDto.getUserName());
+        UserUtils.normalizeEmail(updateUserDto.getEmail());
+        UserUtils.validateRequiredFields(updateUserDto);
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            UserUtils.validatePassword(updateUserDto.getPassword());
+        }
+        if (!currentUser.getUserName().equals(updateUserDto.getUserName()) && existByUserName(updateUserDto.getUserName())) {
+            throw new UserAlreadyExistsException("El nombre de usuario ya existe");
+        }
+        if (!currentUser.getEmail().equals(updateUserDto.getEmail()) && existByEmail(updateUserDto.getEmail())) {
+            throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
+        }
+        currentUser.setUserName(updateUserDto.getUserName());
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            currentUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+        }
+        currentUser.setEmail(updateUserDto.getEmail());
+        try {
+            userRepository.save(currentUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Error al actualizar el usuario. Posiblemente el correo o nombre de usuario ya estén registrados.");
+        } catch (Exception e) {
+            throw new RuntimeException("Ocurrió un error inesperado al actualizar el usuario.", e);
+        }
+    }
+
+    public void updateAdminUser(Long userId, UpdateAdminUserDto updateUserDto, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        validarAdmin(authentication);
-        userRepository.DeactivateUser(id);
-    }
-
-    private void validarSuperUsuario(Authentication authentication) {
-        if (authentication == null || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_SUPERUSER"))) {
-            throw new AccessDeniedException("Solo un Super Usuario tiene permiso para realizar esta acción");
+        if (!targetUser.getUserName().equals(updateUserDto.getUserName()) && existByUserName(updateUserDto.getUserName())) {
+            throw new UserAlreadyExistsException("El nombre de usuario ya existe");
+        }
+        if (!targetUser.getEmail().equals(updateUserDto.getEmail()) && existByEmail(updateUserDto.getEmail())) {
+            throw new UserAlreadyExistsException("El correo electrónico ya está registrado");
+        }
+        UserUtils.normalizeUsername(updateUserDto.getUserName());
+        UserUtils.normalizeEmail(updateUserDto.getEmail());
+        UserUtils.validateRequiredFields(updateUserDto);
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            UserUtils.validatePassword(updateUserDto.getPassword());
+            targetUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+        }
+        targetUser.setUserName(updateUserDto.getUserName());
+        targetUser.setEmail(updateUserDto.getEmail());
+        if (updateUserDto.getIsActive() != null) {
+            targetUser.setActive(updateUserDto.getIsActive());
+        }
+        if (updateUserDto.getIsVerified() != null) {
+            targetUser.setVerified(updateUserDto.getIsVerified());
+        }
+        if (updateUserDto.getIsBlocked() != null) {
+            targetUser.setBlocked(updateUserDto.getIsBlocked());
+        }
+        if (updateUserDto.getRole() != null) {
+            RoleList requestedRole = updateUserDto.getRole().getName();
+            if (requestedRole == RoleList.ROLE_SUPERUSER) {
+                UserUtils.validarSuperUsuario(authentication);
+            }
+            Role role = roleService.findByName(requestedRole)
+                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
+            targetUser.setRole(role);
+        }
+        try {
+            userRepository.save(targetUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Error al actualizar el usuario. Posiblemente el correo o nombre de usuario ya estén registrados.");
+        } catch (Exception e) {
+            throw new RuntimeException("Ocurrió un error inesperado al actualizar el usuario.", e);
         }
     }
 
-    private void validarAdmin(Authentication authentication) {
-        if (authentication == null || authentication.getAuthorities().stream().noneMatch(a ->
-                a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERUSER"))) {
-            throw new AccessDeniedException("Solo un Administrador o Super Usuario tiene permiso para realizar esta acción");
+    public UserDto findPublicUserById(Long userId, Authentication authentication) {
+
+        if (authentication == null) {
+            throw new AccessDeniedException("Autenticación requerida");
         }
+
+        String currentUsername = authentication.getName();
+        User currentUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+
+        if (!currentUser.getId().equals(userId)) {
+            throw new AccessDeniedException("No tienes permisos para acceder a la información de otro usuario");
+        }
+
+        return new UserDto(
+                currentUser.getId(),
+                currentUser.getUserName(),
+                currentUser.getEmail(),
+                currentUser.getRole().getName().name(),
+                currentUser.isActive(),
+                currentUser.isVerified(),
+                currentUser.isBlocked()
+        );
     }
+
+    public UserDto findAdminUserById(Long userId, Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        RoleList requesterRole = requestingUser.getRole().getName();
+        RoleList targetRole = targetUser.getRole().getName();
+
+        if (requesterRole == RoleList.ROLE_ADMIN &&
+                targetRole != RoleList.ROLE_USER &&
+                targetRole != RoleList.ROLE_ADMIN) {
+            throw new AccessDeniedException("No tienes permisos para acceder a la información de este usuario");
+        }
+
+        return new UserDto(
+                targetUser.getId(),
+                targetUser.getUserName(),
+                targetUser.getEmail(),
+                targetRole.name(),
+                targetUser.isActive(),
+                targetUser.isVerified(),
+                targetUser.isBlocked()
+        );
+    }
+
+    public List<UserDto> findAllAdminUsers(Authentication authentication) {
+        UserUtils.validarAdmin(authentication);
+        String currentUsername = authentication.getName();
+        User requestingUser = userRepository.findByUserName(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario autenticado no encontrado"));
+        boolean isSuperUser = requestingUser.getRole().getName() == RoleList.ROLE_SUPERUSER;
+        List<User> allUsers = userRepository.findAll();
+        List<UserDto> result = new ArrayList<>();
+        for (User user : allUsers) {
+            RoleList targetRole = user.getRole().getName();
+            if (isSuperUser) {
+                result.add(new UserDto(
+                        user.getId(),
+                        user.getUserName(),
+                        user.getEmail(),
+                        targetRole.name(),
+                        user.isActive(),
+                        user.isVerified(),
+                        user.isBlocked()
+                ));
+            } else {
+                if (targetRole == RoleList.ROLE_USER || targetRole == RoleList.ROLE_ADMIN) {
+                    result.add(new UserDto(
+                            user.getId(),
+                            user.getUserName(),
+                            user.getEmail(),
+                            targetRole.name(),
+                            user.isActive(),
+                            user.isVerified(),
+                            user.isBlocked()
+                    ));
+                }
+            }
+        }
+        return result;
+    }
+
+
 
 }
