@@ -12,8 +12,15 @@ public enum EmailList {
             "Recuperación de Cuenta",
             "<p>Hola %s</p>" +
                     "<p>Haz clic en el siguiente enlace para recuperar tu cuenta bloqueada:</p>" +
-                    "<p><a href=%s>Recuperar Contraseña</a></p>" +
+                    "<p><a href=%s>Desbloquear Cuenta</a></p>" +
                     "<p>Si no esta bloqueada tu cuenta, por favor ignora este correo.</p>"
+    ),
+    EMAIL_VERIFICATION(
+            "Verificación de Email",
+            "<p>Hola %s</p>" +
+                    "<p>Haz clic en el siguiente enlace para verificar el email, %s, de cuenta:</p>" +
+                    "<p><a href=%s>Verificacion de Email</a></p>" +
+                    "<p>Si no solicitaste la verificacion de correo, por favor ignora este correo.</p>"
     );
 
     private final String subject;

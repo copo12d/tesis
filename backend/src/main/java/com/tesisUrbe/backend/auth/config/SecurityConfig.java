@@ -39,7 +39,8 @@ public class SecurityConfig {
                                 "/email-request/password-recovery",
                                 "/users/password-recovery/**",
                                 "/email-request/account-recovery",
-                                "/users/account-recovery/**"
+                                "/users/account-recovery/**",
+                                "/email-request/verified/**"
                         )
                                 .permitAll()
                                 .anyRequest()

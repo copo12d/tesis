@@ -35,7 +35,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (path.equals("/users/register") ||
                 path.startsWith("/auth/") ||
                 path.startsWith("/email-request/password-recovery") ||
-                path.startsWith("/users/password-recovery/")
+                path.startsWith("/users/password-recovery/") ||
+                path.startsWith("/email-request/account-recovery") ||
+                path.startsWith("/users/account-recovery/") ||
+                path.startsWith("/email-request/verified/")
         ) {
             filterChain.doFilter(request, response);
             return;
