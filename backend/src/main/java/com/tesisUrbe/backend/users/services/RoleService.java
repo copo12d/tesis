@@ -1,33 +1,32 @@
 package com.tesisUrbe.backend.users.services;
 
-import com.tesisUrbe.backend.users.enums.RoleList;
-import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
-import com.tesisUrbe.backend.users.model.Role;
-import com.tesisUrbe.backend.users.model.User;
+import com.tesisUrbe.backend.entities.enums.RoleList;
+import com.tesisUrbe.backend.entities.account.Role;
 import com.tesisUrbe.backend.users.repository.RoleRepository;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RoleService {
 
     private final RoleRepository roleRepository;
 
-    public RoleService(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
+    public Optional<Role> findByName(RoleList name) {
+        return roleRepository.findByName(name);
     }
 
-    public Optional<Role> findByName(RoleList role) {
-        return roleRepository.findByName(role);
+    public Role save(Role role) {
+        return roleRepository.save(role);
     }
 
-    public Role save(Role role) { roleRepository.save(role);
-        return role;
+    public long count() {
+        return roleRepository.count();
     }
 
+    public boolean existsByName(RoleList role) {
+        return roleRepository.existsByName(role);
+    }
 }
