@@ -5,14 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
-    private Long id;
+@NoArgsConstructor
+public class NewAdminUserDto {
     private String userName;
+    private String password;
     private String email;
     private String role;
-    private boolean isActive;
-    private boolean isVerified;
-    private boolean isBlocked;
 }
