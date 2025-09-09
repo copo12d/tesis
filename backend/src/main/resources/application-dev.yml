@@ -16,17 +16,36 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8080
+
+api:
+  base-path: /api/v1
+
+  web:
+    cors:
+      allowed-origins:
+        - "http://localhost:5173"
+        - "https://midominio.com"
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      allow-credentials: true
+      max-age: 3600
+
+jwt:
+  secret: ${SECRET_KEY}
+  expiration: ${EXP}
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
-jwt:
-  secret: ${SECRET_KEY}
-  expiration: ${EXP}

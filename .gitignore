@@ -1,2 +1,3 @@
 .env
-pendiente.txt
+frontend/
+backend/target

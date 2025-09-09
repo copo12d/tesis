@@ -1,64 +1,50 @@
 package com.tesisUrbe.backend.auth.controllers;
 
 import com.tesisUrbe.backend.auth.dto.LoginUserDto;
+import com.tesisUrbe.backend.auth.dto.JwtResponse;
+import com.tesisUrbe.backend.auth.dto.RefreshTokenRequest;
 import com.tesisUrbe.backend.auth.services.AuthService;
-import com.tesisUrbe.backend.users.exceptions.BlockedUserException;
+import com.tesisUrbeTemp2.backend.common.exception.ApiError;
+import com.tesisUrbeTemp2.backend.common.exception.ApiErrorFactory;
+import com.tesisUrbeTemp2.backend.common.exception.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
+import java.util.List;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("${api.base-path}/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final ApiErrorFactory errorFactory;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
-            @Valid @RequestBody LoginUserDto user,
-            BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("error", "Revise sus credenciales"));
-        }
-        try {
-            String jwt = authService.authenticate(user.getUserName(), user.getPassword());
-            return ResponseEntity.ok(Map.of("token", jwt));
-
-        } catch (LockedException e) {
-            return ResponseEntity.status(HttpStatus.LOCKED)
-                    .body(Map.of("error", e.getMessage()));
-
-        } catch (BadCredentialsException | BlockedUserException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error interno" + e));
-        }
+    public ResponseEntity<ApiResponse<JwtResponse>> login(@Valid @RequestBody LoginUserDto dto) {
+        return ResponseEntity.ok(authService.authenticate(dto.getUserName(), dto.getPassword()));
     }
 
-    @GetMapping("/check-auth")
-    public ResponseEntity<Map<String, String>> checkAuth() {
-        return ResponseEntity.ok(Map.of("status", "Autenticado"));
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<JwtResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
-    @ExceptionHandler({AccessDeniedException.class, AuthenticationCredentialsNotFoundException.class})
-    public ResponseEntity<Map<String, String>> handleAuthException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autorizado"));
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    errorFactory.build(HttpStatus.BAD_REQUEST,
+                            List.of(new ApiError(
+                                    "INVALID_HEADER", null, "El header Authorization es inválido")))
+            );
+        }
+
+        String token = authHeader.substring(7);
+        return ResponseEntity.ok(authService.logout(token));
     }
 
 }

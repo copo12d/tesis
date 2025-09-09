@@ -1,6 +1,6 @@
 package com.tesisUrbe.backend.users.dto;
 
-import com.tesisUrbe.backend.users.enums.RoleList;
+import com.tesisUrbeTemp2.backend.entities.enums.RoleList;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
