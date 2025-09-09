@@ -5,10 +5,8 @@ import com.tesisUrbe.backend.users.model.Role;
 import com.tesisUrbe.backend.users.model.User;
 import com.tesisUrbe.backend.users.repository.UserRepository;
 import com.tesisUrbe.backend.users.services.RoleService;
-import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

@@ -5,7 +5,6 @@ import com.tesisUrbe.backend.users.dto.UpdateAdminUserDto;
 import com.tesisUrbe.backend.users.dto.UpdatePublicUserDto;
 import com.tesisUrbe.backend.users.dto.UserDto;
 import com.tesisUrbe.backend.users.enums.RoleList;
-import com.tesisUrbe.backend.users.exceptions.BlockedUserException;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
 import com.tesisUrbe.backend.users.exceptions.UserAlreadyExistsException;
 import com.tesisUrbe.backend.users.model.AccountRecovery;
