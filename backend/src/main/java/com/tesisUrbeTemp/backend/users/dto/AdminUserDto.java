@@ -7,22 +7,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+<<<<<<<< HEAD:backend/src/main/java/com/tesisUrbeTemp/backend/users/dto/PublicUserDto.java
+public class PublicUserDto {
+========
 public class AdminUserDto {
+>>>>>>>> origin/luis-branch:backend/src/main/java/com/tesisUrbeTemp/backend/users/dto/AdminUserDto.java
     private Long id;
     private String fullName;
     private String userName;
     private String email;
-    private String role;
-<<<<<<<< HEAD:backend/src/main/java/com/tesisUrbeTemp/backend/users/dto/UserDto.java
-    private boolean isActive;
-    private boolean isVerified;
-    private boolean isBlocked;
-========
     private boolean active;
     private boolean verified;
     private boolean accountLocked;
     private boolean userLocked;
     private boolean deleted;
->>>>>>>> b4dcb59 (tesis refactorizada.):backend/src/main/java/com/tesisUrbeTemp/backend/users/dto/AdminUserDto.java
 }
 
