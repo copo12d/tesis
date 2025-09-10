@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdatePublicUserDto {
+    private String fullName;
     private String userName;
     private String email;
     private String password;

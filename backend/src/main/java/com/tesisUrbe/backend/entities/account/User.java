@@ -35,9 +35,6 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private boolean active = true;
-
-    @Column(nullable = false)
     private boolean verified = false;
 
     @Column(nullable = false)

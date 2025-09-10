@@ -55,7 +55,6 @@ public class SuperAdminInitializer implements CommandLineRunner {
             superAdmin.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
             superAdmin.setEmail(DEFAULT_EMAIL);
             superAdmin.setRole(superRole);
-            superAdmin.setActive(true);
             superAdmin.setVerified(false);
             superAdmin.setAccountLocked(false);
             superAdmin.setUserLocked(false);

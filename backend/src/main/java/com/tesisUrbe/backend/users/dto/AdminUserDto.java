@@ -13,7 +13,6 @@ public class AdminUserDto {
     private String userName;
     private String email;
     private String role;
-    private boolean active;
     private boolean verified;
     private boolean accountLocked;
     private boolean userLocked;

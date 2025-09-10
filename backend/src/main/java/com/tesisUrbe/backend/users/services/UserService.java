@@ -12,6 +12,7 @@ import com.tesisUrbe.backend.users.exceptions.UserNotFoundException;
 import com.tesisUrbe.backend.entities.account.Role;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.users.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,9 +31,11 @@ import org.springframework.util.StringUtils;
 
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -95,7 +98,6 @@ public class UserService implements UserDetailsService {
                 .password(passwordEncoder.encode(newPublicUserDto.getPassword()))
                 .email(newPublicUserDto.getEmail())
                 .role(role)
-                .active(true)
                 .verified(false)
                 .accountLocked(false)
                 .userLocked(false)
@@ -147,7 +149,7 @@ public class UserService implements UserDetailsService {
         if (callerRole == RoleList.ROLE_ADMIN && requestedRole == RoleList.ROLE_SUPERUSER) {
             return errorFactory.build(
                     HttpStatus.FORBIDDEN,
-                    List.of(new ApiError("ROLE_NOT_ALLOWED", "role", "No tienes permisos para asignar el rol SUPERUSER"))
+                    List.of(new ApiError("ROLE_NOT_ALLOWED", "role", "No tienes los permisos necesarios para realizar esta acción."))
             );
         }
 
@@ -160,7 +162,6 @@ public class UserService implements UserDetailsService {
                 .password(passwordEncoder.encode(newAdminUserDto.getPassword()))
                 .email(newAdminUserDto.getEmail())
                 .role(role)
-                .active(true)
                 .verified(false)
                 .accountLocked(false)
                 .userLocked(false)
@@ -213,7 +214,6 @@ public class UserService implements UserDetailsService {
                 user.getFullName(),
                 user.getUserName(),
                 user.getEmail(),
-                user.isActive(),
                 user.isVerified(),
                 user.isAccountLocked(),
                 user.isUserLocked(),
@@ -264,11 +264,10 @@ public class UserService implements UserDetailsService {
 
         AdminUserDto dto = new AdminUserDto(
                 targetUser.getId(),
-                targetUser.getUserName(),
                 targetUser.getFullName(),
+                targetUser.getUserName(),
                 targetUser.getEmail(),
                 targetUser.getRole().getName().name(),
-                targetUser.isActive(),
                 targetUser.isVerified(),
                 targetUser.isAccountLocked(),
                 targetUser.isUserLocked(),
@@ -313,7 +312,6 @@ public class UserService implements UserDetailsService {
                                 user.getUserName(),
                                 user.getEmail(),
                                 user.getRole().getName().name(),
-                                user.isActive(),
                                 user.isVerified(),
                                 user.isAccountLocked(),
                                 user.isUserLocked(),
@@ -396,137 +394,244 @@ public class UserService implements UserDetailsService {
 //        );
 //    }
 
-//    @Transactional
-//    public ApiResponse<Void> softDeleteUser(Long userId) {
-//        User targetUser = getUserById(userId);
-//
-//        if (targetUser == null) {
-//            return errorFactory.<Void>build(
-//                    HttpStatus.NOT_FOUND,
-//                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
-//            );
-//        }
-//
-//        targetUser.setActive(false);
-//        targetUser.setBlocked(true);
-//        targetUser.setDeleted(true);
-//        userRepository.save(targetUser);
-//
-//        return errorFactory.buildSuccess(HttpStatus.OK, "Usuario eliminado lógicamente exitosamente"
-//        );
-//    }
+    @Transactional
+    public ApiResponse<Void> updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-//    @Transactional
-//    public ApiResponse<Void> updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto) {
-//        User currentUser = getUserById(userId);
-//        updateUserDto.setUserName(NormalizationUtils.normalizeUsername(updateUserDto.getUserName()));
-//        updateUserDto.setEmail(NormalizationUtils.normalizeEmail(updateUserDto.getEmail()));
-//        ValidationUtils.validateRequiredFields(updateUserDto);
-//
-//        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
-//            PasswordUtils.validatePassword(updateUserDto.getPassword());
-//            currentUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
-//        }
-//
-//        if (!currentUser.getUserName().equals(updateUserDto.getUserName())
-//                && Boolean.TRUE.equals(existByUserName(updateUserDto.getUserName()).data())) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
-//            );
-//        }
-//
-//        if (!currentUser.getEmail().equals(updateUserDto.getEmail())
-//                && Boolean.TRUE.equals(existByEmail(updateUserDto.getEmail()).data())) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
-//            );
-//        }
-//
-//        if (!currentUser.getEmail().equals(updateUserDto.getEmail())) {
-//            currentUser.setVerified(false);
-//        }
-//
-//        currentUser.setUserName(updateUserDto.getUserName());
-//        currentUser.setEmail(updateUserDto.getEmail());
-//
-//        try {
-//            userRepository.save(currentUser);
-//        } catch (DataIntegrityViolationException e) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
-//            );
-//        }
-//
-//        return errorFactory.buildSuccess(HttpStatus.OK, "Perfil público actualizado exitosamente"
-//        );
-//    }
-//
-//    @Transactional
-//    public ApiResponse<Void> updateAdminUser(Long userId, UpdateAdminUserDto updateUserDto, RoleList callerRole) {
-//        User targetUser = getUserById(userId);
-//
-//        if (!targetUser.getUserName().equals(updateUserDto.getUserName())
-//                && Boolean.TRUE.equals(existByUserName(updateUserDto.getUserName()).data())) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
-//            );
-//        }
-//
-//        if (!targetUser.getEmail().equals(updateUserDto.getEmail())
-//                && Boolean.TRUE.equals(existByEmail(updateUserDto.getEmail()).data())) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
-//            );
-//        }
-//
-//        updateUserDto.setUserName(NormalizationUtils.normalizeUsername(updateUserDto.getUserName()));
-//        updateUserDto.setEmail(NormalizationUtils.normalizeEmail(updateUserDto.getEmail()));
-//        ValidationUtils.validateRequiredFields(updateUserDto);
-//
-//        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
-//            PasswordUtils.validatePassword(updateUserDto.getPassword());
-//            targetUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
-//        }
-//
-//        targetUser.setUserName(updateUserDto.getUserName());
-//        targetUser.setEmail(updateUserDto.getEmail());
-//
-//        if (updateUserDto.getIsActive() != null) targetUser.setActive(updateUserDto.getIsActive());
-//        if (updateUserDto.getIsVerified() != null) targetUser.setVerified(updateUserDto.getIsVerified());
-//        if (updateUserDto.getIsBlocked() != null) targetUser.setBlocked(updateUserDto.getIsBlocked());
-//
-//        if (updateUserDto.getRole() != null) {
-//            RoleList requestedRole = updateUserDto.getRole().getName();
-//
-//            if (callerRole == RoleList.ROLE_ADMIN && requestedRole == RoleList.ROLE_SUPERUSER) {
-//                return errorFactory.build(
-//                        HttpStatus.FORBIDDEN,
-//                        List.of(new ApiError("ROLE_NOT_ALLOWED", "role", "Un administrador no puede asignar el rol SUPERUSER"))
-//                );
-//            }
-//
-//            Role role = roleService.findByName(requestedRole)
-//                    .orElseThrow(() -> new RoleNotFoundException("Rol " + requestedRole + " no encontrado"));
-//            targetUser.setRole(role);
-//        }
-//
-//        try {
-//            userRepository.save(targetUser);
-//        } catch (DataIntegrityViolationException e) {
-//            return errorFactory.build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
-//            );
-//        }
-//
-//        return errorFactory.buildSuccess(HttpStatus.OK, "Usuario administrativo actualizado exitosamente"
-//        );
-//    }
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        String callerUsername = auth.getName();
+
+        User currentUser = getUserById(userId);
+        if (currentUser == null) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        if (!currentUser.getUserName().equals(callerUsername)) {
+            return errorFactory.build(
+                    HttpStatus.FORBIDDEN,
+                    List.of(new ApiError("ACCESS_DENIED", null, "No puedes modificar el perfil de otro usuario"))
+            );
+        }
+
+        try {
+            if (updateUserDto.getUserName() != null && !updateUserDto.getUserName().isBlank()) {
+                String normalizedUsername = NormalizationUtils.normalizeUsername(updateUserDto.getUserName());
+                if (!currentUser.getUserName().equals(normalizedUsername)
+                        && Boolean.TRUE.equals(existByUserName(normalizedUsername).data())) {
+                    return errorFactory.build(
+                            HttpStatus.CONFLICT,
+                            List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
+                    );
+                }
+                currentUser.setUserName(normalizedUsername);
+            }
+
+            if (updateUserDto.getEmail() != null && !updateUserDto.getEmail().isBlank()) {
+                String normalizedEmail = NormalizationUtils.normalizeEmail(updateUserDto.getEmail());
+                if (!currentUser.getEmail().equals(normalizedEmail)
+                        && Boolean.TRUE.equals(existByEmail(normalizedEmail).data())) {
+                    return errorFactory.build(
+                            HttpStatus.CONFLICT,
+                            List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
+                    );
+                }
+                currentUser.setEmail(normalizedEmail);
+                currentUser.setVerified(false);
+            }
+
+            if (updateUserDto.getFullName() != null && !updateUserDto.getFullName().isBlank()) {
+                currentUser.setFullName(updateUserDto.getFullName());
+            }
+
+            if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+                PasswordUtils.validatePassword(updateUserDto.getPassword());
+                currentUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+            }
+
+            userRepository.save(currentUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Perfil público actualizado exitosamente");
+        } catch (DataIntegrityViolationException e) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
+            );
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al actualizar el usuario"))
+            );
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Void> updateAdminUser(Long userId, UpdateAdminUserDto updateUserDto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        RoleList callerRole = auth.getAuthorities().stream()
+                .map(a -> {
+                    try {
+                        return RoleList.valueOf(a.getAuthority());
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(RoleList.ROLE_USER);
+
+        User targetUser = getUserById(userId);
+        if (targetUser == null) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        RoleList targetRole = targetUser.getRole().getName();
+
+        if (callerRole == RoleList.ROLE_ADMIN && targetRole == RoleList.ROLE_SUPERUSER) {
+            return errorFactory.build(
+                    HttpStatus.FORBIDDEN,
+                    List.of(new ApiError("ACCESS_DENIED", null, "No tienes permiso para modificar este usuario"))
+            );
+        }
+
+        try {
+            if (updateUserDto.getUserName() != null && !updateUserDto.getUserName().isBlank()) {
+                String normalizedUsername = NormalizationUtils.normalizeUsername(updateUserDto.getUserName());
+                if (!targetUser.getUserName().equals(normalizedUsername)
+                        && Boolean.TRUE.equals(existByUserName(normalizedUsername).data())) {
+                    return errorFactory.build(
+                            HttpStatus.CONFLICT,
+                            List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
+                    );
+                }
+                targetUser.setUserName(normalizedUsername);
+            }
+
+            if (updateUserDto.getEmail() != null && !updateUserDto.getEmail().isBlank()) {
+                String normalizedEmail = NormalizationUtils.normalizeEmail(updateUserDto.getEmail());
+                if (!targetUser.getEmail().equals(normalizedEmail)
+                        && Boolean.TRUE.equals(existByEmail(normalizedEmail).data())) {
+                    return errorFactory.build(
+                            HttpStatus.CONFLICT,
+                            List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
+                    );
+                }
+                targetUser.setEmail(normalizedEmail);
+                targetUser.setVerified(false);
+            }
+
+            if (updateUserDto.getFullName() != null && !updateUserDto.getFullName().isBlank()) {
+                targetUser.setFullName(updateUserDto.getFullName());
+            }
+
+            if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+                PasswordUtils.validatePassword(updateUserDto.getPassword());
+                targetUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+            }
+
+            if (Boolean.TRUE.equals(updateUserDto.getUnlockAccount())) {
+                targetUser.setAccountLocked(false);
+            }
+
+            if (Boolean.TRUE.equals(updateUserDto.getUnlockUser())) {
+                targetUser.setUserLocked(false);
+            }
+
+            if (Boolean.TRUE.equals(updateUserDto.getDeleteUser())) {
+                if (callerRole != RoleList.ROLE_SUPERUSER) {
+                    return errorFactory.build(
+                            HttpStatus.FORBIDDEN,
+                            List.of(new ApiError("ACCESS_DENIED", "deleteUser", "Solo un superusuario puede eliminar usuarios"))
+                    );
+                }
+                targetUser.setDeleted(true);
+            }
+
+            if (updateUserDto.getRole() != null && !updateUserDto.getRole().isBlank()) {
+                if (callerRole != RoleList.ROLE_SUPERUSER) {
+                    return errorFactory.build(
+                            HttpStatus.FORBIDDEN,
+                            List.of(new ApiError("ACCESS_DENIED", "newRole", "Solo un superusuario puede cambiar el rol de un usuario"))
+                    );
+                }
+
+                try {
+                    RoleList requestedRole = RoleList.valueOf(updateUserDto.getRole());
+                    Optional<Role> roleOpt = roleService.findByName(requestedRole);
+                    if (roleOpt.isEmpty()) {
+                        return errorFactory.build(
+                                HttpStatus.BAD_REQUEST,
+                                List.of(new ApiError("INVALID_ROLE", "newRole", "El rol solicitado no existe"))
+                        );
+                    }
+                    Role roleEntity = roleOpt.get();
+                    targetUser.setRole(roleEntity);
+                } catch (IllegalArgumentException ex) {
+                    return errorFactory.build(
+                            HttpStatus.BAD_REQUEST,
+                            List.of(new ApiError("INVALID_ROLE", "newRole", "Rol inválido"))
+                    );
+                }
+            }
+
+            userRepository.save(targetUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Usuario administrativo actualizado exitosamente");
+
+        } catch (DataIntegrityViolationException e) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
+            );
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al actualizar el usuario"))
+            );
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Void> softDeleteUser(Long userId) {
+        Optional<User> targetUserOpt = userRepository.findById(userId);
+
+        if (targetUserOpt.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        User targetUser = targetUserOpt.get();
+        targetUser.setDeleted(true);
+
+        try {
+            userRepository.save(targetUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Usuario eliminado exitosamente");
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el usuario"))
+            );
+        }
+    }
 
     private PublicUserDto mapToDto(User user) {
         return new PublicUserDto(
@@ -534,7 +639,6 @@ public class UserService implements UserDetailsService {
                 user.getFullName(),
                 user.getUserName(),
                 user.getEmail(),
-                user.isActive(),
                 user.isVerified(),
                 user.isAccountLocked(),
                 user.isUserLocked(),
@@ -542,4 +646,4 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    }
+}
