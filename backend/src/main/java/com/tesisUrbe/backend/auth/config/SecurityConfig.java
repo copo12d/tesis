@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tesisUrbe.backend.auth.jwt.JwtAuthenticationFilter;
 import com.tesisUrbe.backend.auth.jwt.JwtEntryPoint;
 import com.tesisUrbe.backend.auth.jwt.JwtTokenProvider;
+import com.tesisUrbe.backend.auth.repository.BlackListedTokenRepository;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.users.services.UserService;
 import org.springframework.context.annotation.Bean;
@@ -57,10 +58,10 @@ public class SecurityConfig {
     public JwtAuthenticationFilter jwtTokenFilter(JwtTokenProvider jwtTokenProvider,
                                                   UserService userService,
                                                   ApiErrorFactory errorFactory,
-                                                  ObjectMapper objectMapper) {
-        return new JwtAuthenticationFilter(jwtTokenProvider, userService, errorFactory, objectMapper);
+                                                  ObjectMapper objectMapper,
+                                                  BlackListedTokenRepository blackListedTokenRepository) {
+        return new JwtAuthenticationFilter(jwtTokenProvider, userService, errorFactory, objectMapper, blackListedTokenRepository);
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

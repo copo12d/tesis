@@ -1,6 +1,7 @@
 package com.tesisUrbe.backend.auth.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tesisUrbe.backend.auth.repository.BlackListedTokenRepository;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
@@ -34,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final ApiErrorFactory errorFactory;
     private final ObjectMapper objectMapper;
+    private final BlackListedTokenRepository blackListedTokenRepository;
 
     /**
      * Excluye rutas públicas del filtro JWT.
@@ -57,6 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = header.substring(7);
+
+        if (blackListedTokenRepository.existsByToken(token)) {
+            sendUnauthorized(response, "El token ha sido revocado");
+            return;
+        }
 
         try {
             Claims claims = jwtTokenProvider.extractAllClaims(token);
