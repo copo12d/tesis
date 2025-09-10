@@ -12,7 +12,6 @@ public class UpdateAdminUserDto {
     private String userName;
     private String email;
     private String password;
-    private String role;
     private Boolean unlockAccount;
     private Boolean unlockUser;
     private Boolean deleteUser;
