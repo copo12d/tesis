@@ -1,30 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/resgister.css';
+import { useRegister } from '../hooks/useRegister';
+import '../styles/register.css';
 
 export function Register() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { register, loading, error } = useRegister();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      // Aquí va tu lógica real de registro
-      // const res = await api.post('/register', { userName, password });
-      // if (res.data.success) {
-      //   navigate('/login');
-      // } else {
-      //   setError('No se pudo registrar');
-      // }
-      setLoading(false);
-    } catch (err) {
-      setError(`Error al registrar: ${err.message}`);
-      setLoading(false);
-    }
+    await register(userName, password);
   };
 
   return (
