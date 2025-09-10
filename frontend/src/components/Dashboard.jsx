@@ -1,17 +1,11 @@
 import '../styles/dashboard.css';
 import { Carta } from './Carta';
 import Grafica_semanal from './Grafica_semanal';
+import { useDashboard } from '../hooks/useDashboard';
 
 export const Dashboard = () => {
-   const data = [
-    { day: "Sat", value: 10 },
-    { day: "Sun", value: 10 },
-    { day: "Mon", value: 60 },
-    { day: "Tue", value: 82 },
-    { day: "Wed", value: 50 },
-    { day: "Thu", value: 70 },
-    { day: "Fri", value: 50 }
-  ];
+  const { dashboardData, error, refetch } = useDashboard();
+
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
@@ -33,18 +27,16 @@ export const Dashboard = () => {
       <main className="dashboard-main">
         <h2 className="dashboard-title">Dashboard</h2>
         <div className="dashboard-row">
-          <div className="dashboard-card">
-            <Carta value={75} />
-          </div>
-          <div className="dashboard-card">
-            <Carta value={50} />
-          </div>
-          <div className="dashboard-card">
-            <Carta value={25} />
-          </div>
+          {dashboardData.cardsData.map((card, index) => (
+            <div key={card.id || index} className="dashboard-card">
+              <Carta value={card.value} />
+            </div>
+          ))}
         </div>
         <div className="dashboard-row">
-          <div className="dashboard-card dashboard-card-large"><Grafica_semanal data={data} /></div>
+          <div className="dashboard-card dashboard-card-large">
+            <Grafica_semanal data={dashboardData.weeklyData} />
+          </div>
         </div>
       </main>
     </div>

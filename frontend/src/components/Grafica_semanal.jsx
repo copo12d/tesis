@@ -10,14 +10,11 @@ import {
 import "../styles/grafica-semanal.css";
 import { CustomTooltip } from "./CustomTooltip";
 
-// Componente personalizado para el tooltip
-
-
 const Grafica_semanal = ({ data }) => {
   return (
     <div className="weekly-chart-container">
-      <h3 className="weekly-chart-title">This Week</h3>
-      <p className="weekly-chart-subtitle">Chat Volume</p>
+      <h3 className="weekly-chart-title">Esta Semana</h3>
+      <p className="weekly-chart-subtitle">Volumen de contenedores</p>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" />
