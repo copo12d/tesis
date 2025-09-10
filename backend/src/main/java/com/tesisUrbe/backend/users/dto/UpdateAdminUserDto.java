@@ -8,11 +8,12 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateAdminUserDto {
+    private String fullName;
     private String userName;
     private String email;
     private String password;
-    private Boolean isActive;
-    private Boolean isVerified;
-    private Boolean isBlocked;
-    private RoleDto role;
+    private Boolean unlockAccount;
+    private Boolean unlockUser;
+    private Boolean deleteUser;
 }
+
