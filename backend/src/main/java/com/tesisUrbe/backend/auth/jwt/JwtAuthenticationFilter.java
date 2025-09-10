@@ -71,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = claims.getSubject();
             List<String> roles = claims.get("roles", List.class);
 
-            // ✅ Validación de estado del usuario antes de autenticar
             AuthUserProjection authUser = userService.findAuthUserProjectionByUserName(username)
                     .orElse(null);
 
