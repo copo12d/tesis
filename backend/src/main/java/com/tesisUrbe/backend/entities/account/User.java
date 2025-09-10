@@ -18,7 +18,7 @@ public class User {
     private Long id;
 
     @NotBlank(message = "El nombre completo es obligatorio")
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String fullName;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")

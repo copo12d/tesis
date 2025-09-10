@@ -5,6 +5,7 @@ import com.tesisUrbe.backend.auth.repository.BlackListedTokenRepository;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
+import com.tesisUrbe.backend.users.dto.AuthUserProjection;
 import com.tesisUrbe.backend.users.services.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -69,6 +70,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Claims claims = jwtTokenProvider.extractAllClaims(token);
             String username = claims.getSubject();
             List<String> roles = claims.get("roles", List.class);
+
+            // ✅ Validación de estado del usuario antes de autenticar
+            AuthUserProjection authUser = userService.findAuthUserProjectionByUserName(username)
+                    .orElse(null);
+
+            if (authUser == null || Boolean.TRUE.equals(authUser.isDeleted())) {
+                sendUnauthorized(response, "La cuenta ha sido eliminada");
+                return;
+            }
+            if (Boolean.TRUE.equals(authUser.isUserLocked())) {
+                sendUnauthorized(response, "El acceso fue bloqueado por un administrador");
+                return;
+            }
+            if (Boolean.TRUE.equals(authUser.isAccountLocked())) {
+                sendUnauthorized(response, "La cuenta está bloqueada por intentos fallidos");
+                return;
+            }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService.loadUserByUsername(username);
