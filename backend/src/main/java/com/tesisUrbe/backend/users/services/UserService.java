@@ -90,6 +90,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RoleNotFoundException("Rol ROLE_USER no encontrado"));
 
         User user = User.builder()
+                .fullName(newPublicUserDto.getUserName())
                 .userName(newPublicUserDto.getUserName())
                 .password(passwordEncoder.encode(newPublicUserDto.getPassword()))
                 .email(newPublicUserDto.getEmail())
