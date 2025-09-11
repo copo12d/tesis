@@ -38,7 +38,10 @@ public class SecurityConfig {
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**", "/api/v1/users/public/register").permitAll()
+                        auth.requestMatchers(
+                                "/api/v1/auth/**",
+                                        "/api/v1/users/public/register",
+                                        "/api/v1/email-request/public/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtEntryPoint))

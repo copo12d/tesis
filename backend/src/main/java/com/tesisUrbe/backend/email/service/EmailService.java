@@ -3,19 +3,18 @@ package com.tesisUrbe.backend.email.service;
 import com.tesisUrbe.backend.auth.services.AuthService;
 import com.tesisUrbe.backend.email.model.EmailVerification;
 import com.tesisUrbe.backend.email.repository.EmailVerificationRepository;
+import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.users.dto.UserRecovery;
 import com.tesisUrbe.backend.email.enums.EmailList;
-import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
-import com.tesisUrbe.backend.users.model.AccountRecovery;
-import com.tesisUrbe.backend.users.model.PasswordRecovery;
-import com.tesisUrbe.backend.users.model.User;
+import com.tesisUrbe.backend.email.model.AccountRecovery;
+import com.tesisUrbe.backend.email.model.PasswordRecovery;
 import com.tesisUrbe.backend.users.repository.AccountRecoveryRepository;
 import com.tesisUrbe.backend.users.repository.PasswordRecoveryRepository;
 import com.tesisUrbe.backend.users.repository.UserRepository;
 import com.tesisUrbe.backend.users.services.UserService;
-import com.tesisUrbe.backend.users.utils.UserUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -32,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService implements IEmailService{
 
     private final UserRepository userRepository;
@@ -48,14 +48,6 @@ public class EmailService implements IEmailService{
 
     @Autowired
     private JavaMailSender mailSender;
-
-    public EmailService(UserService userService, UserRepository userRepository, AuthService authService, PasswordRecoveryRepository passwordRecoveryRepository, AccountRecoveryRepository accountRecoveryRepository, EmailVerificationRepository emailVerificationRepository) {
-        this.userRepository = userRepository;
-        this.authService = authService;
-        this.passwordRecoveryRepository = passwordRecoveryRepository;
-        this.accountRecoveryRepository = accountRecoveryRepository;
-        this.emailVerificationRepository = emailVerificationRepository;
-    }
 
     @Override
     public void sendEmail(String toUser, String subject, String message){

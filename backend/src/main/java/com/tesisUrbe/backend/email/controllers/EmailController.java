@@ -2,8 +2,6 @@ package com.tesisUrbe.backend.email.controllers;
 
 import com.tesisUrbe.backend.users.dto.UserRecovery;
 import com.tesisUrbe.backend.email.service.EmailService;
-import com.tesisUrbe.backend.users.exceptions.BlockedUserException;
-import com.tesisUrbe.backend.users.exceptions.InvalidUserDataException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

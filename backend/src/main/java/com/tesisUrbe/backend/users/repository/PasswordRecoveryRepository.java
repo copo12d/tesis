@@ -1,6 +1,6 @@
 package com.tesisUrbe.backend.users.repository;
 
-import com.tesisUrbe.backend.users.model.PasswordRecovery;
+import com.tesisUrbe.backend.email.model.PasswordRecovery;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -1,6 +1,5 @@
 package com.tesisUrbe.backend.email.model;
 
-import com.tesisUrbe.backend.users.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -13,8 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "email_verification")
-public class EmailVerification {
+@Table(name = "account_recoverys")
+public class AccountRecovery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,14 +24,18 @@ public class EmailVerification {
 
     @NotBlank
     @Column(nullable = false)
-    private String verification_token;
+    private String recovery_token;
 
     @Column(nullable = false)
     private LocalDateTime expiration_date;
 
-    public EmailVerification(User user, String verification_token){
+    @Column(nullable = false)
+    private boolean used = false;
+
+    public AccountRecovery(User user, String recovery_token){
         this.user = user;
-        this.verification_token = verification_token;
+        this.recovery_token = recovery_token;
         this.expiration_date = LocalDateTime.now().plusHours(24);
+        this.used = false;
     }
 }

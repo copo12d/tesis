@@ -1,5 +1,10 @@
 package com.tesisUrbe.backend.email.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum EmailList {
     PASSWORD_RECOVERY(
             "Recuperación de contraseña",
@@ -25,18 +30,5 @@ public enum EmailList {
 
     private final String subject;
     private final String message;
-
-    EmailList(String subject, String message) {
-        this.subject = subject;
-        this.message = message;
-    }
-
-    public String getSubject(Object... args) {
-        return String.format(subject, args);
-    }
-
-    public String getMessage(Object... args) {
-        return String.format(message, args);
-    }
 
 }

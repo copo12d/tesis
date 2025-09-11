@@ -1,14 +1,18 @@
 package com.tesisUrbe.backend.users.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class NewPublicUserDto {
+@AllArgsConstructor
+public class UpdateAdminUserDto {
     private String userName;
-    private String password;
     private String email;
+    private String password;
+    private Boolean isActive;
+    private Boolean isVerified;
+    private Boolean isBlocked;
+    private RoleDto role;
 }
