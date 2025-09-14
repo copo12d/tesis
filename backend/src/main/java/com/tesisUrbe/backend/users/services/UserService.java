@@ -395,6 +395,7 @@ public class UserService implements UserDetailsService {
 //    }
 
     @Transactional
+<<<<<<< HEAD
     public ApiResponse<Void> updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -632,6 +633,192 @@ public class UserService implements UserDetailsService {
             );
         }
     }
+=======
+    public ApiResponse<Void> softDeleteUser(Long userId) {
+        Optional<User> targetUserOpt = userRepository.findById(userId);
+
+        if (targetUserOpt.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        User targetUser = targetUserOpt.get();
+
+        targetUser.setActive(false);
+        targetUser.setDeleted(true);
+
+        try {
+            userRepository.save(targetUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Usuario eliminado lógicamente exitosamente");
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el usuario"))
+            );
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Void> updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto) {
+        User currentUser = getUserById(userId);
+        if (currentUser == null) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        updateUserDto.setUserName(NormalizationUtils.normalizeUsername(updateUserDto.getUserName()));
+        updateUserDto.setEmail(NormalizationUtils.normalizeEmail(updateUserDto.getEmail()));
+
+        ValidationUtils.validateRequiredFields(updateUserDto);
+
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            PasswordUtils.validatePassword(updateUserDto.getPassword());
+            currentUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+        }
+
+        if (!currentUser.getUserName().equals(updateUserDto.getUserName())
+                && Boolean.TRUE.equals(existByUserName(updateUserDto.getUserName()).data())) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
+            );
+        }
+
+        if (!currentUser.getEmail().equals(updateUserDto.getEmail())
+                && Boolean.TRUE.equals(existByEmail(updateUserDto.getEmail()).data())) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
+            );
+        }
+
+        if (!currentUser.getEmail().equals(updateUserDto.getEmail())) {
+            currentUser.setVerified(false);
+        }
+
+        currentUser.setFullName(updateUserDto.getFullName());
+        currentUser.setUserName(updateUserDto.getUserName());
+        currentUser.setEmail(updateUserDto.getEmail());
+
+        try {
+            userRepository.save(currentUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Perfil público actualizado exitosamente");
+        } catch (DataIntegrityViolationException e) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
+            );
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al actualizar el usuario"))
+            );
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Void> updateAdminUser(Long userId, UpdateAdminUserDto updateUserDto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        RoleList callerRole = auth.getAuthorities().stream()
+                .map(a -> {
+                    try {
+                        return RoleList.valueOf(a.getAuthority());
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(RoleList.ROLE_USER);
+
+        User targetUser = getUserById(userId);
+        if (targetUser == null) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
+            );
+        }
+
+        if (callerRole == RoleList.ROLE_ADMIN && targetUser.getRole().getName() == RoleList.ROLE_SUPERUSER) {
+            return errorFactory.build(
+                    HttpStatus.FORBIDDEN,
+                    List.of(new ApiError("ACCESS_DENIED", null, "No tienes permiso para modificar este usuario"))
+            );
+        }
+
+        updateUserDto.setUserName(NormalizationUtils.normalizeUsername(updateUserDto.getUserName()));
+        updateUserDto.setEmail(NormalizationUtils.normalizeEmail(updateUserDto.getEmail()));
+
+        ValidationUtils.validateRequiredFields(updateUserDto);
+
+        if (!targetUser.getUserName().equals(updateUserDto.getUserName())
+                && Boolean.TRUE.equals(existByUserName(updateUserDto.getUserName()).data())) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", "userName", "El nombre de usuario ya existe"))
+            );
+        }
+
+        if (!targetUser.getEmail().equals(updateUserDto.getEmail())
+                && Boolean.TRUE.equals(existByEmail(updateUserDto.getEmail()).data())) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", "email", "El correo electrónico ya está registrado"))
+            );
+        }
+
+        if (!targetUser.getEmail().equals(updateUserDto.getEmail())) {
+            targetUser.setVerified(false);
+        }
+
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isBlank()) {
+            PasswordUtils.validatePassword(updateUserDto.getPassword());
+            targetUser.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
+        }
+
+        targetUser.setFullName(updateUserDto.getFullName());
+        targetUser.setUserName(updateUserDto.getUserName());
+        targetUser.setEmail(updateUserDto.getEmail());
+
+        if (Boolean.TRUE.equals(updateUserDto.getUnlockAccount())) {
+            targetUser.setAccountLocked(false);
+        }
+        if (Boolean.TRUE.equals(updateUserDto.getUnlockUser())) {
+            targetUser.setUserLocked(false);
+        }
+        if (Boolean.TRUE.equals(updateUserDto.getDeleteUser())) {
+            targetUser.setActive(false);
+            targetUser.setDeleted(true);
+        }
+
+        try {
+            userRepository.save(targetUser);
+            return errorFactory.buildSuccess(HttpStatus.OK, "Usuario administrativo actualizado exitosamente");
+        } catch (DataIntegrityViolationException e) {
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("USER_ALREADY_EXISTS", null, "El correo electrónico o nombre de usuario ya está registrado"))
+            );
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al actualizar el usuario"))
+            );
+        }
+    }
+
+>>>>>>> 268aa9a3163989fb42c046b41e2075f1c65ce57b
 
     private PublicUserDto mapToDto(User user) {
         return new PublicUserDto(
