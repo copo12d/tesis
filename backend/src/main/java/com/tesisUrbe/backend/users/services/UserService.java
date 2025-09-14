@@ -344,7 +344,7 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
     }
 
     @Transactional
@@ -495,24 +495,18 @@ public class UserService implements UserDetailsService {
                 .findFirst()
                 .orElse(RoleList.ROLE_USER);
 
-        User targetUser = getUserById(userId);
-        if (targetUser == null) {
-            return errorFactory.build(
-                    HttpStatus.NOT_FOUND,
-                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
-            );
-        }
-
-        RoleList targetRole = targetUser.getRole().getName();
-
-        if (callerRole == RoleList.ROLE_ADMIN && targetRole == RoleList.ROLE_SUPERUSER) {
-            return errorFactory.build(
-                    HttpStatus.FORBIDDEN,
-                    List.of(new ApiError("ACCESS_DENIED", null, "No tienes permiso para modificar este usuario"))
-            );
-        }
-
         try {
+            User targetUser = getUserById(userId); // lanza UserNotFoundException si no existe
+
+            RoleList targetRole = targetUser.getRole().getName();
+
+            if (callerRole == RoleList.ROLE_ADMIN && targetRole == RoleList.ROLE_SUPERUSER) {
+                return errorFactory.build(
+                        HttpStatus.FORBIDDEN,
+                        List.of(new ApiError("ACCESS_DENIED", null, "No tienes permiso para modificar este usuario"))
+                );
+            }
+
             if (updateUserDto.getUserName() != null && !updateUserDto.getUserName().isBlank()) {
                 String normalizedUsername = NormalizationUtils.normalizeUsername(updateUserDto.getUserName());
                 if (!targetUser.getUserName().equals(normalizedUsername)
@@ -595,6 +589,11 @@ public class UserService implements UserDetailsService {
             userRepository.save(targetUser);
             return errorFactory.buildSuccess(HttpStatus.OK, "Usuario administrativo actualizado exitosamente");
 
+        } catch (UserNotFoundException ex) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, ex.getMessage()))
+            );
         } catch (DataIntegrityViolationException e) {
             return errorFactory.build(
                     HttpStatus.CONFLICT,
