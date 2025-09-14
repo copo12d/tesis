@@ -407,22 +407,16 @@ public class UserService implements UserDetailsService {
 
         String callerUsername = auth.getName();
 
-        User currentUser = getUserById(userId);
-        if (currentUser == null) {
-            return errorFactory.build(
-                    HttpStatus.NOT_FOUND,
-                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
-            );
-        }
-
-        if (!currentUser.getUserName().equals(callerUsername)) {
-            return errorFactory.build(
-                    HttpStatus.FORBIDDEN,
-                    List.of(new ApiError("ACCESS_DENIED", null, "No puedes modificar el perfil de otro usuario"))
-            );
-        }
-
         try {
+            User currentUser = getUserById(userId); // lanza UserNotFoundException si no existe
+
+            if (!currentUser.getUserName().equals(callerUsername)) {
+                return errorFactory.build(
+                        HttpStatus.FORBIDDEN,
+                        List.of(new ApiError("ACCESS_DENIED", null, "No puedes modificar el perfil de otro usuario"))
+                );
+            }
+
             if (updateUserDto.getUserName() != null && !updateUserDto.getUserName().isBlank()) {
                 String normalizedUsername = NormalizationUtils.normalizeUsername(updateUserDto.getUserName());
                 if (!currentUser.getUserName().equals(normalizedUsername)
@@ -459,6 +453,12 @@ public class UserService implements UserDetailsService {
 
             userRepository.save(currentUser);
             return errorFactory.buildSuccess(HttpStatus.OK, "Perfil público actualizado exitosamente");
+
+        } catch (UserNotFoundException ex) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("USER_NOT_FOUND", null, ex.getMessage()))
+            );
         } catch (DataIntegrityViolationException e) {
             return errorFactory.build(
                     HttpStatus.CONFLICT,
