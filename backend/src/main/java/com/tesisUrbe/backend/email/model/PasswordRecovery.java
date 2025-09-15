@@ -1,18 +1,18 @@
 package com.tesisUrbe.backend.email.model;
 
+import com.tesisUrbe.backend.entities.account.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "password_recoverys")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@Entity
-@Table(name = "password_recoverys")
+@Builder
 public class PasswordRecovery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,16 +27,11 @@ public class PasswordRecovery {
     private String recovery_token;
 
     @Column(nullable = false)
-    private LocalDateTime expiration_date;
+    @Builder.Default
+    private LocalDateTime expiration_date = LocalDateTime.now().plusHours(24);
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean used = false;
-
-    public PasswordRecovery(User user, String recovery_token){
-        this.user = user;
-        this.recovery_token = recovery_token;
-        this.expiration_date = LocalDateTime.now().plusHours(24);
-        this.used = false;
-    }
 
 }

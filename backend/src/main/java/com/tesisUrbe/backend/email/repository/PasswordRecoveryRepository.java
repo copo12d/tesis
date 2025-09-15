@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.users.repository;
+package com.tesisUrbe.backend.email.repository;
 
 import com.tesisUrbe.backend.email.model.PasswordRecovery;
 import jakarta.transaction.Transactional;
@@ -13,9 +13,8 @@ import java.util.Optional;
 @Repository
 public interface PasswordRecoveryRepository extends JpaRepository<PasswordRecovery, Long> {
 
-    Optional<PasswordRecovery> findByUserId(Long userId);
-    @Query(value = "SELECT * FROM PasswordRecovery WHERE user_id = :userId ORDER BY id DESC LIMIT 1", nativeQuery = true)
-    Optional<PasswordRecovery> findLatestByUserId(@Param("userId") Long userId);
+    @Query(value = "SELECT * FROM PasswordRecovery pr WHERE pr.user_id = :userId ORDER BY id DESC LIMIT 1", nativeQuery = true)
+    PasswordRecovery findLatestByUserId(@Param("userId") Long userId);
 
     @Modifying
     @Transactional

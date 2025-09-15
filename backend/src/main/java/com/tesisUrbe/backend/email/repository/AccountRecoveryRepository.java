@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.users.repository;
+package com.tesisUrbe.backend.email.repository;
 
 import com.tesisUrbe.backend.email.model.AccountRecovery;
 import jakarta.transaction.Transactional;
@@ -13,15 +13,10 @@ import java.util.Optional;
 @Repository
 public interface AccountRecoveryRepository extends JpaRepository<AccountRecovery, Long> {
 
-    Optional<AccountRecovery> findByUserId(Long userId);
-    @Query(
-            value = "SELECT * FROM AccountRecovery WHERE user_id = :userId ORDER BY id DESC LIMIT 1",
-            nativeQuery = true
-    )
-    Optional<AccountRecovery> findLatestByUserId(@Param("userId") Long userId);
+    @Query("SELECT * FROM AccountRecovery ar WHERE ar.user_id = :userId ORDER BY id DESC LIMIT 1")
+    AccountRecovery findLatestByUserId(@Param("userId") Long userId);
 
     @Modifying
-    @Transactional
     @Query("UPDATE AccountRecovery ar SET ar.used = true WHERE ar.id = :id")
     void markAsUsed(@Param("id") Long id);
 }

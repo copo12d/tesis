@@ -10,9 +10,8 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @Entity
+@Builder
 @Table(name = "email_verification")
 public class EmailVerification {
     @Id
@@ -28,11 +27,7 @@ public class EmailVerification {
     private String verification_token;
 
     @Column(nullable = false)
-    private LocalDateTime expiration_date;
+    @Builder.Default
+    private LocalDateTime expiration_date = LocalDateTime.now().plusHours(24);
 
-    public EmailVerification(User user, String verification_token){
-        this.user = user;
-        this.verification_token = verification_token;
-        this.expiration_date = LocalDateTime.now().plusHours(24);
-    }
 }

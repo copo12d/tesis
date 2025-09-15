@@ -9,10 +9,8 @@ import java.util.Optional;
 
 public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
 
-    Optional<EmailVerification> findByUserId(Long userId);
-    @Query(
-            value = "SELECT * FROM EmailVerification WHERE user_id = :userId ORDER BY id DESC LIMIT 1",
-            nativeQuery = true
-    )
-    Optional<EmailVerification> findLatestByUserId(@Param("userId") Long userId);
+    @Query("SELECT * FROM EmailVerification ev WHERE ev.user_id = :userId ORDER BY id DESC LIMIT 1")
+    EmailVerification findLatestByUserId(@Param("userId") Long userId);
+
+
 }

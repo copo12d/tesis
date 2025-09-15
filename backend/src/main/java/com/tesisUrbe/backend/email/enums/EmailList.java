@@ -1,5 +1,6 @@
 package com.tesisUrbe.backend.email.enums;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,4 +32,11 @@ public enum EmailList {
     private final String subject;
     private final String message;
 
+    public String getSubject(Object... args) {
+        return String.format(subject, args);
+    }
+
+    public String getMessage(Object... args) {
+        return String.format(message, args);
+    }
 }

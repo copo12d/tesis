@@ -41,7 +41,7 @@ public class SecurityConfig {
                         auth.requestMatchers(
                                 "/api/v1/auth/**",
                                         "/api/v1/users/public/register",
-                                        "/api/v1/email-request/public/**").permitAll()
+                                        "/api/v1/email/public/**").permitAll() // Agregada la ruta para solicitudes publicas (recuperar contraseña y desbloquear cuenta)
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtEntryPoint))
