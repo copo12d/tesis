@@ -1,9 +1,9 @@
 package com.tesisUrbe.backend.entities.solidWaste;
 
+import com.tesisUrbe.backend.entities.account.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "waste")
 public class Waste {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,8 +27,7 @@ public class Waste {
     @Column(nullable = false)
     private BigDecimal weight;
 
-    @PastOrPresent
-    @Column(name = "collection_date", nullable = false)
+    @Column(name = "collection_date", nullable = false, updatable = false)
     private LocalDate collectionDate;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -37,5 +37,9 @@ public class Waste {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "batch_id", nullable = false)
     private Batch batch;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false, updatable = false)
+    private User createdBy;
 
 }
