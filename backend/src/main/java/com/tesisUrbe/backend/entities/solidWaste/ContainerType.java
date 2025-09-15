@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+@Entity
+@Table(name = "containerType")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "containerType")
+@AllArgsConstructor
+@Builder
 public class ContainerType {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,12 +20,10 @@ public class ContainerType {
     @Column(nullable = false)
     private String name;
 
-    @NotBlank
     @Column(nullable = true)
     private String description;
 
-    public ContainerType(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
 }

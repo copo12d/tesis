@@ -108,7 +108,6 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    //validar que el token sea valido
     @Transactional
     public ApiResponse<Void> registerAdminUser(NewAdminUserDto newAdminUserDto) {
         newAdminUserDto.setUserName(NormalizationUtils.normalizeUsername(newAdminUserDto.getUserName()));
@@ -630,19 +629,6 @@ public class UserService implements UserDetailsService {
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el usuario"))
             );
         }
-    }
-
-    private PublicUserDto mapToDto(User user) {
-        return new PublicUserDto(
-                user.getId(),
-                user.getFullName(),
-                user.getUserName(),
-                user.getEmail(),
-                user.isVerified(),
-                user.isAccountLocked(),
-                user.isUserLocked(),
-                user.isDeleted()
-        );
     }
 
 }

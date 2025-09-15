@@ -1,5 +1,6 @@
 package com.tesisUrbe.backend.entities.solidWaste;
 
+import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -40,4 +41,8 @@ public class Batch {
 
     @Column(name = "shipping_date")
     private LocalDate shippingDate;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false, updatable = false)
+    private User createdBy;
 }
