@@ -51,6 +51,11 @@ public class ContainerTypeService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<ContainerType> findById(Long id) {
+        return containerTypeRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
     public ApiResponse<ContainerTypeResponseDto> getContainerTypeById(Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
