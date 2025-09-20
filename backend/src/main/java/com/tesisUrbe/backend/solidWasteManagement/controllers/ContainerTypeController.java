@@ -64,5 +64,4 @@ public class ContainerTypeController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-
 }
