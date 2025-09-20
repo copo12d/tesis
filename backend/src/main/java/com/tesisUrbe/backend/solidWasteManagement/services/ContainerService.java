@@ -117,6 +117,10 @@ public class ContainerService {
         );
     }
 
+    public Optional<Container> findById(Long id) {
+        return containerRepository.findById(id);
+    }
+
     @Transactional(readOnly = true)
     public ApiResponse<Page<ContainerResponseDto>> getAllContainers(
             int page, int size, String sortBy, String sortDir, String search) {

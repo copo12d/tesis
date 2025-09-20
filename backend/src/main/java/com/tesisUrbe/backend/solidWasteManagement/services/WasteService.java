@@ -7,17 +7,17 @@ import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Batch;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.Waste;
-import com.tesisUrbe.backend.repositories.WasteRepository;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteResponseDto;
-import jakarta.transaction.Transactional;
+import com.tesisUrbe.backend.solidWasteManagement.repository.WasteRepository;
+import com.tesisUrbe.backend.users.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WasteService {
 
-    private final WasteRepository wasteRepository;
+    private final WasteRepository  wasteRepository;
     private final ContainerService containerService;
     private final BatchService batchService;
     private final UserService userService;
