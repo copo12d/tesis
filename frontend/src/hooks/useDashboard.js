@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../utils/apis'; 
+import api from '../api/api'; 
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState(false);

@@ -1,10 +1,15 @@
 import '../styles/dashboard.css';
-import { Carta } from './Carta';
-import Grafica_semanal from './Grafica_semanal';
+import { Carta } from '../components/Carta';
+import Grafica_semanal from '../components/Grafica_semanal';
 import { useDashboard } from '../hooks/useDashboard';
+import { AdminSection } from '../components/AdminSection';
+import { useContext } from 'react';
+import AuthContext from '../context/Authcontext';
 
-export const Dashboard = () => {
+
+const Dashboard = () => {
   const { dashboardData, error, refetch } = useDashboard();
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="dashboard-layout">
@@ -14,11 +19,11 @@ export const Dashboard = () => {
           <span className="logo-text">Aplicacion</span>
         </div>
         <nav className="sidebar-menu">
-          <a className="sidebar-item active" href="#">
-            <span className="sidebar-icon">📊</span>
-            Dashboard
-          </a>
+          <a className="sidebar-item" href="#">Dashboard</a>
           <a className="sidebar-item" href="#">Contenedores</a>
+
+          {/* {user && user.role === 'admin' && <AdminSection />} */}
+          <AdminSection />
           <a className="sidebar-item" href="#">Configuración</a>
           <a className="sidebar-item" href="#">Ayuda</a>
           <a className="sidebar-item" href="#">Cerrar sesión</a>
@@ -42,3 +47,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+export { Dashboard };
