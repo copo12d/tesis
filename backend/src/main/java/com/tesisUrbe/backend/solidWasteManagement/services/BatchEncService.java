@@ -10,7 +10,7 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
-import com.tesisUrbe.backend.users.services.UserService;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;

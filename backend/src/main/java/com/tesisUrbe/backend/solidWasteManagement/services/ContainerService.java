@@ -9,7 +9,7 @@ import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
-import com.tesisUrbe.backend.users.services.UserService;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

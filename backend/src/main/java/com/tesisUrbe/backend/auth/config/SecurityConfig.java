@@ -6,7 +6,7 @@ import com.tesisUrbe.backend.auth.jwt.JwtEntryPoint;
 import com.tesisUrbe.backend.auth.jwt.JwtTokenProvider;
 import com.tesisUrbe.backend.auth.repository.BlackListedTokenRepository;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
-import com.tesisUrbe.backend.users.services.UserService;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;

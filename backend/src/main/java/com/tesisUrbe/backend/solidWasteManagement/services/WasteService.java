@@ -11,7 +11,7 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.WasteRepository;
-import com.tesisUrbe.backend.users.services.UserService;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
