@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "waste")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "waste")
 public class Waste {
 
     @Id
@@ -36,10 +36,15 @@ public class Waste {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "batch_id", nullable = false)
-    private Batch batch;
+    private BatchEnc batch;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_user_id", nullable = false, updatable = false)
     private User createdBy;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Column(name = "updated_at")
+    private LocalDate updatedAt;
 }

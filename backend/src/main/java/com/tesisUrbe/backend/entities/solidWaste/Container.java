@@ -22,11 +22,11 @@ public class Container {
     private Long id;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 6)
     private BigDecimal latitude;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 6)
     private BigDecimal longitude;
 
     @NotNull
