@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.common.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PasswordUtils {
@@ -25,5 +26,22 @@ public final class PasswordUtils {
         if (!password.matches(".*[!@#$%^&*()].*")) {
             throw new IllegalArgumentException("La contraseña debe contener al menos un carácter especial");
         }
+    }
+
+    public static boolean isValid(String password) {
+        try {
+            validatePassword(password);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public static String encode(String rawPassword, PasswordEncoder encoder) {
+        return encoder.encode(rawPassword);
+    }
+
+    public static boolean matches(String rawPassword, String encodedPassword, PasswordEncoder encoder) {
+        return encoder.matches(rawPassword, encodedPassword);
     }
 }
