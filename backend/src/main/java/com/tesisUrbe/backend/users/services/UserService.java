@@ -5,6 +5,7 @@ import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PasswordUtils;
 import com.tesisUrbe.backend.common.util.ValidationUtils;
+import com.tesisUrbe.backend.email.dto.UserRecoveryDto;
 import com.tesisUrbe.backend.users.dto.*;
 import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.users.exceptions.RoleNotFoundException;
@@ -12,6 +13,7 @@ import com.tesisUrbe.backend.users.exceptions.UserNotFoundException;
 import com.tesisUrbe.backend.entities.account.Role;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.users.repository.UserRepository;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -33,9 +35,9 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
+@Data
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -44,8 +46,6 @@ public class UserService implements UserDetailsService {
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final ApiErrorFactory errorFactory;
-    private final ConcurrentHashMap<String, Integer> failedAttempts = new ConcurrentHashMap<>();
-    private static final int MAX_ATTEMPTS = 3;
 
     @Override
     public UserDetails loadUserByUsername(String userName) {
@@ -237,7 +237,6 @@ public class UserService implements UserDetailsService {
             );
         }
 
-        String callerUsername = auth.getName();
         String callerRole = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
@@ -278,6 +277,25 @@ public class UserService implements UserDetailsService {
                 dto,
                 null
         );
+    }
+
+    public Optional<User> findByRecoveryDto(UserRecoveryDto dto) {
+        String normalizedUsername = NormalizationUtils.normalizeUsername(dto.getUserName());
+        String normalizedEmail = NormalizationUtils.normalizeEmail(dto.getEmail());
+
+        if (normalizedUsername != null) {
+            return userRepository.findByUserName(normalizedUsername);
+        }
+
+        if (normalizedEmail != null) {
+            return userRepository.findByEmail(normalizedEmail);
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<User> findPublicUserById(Long id) {
+        return userRepository.findByIdAndIsVerifiedTrue(id);
     }
 
     @Transactional(readOnly = true)
@@ -373,30 +391,13 @@ public class UserService implements UserDetailsService {
                 ));
     }
 
-//    @Transactional
-//    public ApiResponse<Void> unlockUserAccount(Long userId) {
-//        User targetUser = getUserById(userId);
-//
-//        if (targetUser == null) {
-//            return errorFactory.<Void>build(
-//                    HttpStatus.NOT_FOUND,
-//                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
-//            );
-//        }
-//
-//        if (!targetUser.isBlocked()) {
-//            return errorFactory.<Void>build(
-//                    HttpStatus.CONFLICT,
-//                    List.of(new ApiError("ACCOUNT_NOT_BLOCKED", null, "La cuenta no está bloqueada"))
-//            );
-//        }
-//
-//        targetUser.setBlocked(false);
-//        userRepository.save(targetUser);
-//
-//        return errorFactory.buildSuccess(HttpStatus.OK, "Cuenta desbloqueada exitosamente"
-//        );
-//    }
+    public void updatePassword(String encodedPassword, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+    }
 
     @Transactional
     public ApiResponse<Void> updatePublicUser(Long userId, UpdatePublicUserDto updateUserDto) {
@@ -634,6 +635,13 @@ public class UserService implements UserDetailsService {
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el usuario"))
             );
         }
+    }
+
+    public void markAsVerified(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        user.setVerified(true);
+        userRepository.save(user);
     }
 
 }

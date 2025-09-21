@@ -3,14 +3,14 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    url: jdbc:postgresql://db:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -26,8 +26,7 @@ api:
   web:
     cors:
       allowed-origins:
-        - "http://localhost:5173"
-        - "https://midominio.com"
+        - "${DOMAIN}"
       allowed-methods:
         - GET
         - POST
@@ -42,19 +41,10 @@ api:
       max-age: 3600
 
 jwt:
-  secret: ${SECRET_KEY:clave_dev_local}
-  expiration: ${EXP:15m}
+  secret: ${SECRET_KEY}
+  expiration: ${EXP}
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
-superuser:
-  name: ${SUPERUSER_NAME}
-  password: ${SUPERUSER_PASSWORD}
-  email: ${SUPERUSER_EMAIL}
-
-email:
-  user: ${EMAIL_USER}
-  password: ${EMAIL_PASSWORD}
