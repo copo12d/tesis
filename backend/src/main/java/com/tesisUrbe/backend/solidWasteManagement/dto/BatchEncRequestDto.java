@@ -1,19 +1,26 @@
 package com.tesisUrbe.backend.solidWasteManagement.dto;
 
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-public class BatchResponseDto {
-    private Long id;
-    private LocalDate creationDate;
+@Builder
+public class BatchEncRequestDto {
+
+    @NotBlank
     private String description;
-    private BigDecimal totalWeight;
+
+    @NotNull
     private BatchStatus status;
+
     private LocalDate shippingDate;
 }
