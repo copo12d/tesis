@@ -1,3 +1,9 @@
 spring:
-  profiles:
-    active: postgres
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  web:
+    cors:
+      allowed-origins: "${DOMAIN}"
+      allowed-methods: "*"
+      allowed-headers: "*"
