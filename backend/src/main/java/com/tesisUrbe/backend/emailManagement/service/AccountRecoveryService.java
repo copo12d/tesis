@@ -20,7 +20,6 @@ public class AccountRecoveryService {
     private final AccountRecoveryRepository accountRecoveryRepository;
     private final ApiErrorFactory errorFactory;
 
-    // 🧩 Guarda la solicitud de recuperación de cuenta bloqueada
     public void saveRecoveryRequest(User user, String token) {
         AccountRecovery recovery = AccountRecovery.builder()
                 .user(user)
