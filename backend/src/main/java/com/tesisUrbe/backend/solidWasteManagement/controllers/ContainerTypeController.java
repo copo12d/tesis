@@ -41,7 +41,7 @@ public class ContainerTypeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(defaultValue = "") String search) {
 
         ApiResponse<Page<ContainerTypeResponseDto>> response = containerTypeService.getAllContainerTypes(page, size, sortBy, sortDir, search);

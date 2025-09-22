@@ -29,7 +29,6 @@ public class PasswordRecoveryService {
         passwordRecoveryRepository.save(recovery);
     }
 
-    // 🔐 Valida el token de recuperación
     public ApiResponse<PasswordRecovery> validateToken(Long userId, String token) {
         PasswordRecovery request = passwordRecoveryRepository.findLatestByUserId(userId);
 
