@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import api from '../api/api'; 
+import { DashboardAPI } from '../api/api'; 
+
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -28,8 +29,8 @@ export const useDashboard = () => {
     try {
       // Ejecutar en paralelo para mayor rendimiento
       const [weeklyRes, cardsRes] = await Promise.all([
-        api.get("/dashboard/weekly"),
-        api.get("/dashboard/cards")
+        DashboardAPI.getWeekly(),
+        DashboardAPI.getCards()
       ]);
 
       setDashboardData({

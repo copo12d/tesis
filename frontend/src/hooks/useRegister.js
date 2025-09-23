@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { AuthAPI } from '../api/api';
 
 export const useRegister = () => {
   const [loading, setLoading] = useState(false);
@@ -13,10 +13,7 @@ export const useRegister = () => {
     setError('');
     
     try {
-      const res = await axios.post("http://localhost:8080/auth/register", {
-        userName,
-        password,
-      });
+      const res = await AuthAPI.register(userName, password);
 
       if (res.data.success) {
         toast.success('¡Registro exitoso!');

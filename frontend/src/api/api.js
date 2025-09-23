@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { refreshToken } from '../service/RefreshToken';
 import { Navigate } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:8080';
@@ -9,7 +10,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
+// --- REQUEST INTERCEPTOR --- //
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -21,6 +22,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+// --- RESPONSE INTERCEPTOR --- //
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -30,17 +32,13 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        
-        if (!refreshToken) throw new Error('No refresh token available');
+        const newAccessToken = await refreshToken();
+        api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { token: refreshToken });
-
-        localStorage.setItem('accessToken', data.accessToken);
-
-        api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
       } catch {
+        
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
@@ -55,5 +53,16 @@ api.interceptors.response.use(
   }
 )
 
+// --- AUTH --- //
+export const AuthAPI = {
+  register: (userName , passWord) => api.post('/auth/register', { userName, passWord }),
+  login: (userName , passWord) => api.post('/auth/login', { userName, passWord }),
+}
+
+// --- DASHBOARD --- //
+export const DashboardAPI = {
+  getWeekly: () => api.get('/dashboard/weekly'),
+  getCards: () => api.get('/dashboard/cards'),
+}
 export default api;
 
