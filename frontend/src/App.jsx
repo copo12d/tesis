@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -13,7 +12,6 @@ import AuthProvider from './context/AuthProvider';
 
 import './App.css';
 function App() {
-  const [token, setToken] = useState(true);
  
   return (
     <AuthProvider>
@@ -21,15 +19,22 @@ function App() {
         <Toaster position="top-right" />
         <Routes>
           <Route path="/" element={
-            token ? <Dashboard /> : <Navigate to="/login" />
-          } />
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } 
+        />
           <Route path="/login" element={
-            token ? <Navigate to="/" /> : <Login onLogin={setToken} />
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
           } />
           <Route path="/register" element={
-            token ? <Navigate to="/" /> : <Register />
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
           } />
-          <Route path="*" element={<Navigate to={token ? '/' : '/login'} />} />
+          <Route path="*" element={<Navigate to={'/login'} />} />
         </Routes>
       </Router>
     </AuthProvider>

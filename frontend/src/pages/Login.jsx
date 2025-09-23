@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import AuthContext from '../context/Authcontext';
+import { useContext } from 'react';
 import '../styles/login.css'; 
+import { Navigate } from 'react-router-dom';
 
-export function Login({ onLogin }) {
+export function Login() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useAuth();
+
+  const { loginRequest, loading, error } = useAuth();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(userName, password);
+    const result = await loginRequest(userName, password);
     if (result.success) {
-      onLogin(result.token);
+      login(result.accessToken, result.refreshToken);
+      Navigate('/');
     }
   };
 
@@ -25,7 +31,7 @@ export function Login({ onLogin }) {
         <h2>Iniciar Sesión</h2>
         <p className="login-subtitle">Accede a tu cuenta</p>
 
-        <label className="login-label">Usuario</label>
+        <label className="login-label">Nombre de usuario</label>
         <div className="login-input-group">
           <span className="login-input-icon">👤</span>
           <input
