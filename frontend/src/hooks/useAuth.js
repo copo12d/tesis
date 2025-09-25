@@ -1,29 +1,28 @@
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
+import { AuthAPI } from '../api/api';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const login = async (userName, password) => {
+  const loginRequest = async (userName, password) => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post("http://localhost:8080/auth/login", {
-        userName,
-        password,
-      });
+      const res = await AuthAPI.login(userName, password);
 
-      if (res.data.token) {
+      const accessToken = res.data.data?.accessToken;
+      const refreshToken = res.data.data?.refreshToken;
+
+      if (accessToken && refreshToken) {
         toast.success("¡Login exitoso!");
-        return { success: true, token: res.data.token };
+        return { success: true, accessToken, refreshToken };
       } else {
         setError("Login fallido");
         toast.error("Error al iniciar sesión");
+        return { success: false };
       }
-
-      return { success: false };
     } catch (err) {
       setError(err.response?.data?.error || "Error al iniciar sesión");
       toast.error(err.response?.data?.error || "Error al iniciar sesión");
@@ -33,5 +32,5 @@ export const useAuth = () => {
     }
   };
 
-  return { login, loading, error };
+  return { loginRequest, loading, error, setError };
 };
