@@ -32,5 +32,5 @@ export const useAuth = () => {
     }
   };
 
-  return { loginRequest, loading, error };
+  return { loginRequest, loading, error, setError };
 };
