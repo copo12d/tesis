@@ -151,17 +151,23 @@ html {
   font-size: 14px;
 }
 
-.register-register {
+.register-login {
   margin-top: 18px;
   text-align: center;
   color: #1b1c31;
   font-size: 15px;
 }
 
-.register-register a {
+.register-login a {
   color: #1b1c31;
   font-weight: bold;
-  text-decoration: underline;
+  text-decoration: none;
   margin-left: 6px;
   cursor: pointer;
+  text-align: center;
+}
+.register-login a:hover {
+  color: #444;
+  text-decoration: underline;
+  background-color: transparent;
 }

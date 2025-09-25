@@ -14,10 +14,6 @@ export function Register() {
 
   return (
     <div className="register-container">
-      <div className="register-logo">
-        <span className="logo-icon">🟪</span>
-        <span className="logo-text">LOGO</span>
-      </div>
       <form className="register-form" onSubmit={handleSubmit}>
         <h2>Registro</h2>
         <p className="register-subtitle">Crea tu cuenta</p>
@@ -55,7 +51,7 @@ export function Register() {
       </form>
       <div className="register-login">
         <span>¿Ya tienes una cuenta?</span>
-        <a href="/login">Iniciar sesión</a>
+        <a href="/login" >Iniciar sesión</a>
       </div>
     </div>
   );

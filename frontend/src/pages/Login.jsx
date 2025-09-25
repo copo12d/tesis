@@ -3,30 +3,32 @@ import { useAuth } from '../hooks/useAuth';
 import AuthContext from '../context/Authcontext';
 import { useContext } from 'react';
 import '../styles/login.css'; 
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export function Login() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
 
-  const { loginRequest, loading, error } = useAuth();
+  const { loginRequest, loading, error, setError } = useAuth();
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleInputChange = (setter) => (e) => {
+    setter(e.target.value);
+    if (error) setError('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await loginRequest(userName, password);
     if (result.success) {
       login(result.accessToken, result.refreshToken);
-      Navigate('/');
+      navigate('/');
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-logo">
-        <span className="logo-icon">🟪</span>
-        <span className="logo-text">LOGO</span>
-      </div>
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Iniciar Sesión</h2>
         <p className="login-subtitle">Accede a tu cuenta</p>
@@ -38,7 +40,7 @@ export function Login() {
             type="text"
             className="login-input"
             value={userName}
-            onChange={e => setUserName(e.target.value)}
+            onChange={handleInputChange(setUserName)}
             placeholder="username123"
             required
           />
@@ -51,7 +53,7 @@ export function Login() {
             type="password"
             className="login-input"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={handleInputChange(setPassword)}
             placeholder="************"
             required
           />
