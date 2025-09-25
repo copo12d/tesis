@@ -19,7 +19,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
     // Valores por defecto definidos en código
     private static final String DEFAULT_USERNAME = "superuser";
     private static final String DEFAULT_EMAIL = "superadmin@tesis.com";
-    private static final String DEFAULT_PASSWORD = "superuser";
+    private static final String DEFAULT_PASSWORD = "*User1234";
 
     public SuperAdminInitializer(UserRepository userRepository,
                                  RoleService roleService,

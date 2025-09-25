@@ -105,11 +105,15 @@ public class ContainerTypeService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<ContainerType> containerTypePage = StringUtils.hasText(search)
-                ? containerTypeRepository.findByDeletedFalseAndNameContainingIgnoreCase(search, pageable)
-                : containerTypeRepository.findByDeletedFalse(pageable);
+                ? containerTypeRepository.searchContainerTypes(search, pageable)
+                : containerTypeRepository.findAllActive(pageable);
 
         Page<ContainerTypeResponseDto> dtoPage = containerTypePage.map(type ->
-                new ContainerTypeResponseDto(type.getId(), type.getName(), type.getDescription())
+                new ContainerTypeResponseDto(
+                        type.getId(),
+                        type.getName(),
+                        type.getDescription()
+                )
         );
 
         return new ApiResponse<>(

@@ -215,8 +215,7 @@ public class UserService implements UserDetailsService {
                 user.getEmail(),
                 user.isVerified(),
                 user.isAccountLocked(),
-                user.isUserLocked(),
-                user.isDeleted()
+                user.isUserLocked()
         );
 
         return new ApiResponse<>(
@@ -268,8 +267,7 @@ public class UserService implements UserDetailsService {
                 targetUser.getRole().getName().name(),
                 targetUser.isVerified(),
                 targetUser.isAccountLocked(),
-                targetUser.isUserLocked(),
-                targetUser.isDeleted()
+                targetUser.isUserLocked()
         );
 
         return new ApiResponse<>(
@@ -331,8 +329,7 @@ public class UserService implements UserDetailsService {
                                 user.getRole().getName().name(),
                                 user.isVerified(),
                                 user.isAccountLocked(),
-                                user.isUserLocked(),
-                                user.isDeleted()
+                                user.isUserLocked()
                         ))
                         .toList(),
                 usersPage.getPageable(),
@@ -341,6 +338,65 @@ public class UserService implements UserDetailsService {
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Usuarios obtenidos correctamente"),
+                filteredPage,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<Page<AdminUserDto>> searchAdvanced(
+            String searchTerm,
+            String role,
+            Boolean verified,
+            Boolean accountLocked,
+            Boolean userLocked,
+            Pageable pageable) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        String callerRole = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        RoleList roleEnum = null;
+        if (StringUtils.hasText(role)) {
+            try {
+                roleEnum = RoleList.valueOf(role);
+            } catch (IllegalArgumentException e) {
+                return errorFactory.build(HttpStatus.BAD_REQUEST,
+                        List.of(new ApiError("INVALID_ROLE", "role", "Rol inválido: " + role)));
+            }
+        }
+
+        Page<User> usersPage = userRepository.searchAdvanced(
+                searchTerm, roleEnum, verified, accountLocked, userLocked, pageable
+        );
+
+        Page<AdminUserDto> filteredPage = new PageImpl<>(
+                usersPage.getContent().stream()
+                        .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
+                        .map(user -> new AdminUserDto(
+                                user.getId(),
+                                user.getFullName(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getRole().getName().name(),
+                                user.isVerified(),
+                                user.isAccountLocked(),
+                                user.isUserLocked()
+                        ))
+                        .toList(),
+                usersPage.getPageable(),
+                usersPage.getTotalElements()
+        );
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Búsqueda avanzada de usuarios completada"),
                 filteredPage,
                 null
         );

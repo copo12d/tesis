@@ -24,11 +24,8 @@ public class BatchEnc {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "creation_date", nullable = false)
-    private LocalDate creationDate;
-
-    @Column(name = "shipping_date")
-    private LocalDate shippingDate;
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    private LocalDateTime creationDate;
 
     @Column(name = "total_weight", nullable = false)
     private BigDecimal totalWeight = BigDecimal.ZERO;

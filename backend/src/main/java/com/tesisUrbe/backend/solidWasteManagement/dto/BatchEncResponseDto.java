@@ -16,17 +16,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BatchEncResponseDto {
-
     private Long id;
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
     private String description;
     private BigDecimal totalWeight;
     private BatchStatus status;
-    private LocalDate shippingDate;
-
+    private LocalDateTime processedAt;
     private String createdByUsername;
     private String processedByUsername;
-    private LocalDateTime processedAt;
-
     private List<BatchRegResponseDto> details;
 }

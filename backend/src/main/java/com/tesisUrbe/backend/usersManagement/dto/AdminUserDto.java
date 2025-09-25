@@ -16,6 +16,5 @@ public class AdminUserDto {
     private boolean verified;
     private boolean accountLocked;
     private boolean userLocked;
-    private boolean deleted;
 }
 

@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.entities.solidWaste;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -20,6 +21,10 @@ public class Container {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
+    @Column(name = "serial", nullable = false, unique = true, length = 20)
+    private String serial;
 
     @NotNull
     @Column(nullable = false, precision = 10, scale = 6)

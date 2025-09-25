@@ -5,6 +5,7 @@ import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
+import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.Waste;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
@@ -32,6 +33,7 @@ public class WasteService {
     private final WasteRepository wasteRepository;
     private final ContainerService containerService;
     private final BatchEncService batchEncService;
+    private final BatchRegService batchRegService;
     private final UserService userService;
     private final ApiErrorFactory errorFactory;
 
@@ -73,6 +75,11 @@ public class WasteService {
                     List.of(new ApiError("BATCH_CLOSED", "batchId", "No se puede agregar residuos a un lote cerrado o despachado")));
         }
 
+        if (dto.getWeight() == null || dto.getWeight().compareTo(BigDecimal.ZERO) <= 0) {
+            return errorFactory.build(HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("INVALID_WEIGHT", "weight", "El peso debe ser mayor a cero")));
+        }
+
         Waste waste = new Waste();
         waste.setWeight(dto.getWeight());
         waste.setCollectionDate(LocalDate.now());
@@ -80,15 +87,24 @@ public class WasteService {
         waste.setBatch(batch);
         waste.setCreatedBy(userOpt.get());
         waste.setDeleted(false);
-
         wasteRepository.save(waste);
 
         BigDecimal updatedWeight = batch.getTotalWeight().add(dto.getWeight());
         batch.setTotalWeight(updatedWeight);
         batchEncService.save(batch);
 
+        BatchReg reg = new BatchReg();
+        reg.setWeight(dto.getWeight());
+        reg.setCollectionDate(LocalDate.now());
+        reg.setContainer(containerOpt.get());
+        reg.setBatchEnc(batch);
+        reg.setCreatedBy(userOpt.get());
+        reg.setDeleted(false);
+        batchRegService.save(reg);
+
         return errorFactory.buildSuccess(HttpStatus.CREATED, "Residuo registrado exitosamente");
     }
+
 
     @Transactional(readOnly = true)
     public ApiResponse<WasteResponseDto> getWasteById(Long id) {

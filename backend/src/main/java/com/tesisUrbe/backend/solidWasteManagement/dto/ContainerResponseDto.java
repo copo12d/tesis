@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ContainerResponseDto {
     private Long id;
+    private String serial;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private BigDecimal capacity;

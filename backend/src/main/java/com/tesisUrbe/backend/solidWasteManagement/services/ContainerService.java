@@ -55,6 +55,13 @@ public class ContainerService {
             );
         }
 
+        if (containerRepository.existsBySerial(dto.getSerial())) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("DUPLICATE_SERIAL", "serial", "Ya existe un contenedor con ese serial"))
+            );
+        }
+
         Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
 
         if (typeOpt.isEmpty() || typeOpt.get().isDeleted()) {
@@ -64,7 +71,15 @@ public class ContainerService {
             );
         }
 
+        if (!StringUtils.hasText(dto.getSerial())) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("MISSING_SERIAL", "serial", "El campo serial es obligatorio"))
+            );
+        }
+
         Container container = Container.builder()
+                .serial(dto.getSerial())
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .capacity(dto.getCapacity())
@@ -102,6 +117,7 @@ public class ContainerService {
 
         ContainerResponseDto dto = new ContainerResponseDto(
                 container.getId(),
+                container.getSerial(),
                 container.getLatitude(),
                 container.getLongitude(),
                 container.getCapacity(),
@@ -144,6 +160,7 @@ public class ContainerService {
         Page<ContainerResponseDto> dtoPage = containerPage.map(container ->
                 new ContainerResponseDto(
                         container.getId(),
+                        container.getSerial(),
                         container.getLatitude(),
                         container.getLongitude(),
                         container.getCapacity(),
