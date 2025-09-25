@@ -93,7 +93,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RoleNotFoundException("Rol ROLE_USER no encontrado"));
 
         User user = User.builder()
-                .fullName(newPublicUserDto.getUserName())
+                .fullName(newPublicUserDto.getFullName())
                 .userName(newPublicUserDto.getUserName())
                 .password(passwordEncoder.encode(newPublicUserDto.getPassword()))
                 .email(newPublicUserDto.getEmail())
@@ -213,9 +213,7 @@ public class UserService implements UserDetailsService {
                 user.getFullName(),
                 user.getUserName(),
                 user.getEmail(),
-                user.isVerified(),
-                user.isAccountLocked(),
-                user.isUserLocked()
+                user.isVerified()
         );
 
         return new ApiResponse<>(
