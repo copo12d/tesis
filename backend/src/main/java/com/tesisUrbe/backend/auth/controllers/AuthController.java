@@ -1,6 +1,6 @@
 package com.tesisUrbe.backend.auth.controllers;
 
-import com.tesisUrbe.backend.auth.dto.LoginUserDto;
+import com.tesisUrbe.backend.auth.dto.LoginRequest;
 import com.tesisUrbe.backend.auth.dto.JwtResponse;
 import com.tesisUrbe.backend.auth.dto.RefreshTokenRequest;
 import com.tesisUrbe.backend.auth.services.AuthService;
@@ -23,7 +23,7 @@ public class AuthController {
     private final ApiErrorFactory errorFactory;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<JwtResponse>> login(@Valid @RequestBody LoginUserDto dto) {
+    public ResponseEntity<ApiResponse<JwtResponse>> login(@Valid @RequestBody LoginRequest dto) {
         return ResponseEntity.ok(authService.authenticate(dto.getUserName(), dto.getPassword()));
     }
 
