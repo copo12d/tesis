@@ -54,11 +54,5 @@ public class BatchRegController {
         );
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
-
-    @DeleteMapping("/admin/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
-    public ResponseEntity<ApiResponse<Void>> softDelete(@PathVariable Long id) {
-        ApiResponse<Void> response = batchRegService.softDelete(id);
-        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
-    }
+    
 }

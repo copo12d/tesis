@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -55,16 +56,56 @@ public class BatchEncService {
         }
 
         BatchEnc batchEnc = new BatchEnc();
-        batchEnc.setCreationDate(LocalDate.now());
+        batchEnc.setCreationDate(LocalDateTime.now());
         batchEnc.setDescription(dto.getDescription());
         batchEnc.setTotalWeight(BigDecimal.ZERO);
-        batchEnc.setStatus(dto.getStatus());
-        batchEnc.setShippingDate(dto.getShippingDate());
+        batchEnc.setStatus(BatchStatus.IN_PROGRESS);
         batchEnc.setCreatedBy(userOpt.get());
         batchEnc.setDeleted(false);
 
         batchRepository.save(batchEnc);
         return errorFactory.buildSuccess(HttpStatus.CREATED, "Lote registrado exitosamente");
+    }
+
+    @Transactional
+    public ApiResponse<Void> processBatch(Long batchId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUserName(username);
+        if (userOpt.isEmpty()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario autenticado no válido")));
+        }
+
+        Optional<BatchEnc> batchOpt = batchRepository.findById(batchId);
+        if (batchOpt.isEmpty() || batchOpt.get().isDeleted()) {
+            return errorFactory.build(HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("BATCH_NOT_FOUND", "batchId", "Lote no encontrado o eliminado")));
+        }
+
+        BatchEnc batch = batchOpt.get();
+
+        if (batch.getStatus() != BatchStatus.IN_PROGRESS) {
+            return errorFactory.build(HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("BATCH_ALREADY_PROCESSED", "batchId", "El lote ya fue procesado o no está en progreso")));
+        }
+
+        if (batch.getDetails() == null || batch.getDetails().isEmpty()) {
+            return errorFactory.build(HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("EMPTY_BATCH", "batchId", "No se puede procesar un lote sin registros de residuos")));
+        }
+
+        batch.setStatus(BatchStatus.PROCESSED);
+        batch.setProcessedAt(LocalDateTime.now());
+        batch.setProcessedBy(userOpt.get());
+
+        batchRepository.save(batch);
+        return errorFactory.buildSuccess(HttpStatus.OK, "Lote procesado exitosamente");
     }
 
     @Transactional
@@ -102,7 +143,7 @@ public class BatchEncService {
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus())
-                .shippingDate(batch.getShippingDate())
+                .processedAt(batch.getProcessedAt())
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
                 .processedAt(batch.getProcessedAt())
@@ -165,7 +206,7 @@ public class BatchEncService {
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus())
-                .shippingDate(batch.getShippingDate())
+                .processedAt(batch.getProcessedAt())
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
                 .processedAt(batch.getProcessedAt())
@@ -198,7 +239,7 @@ public class BatchEncService {
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus())
-                .shippingDate(batch.getShippingDate())
+                .processedAt(batch.getProcessedAt())
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
                 .processedAt(batch.getProcessedAt())

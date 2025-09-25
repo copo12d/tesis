@@ -41,7 +41,6 @@ public class WasteController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(defaultValue = "") String search) {
-
         ApiResponse<Page<WasteResponseDto>> response = wasteService.getAllWaste(page, size, sortBy, sortDir, search);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }

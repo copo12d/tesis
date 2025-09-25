@@ -1,5 +1,6 @@
 package com.tesisUrbe.backend.usersManagement.repository;
 
+import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.usersManagement.dto.AuthUserProjection;
 import com.tesisUrbe.backend.entities.account.User;
 import org.springframework.data.domain.Page;
@@ -76,6 +77,27 @@ public interface UserRepository extends JpaRepository<User, Long> {
         )
     """)
     Page<User> searchUsersWithRoles(@Param("searchTerm") String searchTerm, Pageable pageable);
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.deleted = false
+        AND (:searchTerm IS NULL OR
+               LOWER(u.userName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+               LOWER(u.fullName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+               LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+        AND (:role IS NULL OR u.role.name = :role)
+        AND (:verified IS NULL OR u.verified = :verified)
+        AND (:accountLocked IS NULL OR u.accountLocked = :accountLocked)
+        AND (:userLocked IS NULL OR u.userLocked = :userLocked)
+    """)
+    Page<User> searchAdvanced(
+            @Param("searchTerm") String searchTerm,
+            @Param("role") RoleList role,
+            @Param("verified") Boolean verified,
+            @Param("accountLocked") Boolean accountLocked,
+            @Param("userLocked") Boolean userLocked,
+            Pageable pageable
+    );
 
     @Query("""
         SELECT u FROM User u

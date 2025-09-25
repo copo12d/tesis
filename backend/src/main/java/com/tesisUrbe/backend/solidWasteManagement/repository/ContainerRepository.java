@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ContainerRepository extends JpaRepository<Container, Long> {
     Page<Container> findByDeletedFalse(Pageable pageable);
     Page<Container> findByDeletedFalseAndContainerType_NameContainingIgnoreCase(String name, Pageable pageable);
+    boolean existsBySerial(String serial);
 }

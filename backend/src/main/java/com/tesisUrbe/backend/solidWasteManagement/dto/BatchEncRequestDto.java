@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +23,5 @@ public class BatchEncRequestDto {
     @NotNull
     private BatchStatus status;
 
-    private LocalDate shippingDate;
+    private LocalDateTime processedAt;
 }

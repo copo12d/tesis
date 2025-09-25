@@ -27,6 +27,13 @@ public class BatchEncController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
+    @PatchMapping("/admin/process/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<Void>> processBatch(@PathVariable Long id) {
+        ApiResponse<Void> response = batchEncService.processBatch(id);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
     @GetMapping("/admin/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<BatchEncResponseDto>> getBatchById(@PathVariable Long id) {
@@ -39,9 +46,8 @@ public class BatchEncController {
     public ResponseEntity<ApiResponse<Page<BatchEncResponseDto>>> getAllBatches(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "creationDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-
         PageValidator.validate(page, size);
         ApiResponse<Page<BatchEncResponseDto>> response = batchEncService.getAllBatches(page, size, sortBy, sortDir);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
