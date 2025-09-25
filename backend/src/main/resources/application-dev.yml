@@ -22,7 +22,6 @@ server:
 
 api:
   base-path: /api/v1
-
   web:
     cors:
       allowed-origins:
