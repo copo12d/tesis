@@ -2,13 +2,14 @@ import axios from 'axios';
 import { refreshToken } from '../service/RefreshToken';
 import { Navigate } from 'react-router-dom';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://localhost:8080/api/v1';
 
 const api = axios.create({
   baseURL: `${BASE_URL}`,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 // --- REQUEST INTERCEPTOR --- //
 api.interceptors.request.use(
@@ -55,8 +56,8 @@ api.interceptors.response.use(
 
 // --- AUTH --- //
 export const AuthAPI = {
-  register: (userName , passWord) => api.post('/auth/register', { userName, passWord }),
-  login: (userName , passWord) => api.post('/auth/login', { userName, passWord }),
+  register: (userName , password) => api.post('/auth/register', { userName, password }),
+  login: (userName , password) => api.post('/auth/login', { userName, password }),
 }
 
 // --- DASHBOARD --- //
