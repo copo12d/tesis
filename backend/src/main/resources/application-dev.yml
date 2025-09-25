@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+server:
+  port: 8080
+
+api:
+  base-path: /api/v1
+
+  web:
+    cors:
+      allowed-origins:
+        - "http://localhost:5173"
+        - "https://midominio.com"
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      allow-credentials: true
+      max-age: 3600
+
+jwt:
+  secret: ${SECRET_KEY:clave_dev_local}
+  expiration: ${EXP:15m}
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+superuser:
+  name: ${SUPERUSER_NAME}
+  password: ${SUPERUSER_PASSWORD}
+  email: ${SUPERUSER_EMAIL}
+
+email:
+  user: ${EMAIL_USER}
+  password: ${EMAIL_PASSWORD}
