@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewPublicUserDto {
+    private String fullName;
     private String userName;
     private String password;
     private String email;

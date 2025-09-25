@@ -13,6 +13,4 @@ public class PublicUserDto {
     private String userName;
     private String email;
     private boolean verified;
-    private boolean accountLocked;
-    private boolean userLocked;
 }
