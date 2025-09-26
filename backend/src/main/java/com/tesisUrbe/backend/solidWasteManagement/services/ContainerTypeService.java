@@ -90,10 +90,9 @@ public class ContainerTypeService {
 
     @Transactional(readOnly = true)
     public ApiResponse<Page<ContainerTypeResponseDto>> getAllContainerTypes(
-            int page, int size, String sortBy, String sortDir, String search) {
+            int page, int size, String sortBy, String sortDir, String name, Long id) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         if (auth == null || !auth.isAuthenticated()) {
             return errorFactory.build(
                     HttpStatus.UNAUTHORIZED,
@@ -104,9 +103,15 @@ public class ContainerTypeService {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<ContainerType> containerTypePage = StringUtils.hasText(search)
-                ? containerTypeRepository.searchContainerTypes(search, pageable)
-                : containerTypeRepository.findAllActive(pageable);
+        Page<ContainerType> containerTypePage;
+
+        if (id != null) {
+            containerTypePage = containerTypeRepository.findByIdAndDeletedFalse(id, pageable);
+        } else if (StringUtils.hasText(name)) {
+            containerTypePage = containerTypeRepository.findByNameContainingIgnoreCaseAndDeletedFalse(name, pageable);
+        } else {
+            containerTypePage = containerTypeRepository.findAllActive(pageable);
+        }
 
         Page<ContainerTypeResponseDto> dtoPage = containerTypePage.map(type ->
                 new ContainerTypeResponseDto(

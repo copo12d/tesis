@@ -12,12 +12,15 @@ public interface ContainerTypeRepository extends JpaRepository<ContainerType, Lo
 
     @Query("""
         SELECT ct FROM ContainerType ct
-        WHERE ct.deleted = false AND (
-            LOWER(ct.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-            LOWER(ct.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
-        )
+        WHERE ct.deleted = false AND ct.id = :id
     """)
-    Page<ContainerType> searchContainerTypes(@Param("searchTerm") String searchTerm, Pageable pageable);
+    Page<ContainerType> findByIdAndDeletedFalse(@Param("id") Long id, Pageable pageable);
+
+    @Query("""
+        SELECT ct FROM ContainerType ct
+        WHERE ct.deleted = false AND LOWER(ct.name) LIKE LOWER(CONCAT('%', :name, '%'))
+    """)
+    Page<ContainerType> findByNameContainingIgnoreCaseAndDeletedFalse(@Param("name") String name, Pageable pageable);
 
     @Query("""
         SELECT ct FROM ContainerType ct
