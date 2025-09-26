@@ -3,11 +3,13 @@ package com.tesisUrbe.backend.solidWasteManagement.services;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
+import com.tesisUrbe.backend.common.util.ValidationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +58,13 @@ public class ContainerService {
             );
         }
 
+        if (!StringUtils.hasText(dto.getSerial())) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("MISSING_SERIAL", "serial", "El campo serial es obligatorio"))
+            );
+        }
+
         if (containerRepository.existsBySerial(dto.getSerial())) {
             return errorFactory.build(
                     HttpStatus.BAD_REQUEST,
@@ -62,19 +72,43 @@ public class ContainerService {
             );
         }
 
-        Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
-
-        if (typeOpt.isEmpty() || typeOpt.get().isDeleted()) {
+        if (dto.getLatitude() == null || dto.getLongitude() == null || dto.getCapacity() == null) {
             return errorFactory.build(
                     HttpStatus.BAD_REQUEST,
-                    List.of(new ApiError("INVALID_CONTAINER_TYPE", "containerTypeId", "Tipo de contenedor inválido o eliminado"))
+                    List.of(new ApiError("INVALID_COORDINATES", null, "Latitud, longitud y capacidad son obligatorios"))
             );
         }
 
-        if (!StringUtils.hasText(dto.getSerial())) {
+        if (dto.getContainerTypeId() == null || dto.getContainerTypeId() <= 0) {
             return errorFactory.build(
                     HttpStatus.BAD_REQUEST,
-                    List.of(new ApiError("MISSING_SERIAL", "serial", "El campo serial es obligatorio"))
+                    List.of(new ApiError("INVALID_CONTAINER_TYPE_ID", "containerTypeId", "ID de tipo de contenedor inválido"))
+            );
+        }
+
+        ContainerStatus statusEnum;
+        try {
+            statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("INVALID_STATUS", "status", "Estado inválido. Valores permitidos: AVAILABLE, UNDER_MAINTENANCE, FULL"))
+            );
+        }
+
+        Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
+
+        if (typeOpt.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("CONTAINER_TYPE_NOT_FOUND", "containerTypeId", "Tipo de contenedor no encontrado"))
+            );
+        }
+
+        if (typeOpt.get().isDeleted()) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("CONTAINER_TYPE_DELETED", "containerTypeId", "Tipo de contenedor eliminado"))
             );
         }
 
@@ -83,14 +117,21 @@ public class ContainerService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .capacity(dto.getCapacity())
-                .status(dto.getStatus())
+                .status(statusEnum)
                 .containerType(typeOpt.get())
                 .createdBy(userOpt.get())
                 .deleted(false)
                 .build();
 
-        containerRepository.save(container);
-        return errorFactory.buildSuccess(HttpStatus.CREATED, "Contenedor registrado exitosamente");
+        try {
+            containerRepository.save(container);
+            return errorFactory.buildSuccess(HttpStatus.CREATED, "Contenedor registrado exitosamente");
+        } catch (Exception e) {
+            return errorFactory.build(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al registrar el contenedor"))
+            );
+        }
     }
 
     @Transactional(readOnly = true)
@@ -139,23 +180,26 @@ public class ContainerService {
 
     @Transactional(readOnly = true)
     public ApiResponse<Page<ContainerResponseDto>> getAllContainers(
-            int page, int size, String sortBy, String sortDir, String search) {
+            int page, int size, String sortBy, String sortDir, String serial, Long id) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         if (auth == null || !auth.isAuthenticated()) {
-            return errorFactory.build(
-                    HttpStatus.UNAUTHORIZED,
-                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
-            );
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
         }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Container> containerPage = StringUtils.hasText(search)
-                ? containerRepository.findByDeletedFalseAndContainerType_NameContainingIgnoreCase(search, pageable)
-                : containerRepository.findByDeletedFalse(pageable);
+        Page<Container> containerPage;
+
+        if (id != null) {
+            containerPage = containerRepository.findByIdAndDeletedFalse(id, pageable);
+        } else if (StringUtils.hasText(serial)) {
+            containerPage = containerRepository.findBySerialContainingIgnoreCaseAndDeletedFalse(serial, pageable);
+        } else {
+            containerPage = containerRepository.findByDeletedFalse(pageable);
+        }
 
         Page<ContainerResponseDto> dtoPage = containerPage.map(container ->
                 new ContainerResponseDto(
@@ -199,36 +243,90 @@ public class ContainerService {
             );
         }
 
-        Optional<Container> containerOpt = containerRepository.findById(id);
-
-        if (containerOpt.isEmpty() || containerOpt.get().isDeleted()) {
+        if (id == null || id <= 0) {
             return errorFactory.build(
-                    HttpStatus.NOT_FOUND,
-                    List.of(new ApiError("CONTAINER_NOT_FOUND", null, "Contenedor no encontrado o eliminado"))
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("INVALID_ID", "id", "ID de contenedor inválido"))
             );
         }
 
-        Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
+        Optional<Container> containerOpt = containerRepository.findById(id);
 
-        if (typeOpt.isEmpty() || typeOpt.get().isDeleted()) {
+        if (containerOpt.isEmpty()) {
             return errorFactory.build(
-                    HttpStatus.BAD_REQUEST,
-                    List.of(new ApiError("INVALID_CONTAINER_TYPE", "containerTypeId", "Tipo de contenedor inválido o eliminado"))
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("CONTAINER_NOT_FOUND", "id", "Contenedor no encontrado"))
             );
         }
 
         Container container = containerOpt.get();
 
-        try {
-            container.setLatitude(dto.getLatitude());
-            container.setLongitude(dto.getLongitude());
-            container.setCapacity(dto.getCapacity());
-            container.setStatus(dto.getStatus());
-            container.setContainerType(typeOpt.get());
+        if (container.isDeleted()) {
+            return errorFactory.build(
+                    HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("CONTAINER_DELETED", "id", "El contenedor fue eliminado"))
+            );
+        }
 
+        if (StringUtils.hasText(dto.getSerial())) {
+            if (!container.getSerial().equals(dto.getSerial()) && containerRepository.existsBySerial(dto.getSerial())) {
+                return errorFactory.build(
+                        HttpStatus.CONFLICT,
+                        List.of(new ApiError("DUPLICATE_SERIAL", "serial", "Ya existe un contenedor con ese serial"))
+                );
+            }
+            container.setSerial(dto.getSerial());
+        }
+
+        if (dto.getLatitude() != null) container.setLatitude(dto.getLatitude());
+        if (dto.getLongitude() != null) container.setLongitude(dto.getLongitude());
+
+        if (dto.getCapacity() != null) {
+            if (dto.getCapacity().compareTo(BigDecimal.ZERO) <= 0) {
+                return errorFactory.build(
+                        HttpStatus.BAD_REQUEST,
+                        List.of(new ApiError("INVALID_CAPACITY", "capacity", "La capacidad debe ser mayor a cero"))
+                );
+            }
+            container.setCapacity(dto.getCapacity());
+        }
+
+        if (StringUtils.hasText(dto.getStatus())) {
+            try {
+                ContainerStatus statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
+                container.setStatus(statusEnum);
+            } catch (IllegalArgumentException e) {
+                return errorFactory.build(
+                        HttpStatus.BAD_REQUEST,
+                        List.of(new ApiError("INVALID_STATUS", "status",
+                                ValidationUtils.buildValidEnumMessage(ContainerStatus.class, "Estado")))
+                );
+            }
+        }
+
+        if (dto.getContainerTypeId() != null && dto.getContainerTypeId() > 0) {
+            Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
+
+            if (typeOpt.isEmpty()) {
+                return errorFactory.build(
+                        HttpStatus.NOT_FOUND,
+                        List.of(new ApiError("CONTAINER_TYPE_NOT_FOUND", "containerTypeId", "Tipo de contenedor no encontrado"))
+                );
+            }
+
+            if (typeOpt.get().isDeleted()) {
+                return errorFactory.build(
+                        HttpStatus.BAD_REQUEST,
+                        List.of(new ApiError("CONTAINER_TYPE_DELETED", "containerTypeId", "Tipo de contenedor eliminado"))
+                );
+            }
+
+            container.setContainerType(typeOpt.get());
+        }
+
+        try {
             containerRepository.save(container);
             return errorFactory.buildSuccess(HttpStatus.OK, "Contenedor actualizado exitosamente");
-
         } catch (Exception e) {
             return errorFactory.build(
                     HttpStatus.INTERNAL_SERVER_ERROR,
