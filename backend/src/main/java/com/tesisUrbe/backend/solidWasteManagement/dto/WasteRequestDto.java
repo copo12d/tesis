@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class WasteRequestDto {
@@ -17,7 +17,7 @@ public class WasteRequestDto {
     private BigDecimal weight;
 
     @NotNull
-    private LocalDate collectionDate;
+    private LocalDateTime collectionDate;
 
     @NotNull
     private Long containerId;

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "waste")
@@ -28,7 +29,7 @@ public class Waste {
     private BigDecimal weight;
 
     @Column(name = "collection_date", nullable = false, updatable = false)
-    private LocalDate collectionDate;
+    private LocalDateTime collectionDate;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "container_id", nullable = false)
