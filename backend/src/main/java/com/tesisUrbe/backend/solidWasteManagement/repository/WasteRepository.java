@@ -6,5 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WasteRepository extends JpaRepository<Waste, Long> {
+
     Page<Waste> findByDeletedFalse(Pageable pageable);
+
+    Page<Waste> findByDeletedFalseAndContainer_SerialContainingIgnoreCase(String serial, Pageable pageable);
 }
