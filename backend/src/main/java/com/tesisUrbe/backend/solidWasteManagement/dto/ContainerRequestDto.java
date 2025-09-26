@@ -26,8 +26,8 @@ public class ContainerRequestDto {
     @DecimalMin(value = "0.1", inclusive = true, message = "La capacidad debe ser mayor a cero")
     private BigDecimal capacity;
 
-    @NotNull(message = "El estado del contenedor es obligatorio")
-    private ContainerStatus status;
+    @NotBlank(message = "El estado es obligatorio")
+    private String status;
 
     @NotNull(message = "El tipo de contenedor es obligatorio")
     private Long containerTypeId;
