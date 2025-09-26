@@ -41,12 +41,14 @@ public class ContainerController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
-            @RequestParam(defaultValue = "") String search) {
-        ApiResponse<Page<ContainerResponseDto>> response = containerService.getAllContainers(page, size, sortBy, sortDir, search);
+            @RequestParam(required = false) String serial,
+            @RequestParam(required = false) Long id) {
+
+        ApiResponse<Page<ContainerResponseDto>> response =
+                containerService.getAllContainers(page, size, sortBy, sortDir, serial, id);
+
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
-
-
 
     @PutMapping("/admin/update/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")

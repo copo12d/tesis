@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ValidationUtils {
@@ -30,4 +32,12 @@ public final class ValidationUtils {
             throw new RuntimeException("Error al acceder a los campos del objeto", e);
         }
     }
+
+    public static <E extends Enum<E>> String buildValidEnumMessage(Class<E> enumClass, String label) {
+        String validValues = Arrays.stream(enumClass.getEnumConstants())
+                .map(Enum::name)
+                .collect(Collectors.joining(", "));
+        return label + " inválido. Valores permitidos: " + validValues;
+    }
+
 }
