@@ -42,9 +42,12 @@ public class ContainerTypeController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
-            @RequestParam(required = false ) String search) {
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long id) {
 
-        ApiResponse<Page<ContainerTypeResponseDto>> response = containerTypeService.getAllContainerTypes(page, size, sortBy, sortDir, search);
+        ApiResponse<Page<ContainerTypeResponseDto>> response =
+                containerTypeService.getAllContainerTypes(page, size, sortBy, sortDir, name, id);
+
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
