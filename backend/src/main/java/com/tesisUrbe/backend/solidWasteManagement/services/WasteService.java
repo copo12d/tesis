@@ -20,9 +20,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,7 +84,7 @@ public class WasteService {
 
         Waste waste = new Waste();
         waste.setWeight(dto.getWeight());
-        waste.setCollectionDate(LocalDate.now());
+        waste.setCollectionDate(LocalDateTime.now());
         waste.setContainer(containerOpt.get());
         waste.setBatch(batch);
         waste.setCreatedBy(userOpt.get());
@@ -149,7 +151,20 @@ public class WasteService {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Waste> wastePage = wasteRepository.findByDeletedFalse(pageable);
+        Page<Waste> wastePage;
+
+        if (StringUtils.hasText(search)) {
+            wastePage = wasteRepository.findByDeletedFalseAndContainer_SerialContainingIgnoreCase(search, pageable);
+        } else {
+            wastePage = wasteRepository.findByDeletedFalse(pageable);
+        }
+
+        if (wastePage.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("NO_WASTE_FOUND", null, "No se encontraron residuos para los criterios especificados"))
+            );
+        }
 
         Page<WasteResponseDto> dtoPage = wastePage.map(waste ->
                 new WasteResponseDto(

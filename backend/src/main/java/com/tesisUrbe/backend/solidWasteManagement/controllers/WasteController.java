@@ -38,8 +38,8 @@ public class WasteController {
     public ResponseEntity<ApiResponse<Page<WasteResponseDto>>> getAllWaste(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "collectionDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(defaultValue = "") String search) {
         ApiResponse<Page<WasteResponseDto>> response = wasteService.getAllWaste(page, size, sortBy, sortDir, search);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
