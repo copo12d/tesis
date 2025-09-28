@@ -97,7 +97,7 @@ public class WasteService {
 
         BatchReg reg = new BatchReg();
         reg.setWeight(dto.getWeight());
-        reg.setCollectionDate(LocalDate.now());
+        reg.setCollectionDate(LocalDateTime.now());
         reg.setContainer(containerOpt.get());
         reg.setBatchEnc(batch);
         reg.setCreatedBy(userOpt.get());

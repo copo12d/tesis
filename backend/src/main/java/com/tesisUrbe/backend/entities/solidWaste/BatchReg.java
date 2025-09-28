@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -21,7 +22,7 @@ public class BatchReg {
     private Long id;
 
     @Column(name = "collection_date", nullable = false)
-    private LocalDate collectionDate;
+    private LocalDateTime collectionDate;
 
     @Column(nullable = false)
     private BigDecimal weight;

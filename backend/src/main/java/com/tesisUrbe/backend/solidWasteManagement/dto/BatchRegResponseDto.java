@@ -7,19 +7,16 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class BatchRegResponseDto {
-
-    private Long id;
-    private LocalDate collectionDate;
+    private String serial;
     private BigDecimal weight;
-
-    private Long containerId;
-
-    private Long batchEncId;
     private String createdByUsername;
+    private String date;
+    private String hour;
 }

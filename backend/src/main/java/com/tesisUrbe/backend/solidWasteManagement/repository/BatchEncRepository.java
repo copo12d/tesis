@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
 
+    boolean existsByIdAndDeletedFalse(Long id);
+
     Page<BatchEnc> findByDeletedFalse(Pageable pageable);
 
     Optional<BatchEnc> findByIdAndDeletedFalse(Long id);
