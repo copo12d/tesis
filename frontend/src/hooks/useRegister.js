@@ -8,14 +8,14 @@ export const useRegister = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const register = async (userName, password) => {
+  const register = async (fullName, userName, password, email) => {
     setLoading(true);
     setError('');
     
     try {
-      const res = await AuthAPI.register(userName, password);
+      const res = await AuthAPI.register(fullName, userName, password, email);
 
-      if (res.data.success) {
+      if (res.data.meta?.status === 201 ) {
         toast.success('¡Registro exitoso!');
         navigate('/login');
         return { success: true };

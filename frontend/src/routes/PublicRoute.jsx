@@ -5,5 +5,5 @@ import { Dashboard } from "../pages/Dashboard";
 
 export default function PublicRoute({ children }) {
     const { user } = useContext(AuthContext);
-    return user ? <Navigate to={<Dashboard />} /> : children;
+    return user ? <Navigate to="/" /> : children;
 }
