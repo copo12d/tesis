@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class BatchEncRequestDto {
-
     @NotBlank
     private String description;
 

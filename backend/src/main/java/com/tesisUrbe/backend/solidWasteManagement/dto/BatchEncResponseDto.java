@@ -24,5 +24,4 @@ public class BatchEncResponseDto {
     private LocalDateTime processedAt;
     private String createdByUsername;
     private String processedByUsername;
-    private List<BatchRegResponseDto> details;
 }

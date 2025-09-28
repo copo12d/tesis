@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface ContainerRepository extends JpaRepository<Container, Long> {
 
     boolean existsBySerial(String serial);
@@ -27,4 +29,7 @@ public interface ContainerRepository extends JpaRepository<Container, Long> {
         WHERE c.deleted = false AND LOWER(c.serial) LIKE LOWER(CONCAT('%', :serial, '%'))
     """)
     Page<Container> findBySerialContainingIgnoreCaseAndDeletedFalse(@Param("serial") String serial, Pageable pageable);
+
+    Optional<Container> findBySerialAndDeletedFalse(String serial);
+
 }

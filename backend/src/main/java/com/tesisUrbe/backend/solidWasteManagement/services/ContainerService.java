@@ -174,6 +174,14 @@ public class ContainerService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Container> findBySerialAndDeletedFalse(String serial) {
+        if (serial == null || serial.isBlank()) {
+            return Optional.empty();
+        }
+        return containerRepository.findBySerialAndDeletedFalse(serial);
+    }
+
     public Optional<Container> findById(Long id) {
         return containerRepository.findById(id);
     }

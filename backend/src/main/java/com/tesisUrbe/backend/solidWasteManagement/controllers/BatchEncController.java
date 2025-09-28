@@ -72,7 +72,7 @@ public class BatchEncController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @DeleteMapping("/admin/{id}")
+    @DeleteMapping("/admin/delete/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<Void>> softDeleteBatch(@PathVariable Long id) {
         ApiResponse<Void> response = batchEncService.softDeleteBatch(id);
