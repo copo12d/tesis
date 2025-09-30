@@ -1,16 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
+import { Login } from './features/auth/pages/Login';
+import { Register } from './features/auth/pages/Register';
 import { Toaster } from 'react-hot-toast';
-import { Dashboard } from './pages/Dashboard';
+import { Dashboard } from './features/dashboard/pages/Dashboard';
+import MainLayout from './layouts/MainLayout';
 
 import PrivateRoute from './routes/PrivateRoute';
-import AdminRoute from './routes/AdminRoute';
 import PublicRoute from './routes/PublicRoute';
 
 import AuthProvider from './context/AuthProvider';
 
-import './App.css';
 function App() {
  
   return (
@@ -20,7 +19,9 @@ function App() {
         <Routes>
           <Route path="/" element={
             <PrivateRoute>
-              <Dashboard />
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
             </PrivateRoute>
           } 
         />
