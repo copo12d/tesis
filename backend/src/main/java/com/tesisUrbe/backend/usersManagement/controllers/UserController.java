@@ -1,15 +1,14 @@
-package com.tesisUrbe.backend.users.controllers;
+package com.tesisUrbe.backend.usersManagement.controllers;
 
-import com.tesisUrbe.backend.auth.services.AuthService;
-import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
-import com.tesisUrbe.backend.users.dto.AdminUserDto;
-import com.tesisUrbe.backend.users.dto.NewAdminUserDto;
-import com.tesisUrbe.backend.users.dto.PublicUserDto;
-import com.tesisUrbe.backend.users.services.UserService;
-import com.tesisUrbe.backend.users.dto.NewPublicUserDto;
+import com.tesisUrbe.backend.usersManagement.dto.*;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,7 +52,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Page<AdminUserDto>>> getAdminAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "userName") String sortBy,
+            @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(required = false) String search
     ) {
@@ -61,17 +60,26 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-//    @PutMapping("/{id}/unlock")
-//    @PreAuthorize("hasAnyRole('ADMIN','SUPERUSER')")
-//    public ResponseEntity<ApiResponse<Void>> unlockUser(@PathVariable Long id) {
-//        ApiResponse<Void> response = userService.unlockUserAccount(id);
-//        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
-//    }
-
-    @DeleteMapping("admin/{id}")
+    @GetMapping("/admin/search")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
-    public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable Long id) {
-        ApiResponse<Void> response = userService.softDeleteUser(id);
+    public ResponseEntity<ApiResponse<Page<AdminUserDto>>> searchUsersAdvanced(
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(required = false) Boolean accountLocked,
+            @RequestParam(required = false) Boolean userLocked,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir
+    ) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        ApiResponse<Page<AdminUserDto>> response = userService.searchAdvanced(
+                searchTerm, role, verified, accountLocked, userLocked, pageable
+        );
+
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
@@ -93,5 +101,10 @@ public class UserController {
         return ResponseEntity.status(response.meta().status()).body(response);
     }
 
-
+    @DeleteMapping("admin/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable Long id) {
+        ApiResponse<Void> response = userService.softDeleteUser(id);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
 }

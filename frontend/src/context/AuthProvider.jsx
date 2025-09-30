@@ -9,9 +9,11 @@ export default function AuthProvider({ children }) {
     // Obtener el token del localStorage y decodificarlo para obtener la información del usuario
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
+        
         if (token) {
             try {
                 const decoded = jwtDecode(token);
+                console.log(decoded);
                 setUser(decoded);
             } catch {
                 setUser(null);

@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,6 @@ import java.util.Optional;
 public class BatchEncService {
 
     private final BatchEncRepository batchRepository;
-    private final BatchRegService batchRegService;
     private final UserService userService;
     private final ApiErrorFactory errorFactory;
 
@@ -119,6 +119,15 @@ public class BatchEncService {
     }
 
     @Transactional(readOnly = true)
+    public boolean batchExists(Long batchEncId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("No estás autenticado");
+        }
+        return batchRepository.existsByIdAndDeletedFalse(batchEncId);
+    }
+
+    @Transactional(readOnly = true)
     public ApiResponse<BatchEncResponseDto> getBatchById(Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
@@ -134,9 +143,6 @@ public class BatchEncService {
 
         BatchEnc batch = batchOpt.get();
 
-        ApiResponse<List<BatchRegResponseDto>> regResponse = batchRegService.getDetailsForBatch(batch.getId());
-        List<BatchRegResponseDto> regDtos = regResponse.data();
-
         BatchEncResponseDto dto = BatchEncResponseDto.builder()
                 .id(batch.getId())
                 .creationDate(batch.getCreationDate())
@@ -147,7 +153,6 @@ public class BatchEncService {
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
                 .processedAt(batch.getProcessedAt())
-                .details(regDtos)
                 .build();
 
         return new ApiResponse<>(

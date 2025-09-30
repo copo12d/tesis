@@ -7,7 +7,6 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,28 +14,69 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BatchRegService {
 
+    private final BatchEncService batchEncService;
     private final BatchRegRepository batchRegRepository;
+    private final ContainerService containerService;
     private final ApiErrorFactory errorFactory;
 
     @Transactional(readOnly = true)
-    public ApiResponse<List<BatchRegResponseDto>> getDetailsForBatch(Long batchEncId) {
+    public ApiResponse<List<BatchRegResponseDto>> getAllBatchRegs() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return errorFactory.build(HttpStatus.UNAUTHORIZED,
                     List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
         }
 
-        List<BatchReg> regs = batchRegRepository.findByBatchEncIdAndDeletedFalse(batchEncId);
-        List<BatchRegResponseDto> dtos = regs.stream().map(this::toDto).toList();
+        List<BatchReg> regs = batchRegRepository.findByDeletedFalse();
+
+        List<BatchRegResponseDto> dtos = regs.stream()
+                .map(this::toDto)
+                .toList();
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Registros obtenidos correctamente"),
+                dtos,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<BatchRegResponseDto>> getByBatchEncWithFilters(Long batchEncId, String serial, LocalDate startDate, LocalDate endDate) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        if (!batchEncService.batchExists(batchEncId)) {
+            return errorFactory.build(HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("BATCH_NOT_FOUND", null, "El lote especificado no existe")));
+        }
+
+        List<BatchReg> base = batchRegRepository.findByBatchEncIdAndDeletedFalse(batchEncId);
+
+        LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : null;
+
+        List<BatchReg> filtered = base.stream()
+                .filter(reg -> serial == null || reg.getContainer().getSerial().equalsIgnoreCase(serial))
+                .filter(reg -> start == null || !reg.getCollectionDate().isBefore(start))
+                .filter(reg -> end == null || !reg.getCollectionDate().isAfter(end))
+                .toList();
+
+        List<BatchRegResponseDto> dtos = filtered.stream()
+                .map(this::toDto)
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Registros filtrados correctamente"),
                 dtos,
                 null
         );
@@ -47,56 +87,16 @@ public class BatchRegService {
         batchRegRepository.save(batchReg);
     }
 
-    @Transactional(readOnly = true)
-    public BatchReg findByIdOrThrow(Long id) {
-        return batchRegRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new IllegalArgumentException("Registro no encontrado o eliminado"));
-    }
-
-    @Transactional
-    public ApiResponse<Void> softDelete(Long id) {
-        BatchReg reg = findByIdOrThrow(id);
-        reg.setDeleted(true);
-        batchRegRepository.save(reg);
-
-        return errorFactory.buildSuccess(HttpStatus.OK, "Registro eliminado correctamente");
-    }
-
-    @Transactional(readOnly = true)
-    public ApiResponse<Page<BatchRegResponseDto>> searchAdvanced(
-            Long containerId,
-            Long batchEncId,
-            String createdByUsername,
-            LocalDate fechaInicio,
-            LocalDate fechaFin,
-            Pageable pageable) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return errorFactory.build(HttpStatus.UNAUTHORIZED,
-                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
-        }
-
-        Page<BatchReg> page = batchRegRepository.searchAdvanced(
-                containerId, batchEncId, createdByUsername, fechaInicio, fechaFin, pageable);
-
-        Page<BatchRegResponseDto> dtoPage = page.map(this::toDto);
-
-        return new ApiResponse<>(
-                errorFactory.buildMeta(HttpStatus.OK, "Búsqueda avanzada de registros completada"),
-                dtoPage,
-                null
-        );
-    }
-
     private BatchRegResponseDto toDto(BatchReg reg) {
+        LocalDateTime collectionDate = reg.getCollectionDate();
+
         return BatchRegResponseDto.builder()
-                .id(reg.getId())
-                .collectionDate(reg.getCollectionDate())
+                .serial(reg.getContainer().getSerial())
                 .weight(reg.getWeight())
-                .containerId(reg.getContainer().getId())
-                .batchEncId(reg.getBatchEnc().getId())
                 .createdByUsername(reg.getCreatedBy().getUserName())
+                .date(collectionDate.toLocalDate().toString())
+                .hour(collectionDate.toLocalTime().toString())
                 .build();
     }
+
 }
