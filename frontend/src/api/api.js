@@ -54,16 +54,7 @@ api.interceptors.response.use(
   }
 )
 
-// --- AUTH --- //
-export const AuthAPI = {
-  register: (fullName, userName, password, email) => api.post('/users/public/register', { fullName, userName, password, email }),
-  login: (userName , password) => api.post('/auth/login', { userName, password }),
-}
 
-// --- DASHBOARD --- //
-export const DashboardAPI = {
-  getWeekly: () => api.get('/dashboard/weekly'),
-  getCards: () => api.get('/dashboard/cards'),
-}
+
 export default api;
 
