@@ -1,11 +1,14 @@
 package com.tesisUrbe.backend.usersManagement.services;
 
-import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.entities.account.Role;
+import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.usersManagement.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,5 +31,23 @@ public class RoleService {
 
     public boolean existsByName(RoleList role) {
         return roleRepository.existsByName(role);
+    }
+
+    public List<Role> getVisibleRolesForCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return List.of();
+        }
+
+        boolean isSuperuser = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERUSER"));
+
+        if (isSuperuser) {
+            return roleRepository.findAll();
+        } else {
+            return roleRepository.findAll().stream()
+                    .filter(role -> role.getName() != RoleList.ROLE_SUPERUSER)
+                    .toList();
+        }
     }
 }
