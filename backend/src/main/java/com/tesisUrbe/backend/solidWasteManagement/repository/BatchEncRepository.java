@@ -33,4 +33,5 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
             @Param("fechaFin") LocalDate fechaFin,
             Pageable pageable
     );
+    
 }
