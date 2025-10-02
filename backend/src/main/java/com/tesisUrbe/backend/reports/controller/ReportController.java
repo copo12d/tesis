@@ -41,4 +41,15 @@ public class ReportController {
         return reportService.generateAllUsersPdf(role, verified, accountLocked, userLocked, sortBy, sortDir);
     }
 
+    @GetMapping("/admin/containers/all")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<byte[]> generateContainerReport(
+            @RequestParam(required = false) String serial,
+            @RequestParam(required = false) Long id,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir
+    ) {
+        return reportService.generateContainerReport(serial, id, sortBy, sortDir);
+    }
+
 }

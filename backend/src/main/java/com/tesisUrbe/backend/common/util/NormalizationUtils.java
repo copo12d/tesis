@@ -56,5 +56,14 @@ public final class NormalizationUtils {
         };
     }
 
+    public static String translateContainerStatus(String status) {
+        return switch (status) {
+            case "AVAILABLE" -> "Disponible";
+            case "FULL" -> "Lleno";
+            case "UNDER_MAINTENANCE" -> "En mantenimiento";
+            default -> status;
+        };
+    }
+
 
 }

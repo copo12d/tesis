@@ -4,12 +4,15 @@ import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
+import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.reports.builders.ReportBuilder;
 import com.tesisUrbe.backend.reports.registry.ReportRegistry;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
+import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -27,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +45,7 @@ public class ReportService {
     private final UserRepository userRepository;
     private final BatchEncRepository batchEncRepository;
     private final BatchRegRepository batchRegRepository;
+    private final ContainerRepository containerRepository;
 
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> generateBatchReportPdf(Long batchId) {
@@ -223,5 +229,70 @@ public class ReportService {
             }
         }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> generateContainerReport(
+            String serial, Long id, String sortBy, String sortDir
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<Container> containers;
+
+        if (id != null) {
+            containers = containerRepository.findAllByIdAndDeletedFalse(id);
+        } else if (StringUtils.hasText(serial)) {
+            containers = containerRepository.findAllBySerialContainingIgnoreCaseAndDeletedFalse(serial);
+        } else {
+            containers = containerRepository.findAllByDeletedFalse();
+        }
+
+        if (containers.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Comparator<Container> comparator = switch (sortBy) {
+            case "serial" -> Comparator.comparing(Container::getSerial, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "createdAt" -> Comparator.comparing(Container::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo));
+            default -> Comparator.comparing(Container::getId);
+        };
+        if ("DESC".equalsIgnoreCase(sortDir)) {
+            comparator = comparator.reversed();
+        }
+        containers.sort(comparator);
+
+        List<ContainerResponseDto> dtos = containers.stream()
+                .map(container -> new ContainerResponseDto(
+                        container.getId(),
+                        container.getSerial(),
+                        container.getLatitude(),
+                        container.getLongitude(),
+                        container.getCapacity(),
+                        container.getStatus(),
+                        container.getContainerType().getName(),
+                        container.getCreatedAt()
+                ))
+                .toList();
+
+        try {
+            List<String> columnTitles = List.of(
+                    "ID", "Serial", "Latitud", "Longitud", "Capacidad",
+                    "Estado", "Tipo de contenedor", "Creado en"
+            );
+
+            ReportBuilder<ContainerResponseDto> builder = reportRegistry.getBuilder(ContainerResponseDto.class);
+            byte[] pdf = builder.build("Reporte de Contenedores", columnTitles, dtos, auth.getName());
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"containers-report.pdf\"")
+                    .header("Content-Type", "application/pdf")
+                    .body(pdf);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 }

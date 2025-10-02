@@ -5,6 +5,7 @@ import com.tesisUrbe.backend.reports.builders.*;
 import com.tesisUrbe.backend.reports.registry.ReportRegistry;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -100,16 +101,42 @@ public class ReportBuilderConfig {
     }
 
     @Bean
+    public ReportModule<ContainerResponseDto> containerReportModule(
+            ReportStyleConfig style,
+            PdfHeaderBuilder header,
+            PdfFooterBuilder footer
+    ) {
+        RowMapper<ContainerResponseDto> mapper = dto -> List.of(
+                dto.getId() != null ? dto.getId().toString() : "",
+                dto.getSerial() != null ? dto.getSerial() : "",
+                dto.getLatitude() != null ? dto.getLatitude().toPlainString() : "",
+                dto.getLongitude() != null ? dto.getLongitude().toPlainString() : "",
+                dto.getCapacity() != null ? dto.getCapacity().toPlainString() : "",
+                dto.getStatus() != null ? NormalizationUtils.translateContainerStatus(dto.getStatus().name()) : "",
+                dto.getContainerTypeName() != null ? dto.getContainerTypeName() : "",
+                dto.getCreatedAt() != null ? NormalizationUtils.formatDateTime(dto.getCreatedAt()) : ""
+        );
+
+        PdfTableBuilderInterface<ContainerResponseDto> table = new PdfTableBuilder<>(style, mapper);
+        ReportBuilder<ContainerResponseDto> builder = new PdfReportBuilder<>(header, footer, table);
+
+        return new ReportModule<>(mapper, table, builder);
+    }
+
+    @Bean
     public CommandLineRunner registerReportModules(
             ReportRegistry registry,
             ReportModule<BatchRegResponseDto> batchModule,
             ReportModule<AdminUserDto> adminModule,
-            ReportModule<BatchEncResponseDto> batchEncModule
+            ReportModule<BatchEncResponseDto> batchEncModule,
+            ReportModule<ContainerResponseDto> containerModule
     ) {
         return args -> {
             registry.register(BatchRegResponseDto.class, batchModule.getReportBuilder());
             registry.register(AdminUserDto.class, adminModule.getReportBuilder());
             registry.register(BatchEncResponseDto.class, batchEncModule.getReportBuilder());
+            registry.register(ContainerResponseDto.class, containerModule.getReportBuilder());
         };
     }
+
 }
