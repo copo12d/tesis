@@ -19,18 +19,26 @@ public class ReportController {
         return reportService.generateBatchReportPdf(batchId);
     }
 
+    @GetMapping("admin/batch/all")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<byte[]> generateBatchEncReport(
+            @RequestParam(required = false) String fechaInicio,
+            @RequestParam(required = false) String fechaFin
+    ) {
+        return reportService.generateBatchEncReport(fechaInicio, fechaFin);
+    }
+
     @GetMapping("admin/users/all")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<byte[]> generateAllUsersPdf(
             @RequestParam(required = false) String role,
-            @RequestParam(required = false) Boolean verified,
-            @RequestParam(required = false) Boolean accountLocked,
-            @RequestParam(required = false) Boolean userLocked,
+            @RequestParam(required = false) String verified,
+            @RequestParam(required = false) String accountLocked,
+            @RequestParam(required = false) String userLocked,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDir
     ) {
         return reportService.generateAllUsersPdf(role, verified, accountLocked, userLocked, sortBy, sortDir);
     }
-
 
 }
