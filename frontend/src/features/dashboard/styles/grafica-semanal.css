@@ -1,0 +1,48 @@
+.weekly-chart-container {
+  background: linear-gradient(135deg, #8bc34a 0%, #cddc39 100%);
+  border-radius: 12px;
+  padding: 4px;
+  color: #fff;
+  flex: 1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.weekly-chart-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.weekly-chart-subtitle {
+  margin: 5px 0 15px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.chart-container {
+  width: 100%;
+  height: 250px;
+}
+
+/* Estilos para el tooltip personalizado */
+.custom-tooltip {
+  background: rgba(0, 0, 0, 0.95);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.custom-tooltip .label {
+  color: #656464;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.custom-tooltip .value {
+  color: #8bc34a;
+  font-weight: 700;
+}
