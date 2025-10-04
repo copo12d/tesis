@@ -1,6 +1,6 @@
-package com.tesisUrbe.backend.reports.registry;
+package com.tesisUrbe.backend.reportsManagerPdf.registry;
 
-import com.tesisUrbe.backend.reports.builders.ReportBuilder;
+import com.tesisUrbe.backend.reportsManagerPdf.builders.ReportBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

@@ -1,6 +1,6 @@
-package com.tesisUrbe.backend.reports.controller;
+package com.tesisUrbe.backend.reportsManagerPdf.controller;
 
-import com.tesisUrbe.backend.reports.services.ReportService;
+import com.tesisUrbe.backend.reportsManagerPdf.services.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.reports.builders;
+package com.tesisUrbe.backend.reportsManagerPdf.builders;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
@@ -6,9 +6,8 @@ import com.lowagie.text.FontFactory;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.tesisUrbe.backend.reports.config.ReportStyleConfig;
+import com.tesisUrbe.backend.reportsManagerPdf.config.ReportStyleConfig;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.List;

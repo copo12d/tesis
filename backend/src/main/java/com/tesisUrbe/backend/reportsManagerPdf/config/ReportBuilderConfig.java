@@ -1,8 +1,8 @@
-package com.tesisUrbe.backend.reports.config;
+package com.tesisUrbe.backend.reportsManagerPdf.config;
 
 import com.tesisUrbe.backend.common.util.NormalizationUtils;
-import com.tesisUrbe.backend.reports.builders.*;
-import com.tesisUrbe.backend.reports.registry.ReportRegistry;
+import com.tesisUrbe.backend.reportsManagerPdf.builders.*;
+import com.tesisUrbe.backend.reportsManagerPdf.registry.ReportRegistry;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;

@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.reports.builders;
+package com.tesisUrbe.backend.reportsManagerPdf.builders;
 
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
@@ -7,9 +7,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import com.tesisUrbe.backend.reports.config.UniversityConfig;
+import com.tesisUrbe.backend.reportsManagerPdf.config.UniversityConfig;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

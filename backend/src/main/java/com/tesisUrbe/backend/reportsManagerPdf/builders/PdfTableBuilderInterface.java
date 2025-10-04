@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.reports.builders;
+package com.tesisUrbe.backend.reportsManagerPdf.builders;
 
 import com.lowagie.text.Document;
 import java.util.List;
