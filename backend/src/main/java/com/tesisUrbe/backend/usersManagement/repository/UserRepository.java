@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -105,4 +106,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE u.deleted = false
     """)
     Page<User> findAllWithRoles(Pageable pageable);
+
+    @Query("""
+    SELECT u FROM User u
+    WHERE u.deleted = false
+    AND (:role IS NULL OR u.role.name = :role)
+    AND (:verified IS NULL OR u.verified = :verified)
+    AND (:accountLocked IS NULL OR u.accountLocked = :accountLocked)
+    AND (:userLocked IS NULL OR u.userLocked = :userLocked)
+""")
+    List<User> searchAdvancedForReport(
+            @Param("role") RoleList role,
+            @Param("verified") Boolean verified,
+            @Param("accountLocked") Boolean accountLocked,
+            @Param("userLocked") Boolean userLocked
+    );
+
 }

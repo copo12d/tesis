@@ -7,6 +7,9 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +26,6 @@ public class BatchRegService {
 
     private final BatchEncService batchEncService;
     private final BatchRegRepository batchRegRepository;
-    private final ContainerService containerService;
     private final ApiErrorFactory errorFactory;
 
     @Transactional(readOnly = true)
@@ -48,7 +50,13 @@ public class BatchRegService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<List<BatchRegResponseDto>> getByBatchEncWithFilters(Long batchEncId, String serial, LocalDate startDate, LocalDate endDate) {
+    public ApiResponse<Page<BatchRegResponseDto>> getByBatchEncWithFilters(
+            Long batchEncId,
+            String serial,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return errorFactory.build(HttpStatus.UNAUTHORIZED,
@@ -65,22 +73,26 @@ public class BatchRegService {
         LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : null;
 
-        List<BatchReg> filtered = base.stream()
+        List<BatchRegResponseDto> filteredDtos = base.stream()
                 .filter(reg -> serial == null || reg.getContainer().getSerial().equalsIgnoreCase(serial))
                 .filter(reg -> start == null || !reg.getCollectionDate().isBefore(start))
                 .filter(reg -> end == null || !reg.getCollectionDate().isAfter(end))
-                .toList();
-
-        List<BatchRegResponseDto> dtos = filtered.stream()
                 .map(this::toDto)
                 .toList();
 
+        int startIndex = (int) pageable.getOffset();
+        int endIndex = Math.min(startIndex + pageable.getPageSize(), filteredDtos.size());
+        List<BatchRegResponseDto> pageContent = filteredDtos.subList(startIndex, endIndex);
+
+        Page<BatchRegResponseDto> page = new PageImpl<>(pageContent, pageable, filteredDtos.size());
+
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Registros filtrados correctamente"),
-                dtos,
+                page,
                 null
         );
     }
+
 
     @Transactional
     public void save(BatchReg batchReg) {
