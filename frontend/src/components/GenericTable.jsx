@@ -1,8 +1,26 @@
 import React from "react";
-import { Stack, Table, For, Text, Box, Flex, Card, ButtonGroup, IconButton, Pagination , Button} from "@chakra-ui/react";
-import { LuChevronLeft, LuChevronRight, LuCirclePlus } from "react-icons/lu";
-import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
-
+import {
+  Stack,
+  Table,
+  For,
+  Text,
+  Box,
+  Flex,
+  Card,
+  ButtonGroup,
+  IconButton,
+  Pagination,
+  Button,
+  Menu,
+  Portal,
+  Input,
+  InputGroup,
+  Select,
+  HStack,
+  Group,
+} from "@chakra-ui/react";
+import { LuChevronLeft, LuChevronRight, LuChevronDown } from "react-icons/lu";
+import { FaSearch } from "react-icons/fa";
 
 /**
  * headers: [{ key:'name', label:'Product', textAlign? }]
@@ -37,7 +55,7 @@ export function GenericTable({
   stripe = false,
   stripeBg = "gray.50",
   cellColor = "blackAlpha.800",
-  actionAlignment="center",
+  actionAlignment = "center",
   // ---- Card props ----
   cardTitle,
   cardBg = "white",
@@ -59,11 +77,18 @@ export function GenericTable({
   totalPages = 1,
   totalElements = items.length,
   onPageChange,
+  // ---- Search bar props ----
+  menuItems = [],
+  menuButtonText = "Open",
+  searchTerm = "",
+  onSearchTermChange = () => {},
+  searchType = "",
+  onSearchTypeChange = () => {},
 }) {
-
-  const paginatedItems = pagination && totalPages
-    ? items
-    : pagination
+  const paginatedItems =
+    pagination && totalPages
+      ? items
+      : pagination
       ? items.slice((page - 1) * pageSize, page * pageSize)
       : items;
   const hasActions = typeof renderActions === "function";
@@ -81,7 +106,7 @@ export function GenericTable({
           >
             <Table.Caption color="blackAlpha.600">{caption}</Table.Caption>
             <Table.Header>
-              <Table.Row bg={headerBg} color={headerColor} >
+              <Table.Row bg={headerBg} color={headerColor}>
                 {headers.map((h) => (
                   <Table.ColumnHeader
                     key={h.key}
@@ -153,84 +178,144 @@ export function GenericTable({
     </For>
   );
 
-
-    return (
-      <Box p={4} w="100%" h="100%">
-        <Card.Root
-          w="100%"
-          maxW="100%"
-          bg={cardBg}
-          borderColor={cardBorderColor}
-          borderWidth="1px"
-          borderRadius={cardRadius}
-          boxShadow="sm"
-          p={0}
-        >
-          {(cardTitle || caption) && (
-            <Box
-              as="header"
-              w="100%"
-              bg={cardHeaderBg}
-              color={cardHeaderColor}
+  return (
+    <Box p={4} w="100%" h="100%">
+      <Card.Root
+        w="100%"
+        maxW="100%"
+        bg={cardBg}
+        borderColor={cardBorderColor}
+        borderWidth="1px"
+        borderRadius={cardRadius}
+        boxShadow="sm"
+        p={0}
+      >
+        {(cardTitle || caption) && (
+          <Box
+            as="header"
+            w="100%"
+            bg={cardHeaderBg}
+            color={cardHeaderColor}
+            fontSize="sm"
+            fontWeight="bold"
+            px={2}
+            py={2}
+            borderTopLeftRadius={cardRadius}
+            borderTopRightRadius={cardRadius}
+          >
+            {cardTitle || caption}
+          </Box>
+        )}
+        <Flex justify="space-between" align="center" px={6} pt={3}>
+          <Group w="400px" gap={"unset"}>
+            <Menu.Root>
+              <Menu.Trigger asChild gap={"unset"}>
+                <Button
+                  variant="solid"
+                  borderLeftRadius={"10px"}
+                  borderRightRadius={0}
+                  hover={{ bg: "gray.100" }}
+                  color={"gray.700"}
+                  bg={"gray.200"}
+                  px={1}
+                  focusRing={false}
+                >
+                  <LuChevronDown /> {menuButtonText}
+                </Button>
+              </Menu.Trigger>
+              <Portal>
+                <Menu.Positioner>
+                  <Menu.Content
+                    borderRadius={"5px"}
+                    bg={"white"}
+                    boxShadow={"md"}
+                    border={"1px solid"}
+                    borderColor={"gray.200"}
+                    px={0}
+                    py={1}
+                    minW="160px"
+                  >
+                    {menuItems.map((item) => (
+                      <Menu.Item
+                        key={item.value}
+                        value={item.value}
+                        _hover={{ bg: "gray.100" }}
+                        px={4}
+                        py={2}
+                        fontSize="sm"
+                        color="gray.800"
+                        cursor="pointer"
+                        onClick={() => onSearchTypeChange(item.value)} // <-- IMPORTANTE
+                      >
+                        {item.label}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Portal>
+            </Menu.Root>
+            <Input
+              borderRadius={0}
+              borderColor="gray.300"
+              placeholder="Buscar ..."
+              bg="white"
               fontSize="sm"
-              fontWeight="bold"
-              px={2}
-              py={2}
-              borderTopLeftRadius={cardRadius}
-              borderTopRightRadius={cardRadius}
+              color={"blackAlpha.800"}
+              value={searchTerm}
+              onChange={onSearchTermChange} // <-- IMPORTANTE
+            />
+            <IconButton
+              borderRightRadius={"10px"}
+              borderLeftRadius={0}
+              bg="cyan.300"
+              aria-label="Buscar"
             >
-              {cardTitle || caption}
+              <FaSearch />
+            </IconButton>
+          </Group>
+          <Button colorPalette="blue" size="sm" onClick={onAdd} px={3}>
+            + Añadir
+          </Button>
+        </Flex>
+        <Card.Body p={3}>
+          {TableContent}
+          {pagination && (
+            <Box mt={3} display="flex" justifyContent="center">
+              <Pagination.Root
+                count={totalElements}
+                pageSize={pageSize}
+                page={page}
+                onPageChange={onPageChange}
+              >
+                <ButtonGroup variant="ghost" size="sm" wrap="wrap">
+                  <Pagination.PrevTrigger asChild>
+                    <IconButton aria-label="Anterior">
+                      <LuChevronLeft />
+                    </IconButton>
+                  </Pagination.PrevTrigger>
+                  <Pagination.Items
+                    render={(pageObj) => (
+                      <IconButton
+                        key={pageObj.value}
+                        variant={{ base: "ghost", _selected: "outline" }}
+                        aria-label={`Página ${pageObj.value}`}
+                        isActive={pageObj.selected}
+                      >
+                        {pageObj.value}
+                      </IconButton>
+                    )}
+                  />
+                  <Pagination.NextTrigger asChild>
+                    <IconButton aria-label="Siguiente">
+                      <LuChevronRight />
+                    </IconButton>
+                  </Pagination.NextTrigger>
+                </ButtonGroup>
+              </Pagination.Root>
             </Box>
           )}
-          <Flex justify="flex-end" align="center" px={6} pt={3}>
-            <Button
-              colorPalette="blue"
-              size="sm"
-              onClick={onAdd}
-              px={3}
-            >
-             + Añadir
-            </Button>
-          </Flex>
-          <Card.Body p={3}>
-            {TableContent}
-            {pagination && (
-              <Box mt={3} display="flex" justifyContent="center" >
-                <Pagination.Root
-                  count={totalElements}
-                  pageSize={pageSize}
-                  page={page}
-                  onPageChange={onPageChange}
-                >
-                  <ButtonGroup variant="ghost" size="sm" wrap="wrap">
-                    <Pagination.PrevTrigger asChild>
-                      <IconButton aria-label="Anterior">
-                        <LuChevronLeft />
-                      </IconButton>
-                    </Pagination.PrevTrigger>
-                    <Pagination.Items
-                      render={(pageObj) => (
-                        <IconButton
-                          key={pageObj.value}
-                          variant={{ base: "ghost", _selected: "outline" }}
-                          aria-label={`Página ${pageObj.value}`}
-                          isActive={pageObj.selected}
-                        >
-                          {pageObj.value}
-                        </IconButton>
-                      )}
-                    />
-                    <Pagination.NextTrigger asChild>
-                      <IconButton aria-label="Siguiente">
-                        <LuChevronRight />
-                      </IconButton>
-                    </Pagination.NextTrigger>
-                  </ButtonGroup>
-                </Pagination.Root>
-              </Box>
-            )}
-          </Card.Body>
-        </Card.Root>
-      </Box>
-    );
+        </Card.Body>
+      </Card.Root>
+    </Box>
+  );
 }
