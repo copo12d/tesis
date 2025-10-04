@@ -1,10 +1,10 @@
-package com.tesisUrbe.backend.reports.builders;
+package com.tesisUrbe.backend.reportsManagerPdf.builders;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
-import com.tesisUrbe.backend.reports.config.ReportStyleConfig;
+import com.tesisUrbe.backend.reportsManagerPdf.config.ReportStyleConfig;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;

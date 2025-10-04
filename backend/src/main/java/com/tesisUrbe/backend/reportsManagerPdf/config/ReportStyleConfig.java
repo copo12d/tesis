@@ -1,4 +1,4 @@
-package com.tesisUrbe.backend.reports.config;
+package com.tesisUrbe.backend.reportsManagerPdf.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

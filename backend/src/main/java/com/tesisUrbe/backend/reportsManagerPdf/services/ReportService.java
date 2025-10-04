@@ -1,12 +1,12 @@
-package com.tesisUrbe.backend.reports.services;
+package com.tesisUrbe.backend.reportsManagerPdf.services;
 
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
-import com.tesisUrbe.backend.reports.builders.ReportBuilder;
-import com.tesisUrbe.backend.reports.registry.ReportRegistry;
+import com.tesisUrbe.backend.reportsManagerPdf.builders.ReportBuilder;
+import com.tesisUrbe.backend.reportsManagerPdf.registry.ReportRegistry;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
@@ -15,11 +15,7 @@ import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
-import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
