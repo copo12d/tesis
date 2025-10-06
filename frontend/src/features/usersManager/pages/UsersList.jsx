@@ -1,11 +1,11 @@
 import { IconButton, Stack, Spinner, Text, Heading } from "@chakra-ui/react";
 import { LiaEditSolid, LiaTrashAltSolid } from "react-icons/lia";
-import { useUsersList } from "../hooks/useUsersList";
 import { useDeleteUser } from "../hooks/useDeleteUser";
 import { GenericTable } from "@/components/GenericTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { useUserAdvancedSearch } from "../hooks/useUserAdvancedSearch";
+import { useEffect, useState } from "react";
 
 const headers = [
   { key: "fullName", label: "Nombre" },
@@ -54,7 +54,13 @@ export function UsersList() {
     }
   };
 
-  if (loading && items.length === 0) {
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!loading) setHasLoaded(true);
+  }, [loading]);
+
+  if (loading && !hasLoaded) {
     return (
       <Stack p={6} align="center">
         <Spinner />
