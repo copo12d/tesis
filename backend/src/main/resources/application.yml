@@ -3,3 +3,10 @@ spring:
     active: dev
   config:
     import: classpath:report-config.yml
+
+# Frontend and QR configuration
+app:
+  frontend:
+    base-url: "http://localhost:5173"
+  qr:
+    size: 300

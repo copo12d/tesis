@@ -1,6 +1,7 @@
 package com.tesisUrbe.backend.solidWasteManagement.repository;
 
 import com.tesisUrbe.backend.entities.solidWaste.Container;
+import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;

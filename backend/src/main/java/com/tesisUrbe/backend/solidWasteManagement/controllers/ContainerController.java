@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 @RestController
 @RequiredArgsConstructor
@@ -66,4 +69,15 @@ public class ContainerController {
         ApiResponse<Void> response = containerService.softDeleteContainer(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
+
+    @GetMapping(value = "/admin/qr/{id}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<Resource> getContainerQrById(@PathVariable Long id) {
+        byte[] png = containerService.generateContainerQrById(id);
+        if (png == null) {
+            return ResponseEntity.notFound().build();
+        }
+        ByteArrayResource resource = new ByteArrayResource(png);
+        return ResponseEntity.ok().contentLength(png.length).contentType(MediaType.IMAGE_PNG).body(resource);
+    }
+
 }
