@@ -7,11 +7,17 @@ import { Dashboard } from './features/dashboard/pages/Dashboard';
 import { UserCreate } from './features/usersManager/pages/UserCreate';
 import { UsersList } from './features/usersManager/pages/UsersList';
 import { UserEdit } from './features/usersManager/pages/UserEdit';
+import ForgotPassword from './features/auth/pages/ForgotPassword';
+import AccountLocked from './features/auth/pages/AccountLocked';
+import MobileReportPage from './features/mobile/pages/MobileReportPage';
+import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
+
 
 import MainLayout from './layouts/MainLayout';
 
 import PrivateRoute from './routes/PrivateRoute';
 import PublicRoute from './routes/PublicRoute';
+import MobileRoute from './routes/MobileRoute';
 
 import AuthProvider from './context/AuthProvider';
 
@@ -36,6 +42,22 @@ function App() {
             <Route path='users/edit/:id' element={<UserEdit />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
+          <Route
+            path="/mobile"
+            element={
+              <MobileRoute>
+                <MobileReportPage />
+              </MobileRoute>
+            }
+          />
+          <Route
+            path="/mobile/login"
+            element={
+              <MobileRoute>
+                <MobileCollectorLogin />
+              </MobileRoute>
+            }
+          />
 
             <Route
               path="/login"
@@ -52,6 +74,14 @@ function App() {
                   <Register />
                 </PublicRoute>
               }
+            />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+            <Route
+              path="/account-locked"
+              element={<AccountLocked />}
             />
 
           <Route path="*" element={<Navigate to="/login" replace />} />

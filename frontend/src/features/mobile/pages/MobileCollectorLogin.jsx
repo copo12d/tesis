@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useState, useContext } from "react";
+import { useAuth } from "../../auth/hooks/useAuth";
 import AuthContext from "../../../context/Authcontext";
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Center,
@@ -15,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { LiaUser, LiaLockSolid } from "react-icons/lia";
 
-export function Login() {
+export default function MobileCollectorLogin() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,33 +32,34 @@ export function Login() {
     const result = await loginRequest(userName, password);
     if (result.success) {
       login(result.accessToken, result.refreshToken);
-      navigate("/");
+      navigate("/mobile/recolector");
     } else if (
       result.error &&
       result.error.toLowerCase().includes("bloqueada")
     ) {
-      // Si el mensaje de error contiene "bloqueada", redirige
       navigate("/account-locked");
     }
   };
 
   return (
     <Center h="100vh" bg="#e6f4ea">
-      <Stack boxShadow="md" bg="white" p={10} rounded={"md"} w={600}>
-        <Heading color={"#00695c"}>Iniciar Sesión</Heading>
-        <Text fontSize={"lg"} color={"#00695c"}>
-          Por favor, ingresa tus credenciales
+      <Stack boxShadow="md" bg="white" p={8} rounded={"md"} w="95vw" maxW={350}>
+        <Heading color={"#00695c"} size="md" textAlign="center">
+          Ingreso recolector
+        </Heading>
+        <Text fontSize={"md"} color={"#00695c"} textAlign="center">
+          Ingresa tus credenciales de recolector
         </Text>
         <form onSubmit={handleSubmit}>
           <Stack spacing={6} my={4}>
-            <Field.Root required >
+            <Field.Root required>
               <Field.Label htmlFor="userName" color={"black"}>
                 Nombre de usuario
               </Field.Label>
               <InputGroup
-                  startAddon={<LiaUser />}
-                  startAddonProps={{ bg: "#009688", px: 3 }}
-                >
+                startAddon={<LiaUser />}
+                startAddonProps={{ bg: "#009688", px: 3 }}
+              >
                 <Input
                   id="userName"
                   name="userName"
@@ -71,6 +71,7 @@ export function Login() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  autoFocus
                 />
               </InputGroup>
 
@@ -92,8 +93,6 @@ export function Login() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
-                  css={{ "--error-color": "red" }}
-                  
                 />
               </InputGroup>
             </Field.Root>
@@ -102,41 +101,25 @@ export function Login() {
               bg="#009688"
               color="white"
               size="lg"
-              loading={loading}
-              loadingText="Iniciando..."
+              isLoading={loading}
+              loadingText="Ingresando..."
               marginTop={4}
               spinnerPlacement="end"
               _hover={{ bg: "#00695c" }}
             >
-              Iniciar Sesión
+              Ingresar
             </Button>
           </Stack>
         </form>
-  <Stack justify={"center"} spacing={4} color={"#00695c"}>
-          <Text
-            as={"div"}
-            textAlign={"center"}
-            display={"inline-flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
-          >
-            <span>No tienes una cuenta? </span>
-            <Button
-              variant="link"
-              color="#009688"
-              onClick={() => navigate("/register")}
-            >
-              Regístrate
-            </Button>
-          </Text>
+        <Text mt={2} textAlign="center" fontSize="sm">
           <Button
             variant="link"
             color="#009688"
-            onClick={() => navigate("/forgot-password")}
+            onClick={() => navigate("/mobile")}
           >
-            Olvidaste tu contraseña?
+            Volver
           </Button>
-        </Stack>
+        </Text>
       </Stack>
     </Center>
   );
