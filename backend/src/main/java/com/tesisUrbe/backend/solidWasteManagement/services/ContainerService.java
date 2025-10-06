@@ -28,6 +28,15 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +45,12 @@ public class ContainerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
     private final UserService userService;
+    
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:5173}")
+    private String frontendBaseUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${app.qr.size:300}")
+    private int frontendQrSize;
 
     @Transactional
     public ApiResponse<Void> registerContainer(ContainerRequestDto dto) {
@@ -384,6 +399,33 @@ public class ContainerService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el contenedor"))
             );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generateContainerQrById(Long id) {
+        Optional<Container> containerOpt = containerRepository.findById(id);
+        if (containerOpt.isEmpty() || containerOpt.get().isDeleted()) {
+            return null;
+        }
+
+        Container container = containerOpt.get();
+
+        // Build the frontend URL from injected property
+        String path = String.format("/containers/%d", container.getId());
+        String target = frontendBaseUrl + path;
+
+        try {
+            int size = frontendQrSize;
+
+            Map<EncodeHintType, Object> hints = Map.of(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8.name());
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(target, BarcodeFormat.QR_CODE, size, size, hints);
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+                return baos.toByteArray();
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 
