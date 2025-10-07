@@ -7,11 +7,12 @@ import {
   Popover,
 } from "@chakra-ui/react";
 import { FiShield, FiUsers, FiBox, FiDownload, FiUpload, FiList, FiFileText } from "react-icons/fi";
-import { useNavigate } from "react-router-dom"; // <-- agregado
+import { TbRecycle, TbListDetails } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminSection({ user }) {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate(); // <-- agregado
+  const navigate = useNavigate();
 
   const isAdmin =
     user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPERUSER";
@@ -24,6 +25,8 @@ export default function AdminSection({ user }) {
   ];
 
   const containerSubItems = [
+    { label: "Lista de tipos", icon: TbListDetails, action: () => navigate("/container-type/list") },
+    { label: "Tipo de contenedor", icon: TbRecycle, action: () => navigate("/container-type/new") },
     { label: "Contenedor 1", icon: FiBox },
     { label: "Contenedor 2", icon: FiBox },
     { label: "Reportes", icon: FiUpload },

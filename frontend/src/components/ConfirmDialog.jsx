@@ -34,24 +34,24 @@ export function ConfirmDialog({
   confirmText = "Aceptar",
   cancelText = "Cancelar",
   onConfirm,
-  confirmColorPalette = "red",
+  confirmColorPalette = "teal",           // Cambiado a teal
   loading = false,
   icon = <LiaExclamationTriangleSolid />,
   hideCloseButton = false,
 
   // Color antiguo (compat)
   colorText,
-  descriptionColor = colorText || "gray.200",
+  descriptionColor = colorText || "gray.700", // gris oscuro
 
-  // Nuevos props de estilo
+  // Nuevos props de estilo (defaults teal y grises)
   iconColor,
-  contentColorPalette = "green",
-  contentBg = "blackAlpha.900",
-  headerBg = "blackAlpha.900",
-  headerBorderColor = "gray.200",
-  footerBg = "blackAlpha.900",
+  contentColorPalette = "teal",           // Cambiado a teal
+  contentBg = "white",                    // Fondo blanco
+  headerBg = "teal.700",                  // Header teal oscuro
+  headerBorderColor = "teal.600",         // Borde teal
+  footerBg = "white",                     // Footer blanco
   backdropBg = "blackAlpha.400",
-  titleColor,
+  titleColor = "WhiteAlpha.900",                // Título blanco
   cancelVariant = "outline",
   cancelColorPalette = "gray",
   cancelTextColor,
@@ -141,6 +141,7 @@ export function ConfirmDialog({
                     colorPalette={cancelColorPalette}
                     disabled={loading}
                     color={cancelTextColor}
+                    px={2}
                   >
                     {cancelText}
                   </Button>
@@ -154,6 +155,7 @@ export function ConfirmDialog({
                   loading={loading}
                   loadingText="Procesando..."
                   spinnerPlacement="end"
+                  px={2}
                 >
                   {confirmText}
                 </Button>
