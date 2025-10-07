@@ -34,6 +34,7 @@ export const UsersAPI = {
         sortDir,
       },
     }),
+  getRoles: () => api.get("/role/admin/all"),
   // ...existing methods...
 };
 

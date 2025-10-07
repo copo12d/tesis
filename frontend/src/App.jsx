@@ -11,6 +11,9 @@ import ForgotPassword from './features/auth/pages/ForgotPassword';
 import AccountLocked from './features/auth/pages/AccountLocked';
 import MobileReportPage from './features/mobile/pages/MobileReportPage';
 import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
+import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeList";
+import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
+import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
 
 
 import MainLayout from './layouts/MainLayout';
@@ -40,6 +43,9 @@ function App() {
             <Route path="users/new" element={<UserCreate />} />
             <Route path='users/all' element={<UsersList />} />
             <Route path='users/edit/:id' element={<UserEdit />} />
+            <Route path="/container-type/new" element={<ContainerTypeCreate />} />
+            <Route path="/container-type/edit/:id" element={<ContainerTypeEdit />} />
+            <Route path="/container-type/list" element={<ContainerTypeList />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route
