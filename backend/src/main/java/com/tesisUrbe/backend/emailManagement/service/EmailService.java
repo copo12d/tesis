@@ -115,13 +115,13 @@ public class EmailService implements IEmailService {
         }
 
         String callerUsername = auth.getName();
-        Optional<User> userOpt = userService.findPublicUserById(id);
+        Optional<User> userOpt = userService.findUnverifiedUserById(id);
 
         if (userOpt.isEmpty()) {
             return new ApiResponse<>(
-                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Usuario no público o no encontrado"),
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Usuario ya verificado"),
                     null,
-                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no público o no encontrado"))
+                    List.of(new ApiError("USER_NOT_FOUND", null, "Usuario ya verificado"))
             );
         }
 
