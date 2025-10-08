@@ -52,11 +52,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     boolean isVerifiedUserById(@Param("id") Long id);
 
-    Optional<User> findByIdAndVerifiedTrue(Long id);
+    Optional<User> findByIdAndVerifiedFalse(Long id);
 
     @Query("""
-        SELECT u.fullName AS fullName, 
-               u.userName AS userName, 
+        SELECT u.fullName AS fullName,
+               u.userName AS userName,
                u.password AS password, 
                r.name AS roleName,
                u.accountLocked AS accountLocked,

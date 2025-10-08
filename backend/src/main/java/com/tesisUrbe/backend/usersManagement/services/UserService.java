@@ -290,8 +290,8 @@ public class UserService implements UserDetailsService {
         return Optional.empty();
     }
 
-    public Optional<User> findPublicUserById(Long id) {
-        return userRepository.findByIdAndVerifiedTrue(id);
+    public Optional<User> findUnverifiedUserById(Long id) {
+        return userRepository.findByIdAndVerifiedFalse(id);
     }
 
     @Transactional(readOnly = true)
