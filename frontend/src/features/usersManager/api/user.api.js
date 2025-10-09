@@ -35,6 +35,8 @@ export const UsersAPI = {
       },
     }),
   getRoles: () => api.get("/role/admin/all"),
+  getProfile: (id) => api.get(`/users/public/${id}`),
+  updateProfile: (id, payload) => api.put(`/users/public/${id}`, payload),
   // ...existing methods...
 };
 
