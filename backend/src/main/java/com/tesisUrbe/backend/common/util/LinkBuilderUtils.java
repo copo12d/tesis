@@ -7,9 +7,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LinkBuilderUtils {
 
-    public static String buildEmailLink(String domain, String pathSegment, Long userId) {
+    public static String buildEmailLink(String domain, String apiVersion,String pathSegment, Long userId, String token) {
         return UriComponentsBuilder.fromUriString(domain)
-                .path("/email/public/" + pathSegment + "/" + userId + "/token")
+                .path(apiVersion +"/email/public/" + pathSegment + "/" + userId + "/" + token)
                 .toUriString();
     }
 }
