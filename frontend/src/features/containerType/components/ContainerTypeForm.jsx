@@ -20,7 +20,13 @@ export function ContainerTypeForm({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setForm(initialValues);
+    if (
+      form.name !== initialValues.name ||
+      form.description !== initialValues.description
+    ) {
+      setForm(initialValues);
+    }
+    // eslint-disable-next-line
   }, [initialValues]);
 
   const iconAddonProps = { bg: "teal.700", px: 3 };
@@ -91,7 +97,7 @@ export function ContainerTypeForm({
           type="submit"
           colorPalette="green"
           size="lg"
-          isLoading={loading}
+          loading={loading}
           loadingText="Guardando..."
           spinnerPlacement="end"
           alignSelf="flex-end"

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useMemo, useEffect } from "react";
 import { useContainerType } from "../hooks/useContainerType";
 import { ContainerTypeForm } from "../components/ContainerTypeForm";
-import { useEffect } from "react";
 
 export function ContainerTypeEdit() {
   const { id } = useParams();
@@ -19,6 +19,14 @@ export function ContainerTypeEdit() {
     fetchContainerType();
   }, [id, fetchContainerType]);
 
+  const initialValues = useMemo(
+    () => ({
+      name: containerType?.name || "",
+      description: containerType?.description || "",
+    }),
+    [containerType?.name, containerType?.description]
+  );
+
   const handleSubmit = async (form) => {
     const ok = await updateContainerType(form);
     if (ok) navigate("/container-type/list");
@@ -34,7 +42,7 @@ export function ContainerTypeEdit() {
 
   return (
     <ContainerTypeForm
-      initialValues={containerType || { name: "", description: "" }}
+      initialValues={initialValues}
       loading={loading || updating}
       onSubmit={handleSubmit}
       submitText="Actualizar"

@@ -104,6 +104,7 @@ html {
   display: flex;
   margin-bottom: 12px;
   flex-wrap: wrap;
+  width: 80%;
 }
 
 .dashboard-card {

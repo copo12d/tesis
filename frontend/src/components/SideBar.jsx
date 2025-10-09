@@ -24,8 +24,8 @@ import { useNavigate } from "react-router-dom";
 
 
 const Sidebar = () => {
-  const navigate = useNavigate()
-  const { logout, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user, setSessionExpired } = useContext(AuthContext);
 
   const navItems = [
     {
@@ -97,7 +97,7 @@ const Sidebar = () => {
               borderRadius="md"
               display="flex"
               gap={3}
-              onClick={logout}
+              onClick={() => setSessionExpired(true)} // Cambia esto para probar el modal
             >
               <Box as={FiLogOut} boxSize={5} opacity={0.9} />
               Logout

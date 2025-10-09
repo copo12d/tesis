@@ -18,14 +18,8 @@ export default function AdminSection({ user }) {
     user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPERUSER";
   if (!isAdmin) return null;
 
-  const userSubItems = [
-    { label: "Listado", icon: FiList, action: () => navigate("/users/all") },
-    { label: "Crear", icon: FiUsers, action: () => navigate("/users/new") },
-    { label: "Reportes", icon: FiDownload },
-  ];
-
   const containerSubItems = [
-    { label: "Lista de tipos", icon: TbListDetails, action: () => navigate("/container-type/list") },
+    { label: "Tipos de contenedores", icon: TbListDetails, action: () => navigate("/container-type/list") },
     { label: "Tipo de contenedor", icon: TbRecycle, action: () => navigate("/container-type/new") },
     { label: "Contenedor 1", icon: FiBox },
     { label: "Contenedor 2", icon: FiBox },
@@ -34,10 +28,9 @@ export default function AdminSection({ user }) {
 
   const adminItems = [
     {
-      type: "popover",
-      label: "Usuarios ▸",
+      label: "Usuarios",
       icon: FiUsers,
-      subItems: userSubItems,
+      action: () => navigate("/users/all"),
     },
     {
       type: "popover",
@@ -139,7 +132,16 @@ export default function AdminSection({ user }) {
             }
             const ItemIcon = item.icon;
             return (
-              <Button key={item.label} {...baseBtnProps}>
+              <Button
+                key={item.label}
+                {...baseBtnProps}
+                onClick={() => {
+                  if (item.action) {
+                    item.action();
+                    setOpen(false);
+                  }
+                }}
+              >
                 {ItemIcon && <Box as={ItemIcon} boxSize={4} opacity={0.9} />}
                 {item.label}
               </Button>

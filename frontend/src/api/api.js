@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { refreshToken } from '../service/RefreshToken';
-import { Navigate } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:8080/api/v1';
 
@@ -39,16 +38,9 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch {
-        
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        
-        window.location.href = '/login';
-        
+        window.sessionExpired = true; // O usa un event emitter
+        return Promise.reject(error);
       }
-
-
     }
     return Promise.reject(error);
   }

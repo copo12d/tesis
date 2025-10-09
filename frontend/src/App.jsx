@@ -14,7 +14,7 @@ import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
 import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeList";
 import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
 import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
-
+import { UserProfileEdit } from './features/usersManager/pages/UserProfileEdit';
 
 import MainLayout from './layouts/MainLayout';
 
@@ -22,7 +22,7 @@ import PrivateRoute from './routes/PrivateRoute';
 import PublicRoute from './routes/PublicRoute';
 import MobileRoute from './routes/MobileRoute';
 
-import AuthProvider from './context/AuthProvider';
+import { AuthProvider } from './context/AuthProvider';
 
 
 function App() {
@@ -46,6 +46,7 @@ function App() {
             <Route path="/container-type/new" element={<ContainerTypeCreate />} />
             <Route path="/container-type/edit/:id" element={<ContainerTypeEdit />} />
             <Route path="/container-type/list" element={<ContainerTypeList />} />
+            <Route path="/profile" element={<UserProfileEdit />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route
