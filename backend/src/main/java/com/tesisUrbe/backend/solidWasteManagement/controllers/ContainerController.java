@@ -70,14 +70,15 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @GetMapping(value = "/admin/qr/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<Resource> getContainerQrById(@PathVariable Long id) {
-        byte[] png = containerService.generateContainerQrById(id);
-        if (png == null) {
-            return ResponseEntity.notFound().build();
+    @GetMapping("/admin/qr/{id}")
+    public ResponseEntity<ApiResponse<byte[]>> getContainerQrById(@PathVariable Long id) {
+        ApiResponse<byte[]> response = containerService.generateContainerQrById(id);
+
+        if (response.data() == null || response.data().length == 0) {
+            return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
         }
-        ByteArrayResource resource = new ByteArrayResource(png);
-        return ResponseEntity.ok().contentLength(png.length).contentType(MediaType.IMAGE_PNG).body(resource);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }
