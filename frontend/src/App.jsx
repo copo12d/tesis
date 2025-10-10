@@ -15,6 +15,9 @@ import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeL
 import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
 import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
 import { UserProfileEdit } from './features/usersManager/pages/UserProfileEdit';
+import { ReportsPage } from './features/Reports/pages/ReportsPage';
+import { ContainerList } from "./features/container/pages/ContainerList";
+import { ContainerCreate } from "./features/container/pages/ContainerCreate";
 
 import MainLayout from './layouts/MainLayout';
 
@@ -47,6 +50,9 @@ function App() {
             <Route path="/container-type/edit/:id" element={<ContainerTypeEdit />} />
             <Route path="/container-type/list" element={<ContainerTypeList />} />
             <Route path="/profile" element={<UserProfileEdit />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/container/list" element={<ContainerList />} />
+            <Route path="container/new" element={<ContainerCreate />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route
