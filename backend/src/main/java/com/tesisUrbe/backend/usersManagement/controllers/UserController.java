@@ -40,6 +40,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
+    @GetMapping("/public/idByUsername/{username}")
+    public ResponseEntity<ApiResponse<Long>> getIdByUsername(@PathVariable String username) {
+        ApiResponse<Long> response = userService.getIdByUserName(username);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
     @GetMapping("/admin/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<AdminUserDto>> getAdminUserById(@PathVariable Long id) {

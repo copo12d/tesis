@@ -36,6 +36,8 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.Map;
 
 @Service
@@ -403,29 +405,40 @@ public class ContainerService {
     }
 
     @Transactional(readOnly = true)
-    public byte[] generateContainerQrById(Long id) {
+    public ApiResponse<byte[]> generateContainerQrById(Long id) {
         Optional<Container> containerOpt = containerRepository.findById(id);
+
         if (containerOpt.isEmpty() || containerOpt.get().isDeleted()) {
-            return null;
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Contenedor no encontrado o eliminado"),
+                    null,
+                    List.of(new ApiError("CONTAINER_NOT_FOUND", "id", "Contenedor con ID " + id + " no fue encontrado o está eliminado"))
+            );
         }
 
         Container container = containerOpt.get();
-
-        // Build the frontend URL from injected property
         String path = String.format("/containers/%d", container.getId());
         String target = frontendBaseUrl + path;
 
         try {
             int size = frontendQrSize;
-
             Map<EncodeHintType, Object> hints = Map.of(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8.name());
             BitMatrix bitMatrix = new MultiFormatWriter().encode(target, BarcodeFormat.QR_CODE, size, size, hints);
+
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
-                return baos.toByteArray();
+                return new ApiResponse<>(
+                        errorFactory.buildMeta(HttpStatus.OK, "Código QR generado exitosamente"),
+                        baos.toByteArray(),
+                        null
+                );
             }
         } catch (Exception e) {
-            return null;
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el código QR"),
+                    null,
+                    List.of(new ApiError("QR_GENERATION_ERROR", null, "Error interno al generar el código QR"))
+            );
         }
     }
 

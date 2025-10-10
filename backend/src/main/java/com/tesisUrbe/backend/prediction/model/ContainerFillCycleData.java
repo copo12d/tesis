@@ -46,6 +46,8 @@ public class ContainerFillCycleData {
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
 
+    private String reporterIp;
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime noticeTime = LocalDateTime.now();

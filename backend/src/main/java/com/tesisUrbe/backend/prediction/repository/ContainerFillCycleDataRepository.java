@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
@@ -26,5 +27,9 @@ public interface ContainerFillCycleDataRepository extends JpaRepository<Containe
             @Param("container") Container container,
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
             @Param("monthOfYear") Month monthOfYear);
+
+    boolean existsByContainerAndReporterIpAndTimeFillingNoticeAfter(Container container, String ip, LocalDateTime after);
+
+    long countDistinctReporterIpByContainerAndTimeFillingNoticeAfter(Container container, LocalDateTime after);
 
 }
