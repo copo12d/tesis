@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ContainerTypeRepository extends JpaRepository<ContainerType, Long> {
 
     boolean existsByName(String name);
@@ -27,4 +29,7 @@ public interface ContainerTypeRepository extends JpaRepository<ContainerType, Lo
         WHERE ct.deleted = false
     """)
     Page<ContainerType> findAllActive(Pageable pageable);
+
+    @Query("SELECT ct FROM ContainerType ct WHERE ct.deleted = false")
+    List<ContainerType> findAllActive();
 }
