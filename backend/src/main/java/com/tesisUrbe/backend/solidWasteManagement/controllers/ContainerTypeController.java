@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("${api.base-path}/container-type")
@@ -49,6 +51,22 @@ public class ContainerTypeController {
                 containerTypeService.getAllContainerTypes(page, size, sortBy, sortDir, name, id);
 
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("admin/all-list")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<List<ContainerTypeResponseDto>>> getAllContainerTypes() {
+        ApiResponse<List<ContainerTypeResponseDto>> response = containerTypeService.getAllContainerTypes();
+
+        if (response.data() == null || response.data().isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.valueOf(response.meta().status()))
+                    .body(response);
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 
     @PutMapping("/admin/update/{id}")
