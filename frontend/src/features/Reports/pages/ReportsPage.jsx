@@ -11,10 +11,11 @@ import { toast } from "react-hot-toast";
 import { FiUsers, FiBox } from "react-icons/fi";
 import { MdBatchPrediction } from "react-icons/md";
 import { useState } from "react";
+import { useDownloadUsersReport } from "../hooks/useDownloadUsersReport";
+import { useDownloadContainersReport } from "../hooks/useDownloadContainersReport";
 import ReportDialog from "../components/ReportDialog";
-import { useDownloadUsersReport } from "../hooks/useDownloadUsersReport"; // Importa el hook
 
-function downloadFile(response, filename = "reporte.pdf") {
+function downloadFile(response, filename = "reporte.xlsx") {
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement("a");
   link.href = url;
@@ -29,13 +30,23 @@ export function ReportsPage() {
   const [sortBy, setSortBy] = useState("id");
   const [sortDir, setSortDir] = useState("ASC");
   const { downloadUsersReport, loading: loadingUsers } = useDownloadUsersReport();
+  const { downloadContainersReport, loading: loadingContainers } = useDownloadContainersReport();
 
-  // Define las acciones aquí para pasarlas como onClick
   const handleDownload = async (action, label, params = {}) => {
     try {
       const response = await action(params);
       downloadFile(response, `${label}.pdf`);
       toast.success(`El reporte "${label}" se ha descargado.`);
+    } catch {
+      toast.error("No se pudo descargar el reporte.");
+    }
+  };
+
+  const handleDownloadContainers = async ({ sortBy, sortDir }) => {
+    try {
+      const response = await downloadContainersReport({ sortBy, sortDir });
+      downloadFile(response, `reporte-contenedores.pdf`);
+      toast.success("El reporte de contenedores se ha descargado.");
     } catch {
       toast.error("No se pudo descargar el reporte.");
     }
@@ -61,7 +72,7 @@ export function ReportsPage() {
       icon: FiUsers,
       iconColor: "teal.600",
       dialog: false,
-      onClick: downloadUsersReport, // Usa el hook aquí
+      onClick: downloadUsersReport,
       isLoading: loadingUsers,
     },
     {
@@ -91,17 +102,12 @@ export function ReportsPage() {
                 icon={report.icon}
                 iconColor={report.iconColor}
                 label={report.label}
-                onDownload={({ sortBy, sortDir }) =>
-                  handleDownload(
-                    ReportsAPI.downloadContainers,
-                    "Reporte de Contenedores",
-                    { sortBy, sortDir }
-                  )
-                }
+                onDownload={handleDownloadContainers}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
                 sortDir={sortDir}
                 setSortDir={setSortDir}
+                loading={loadingContainers}
               />
             ) : (
               <Button

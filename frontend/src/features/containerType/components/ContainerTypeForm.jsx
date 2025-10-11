@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Stack,
   Button,
@@ -7,7 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { LiaTagSolid, LiaInfoCircleSolid } from "react-icons/lia";
-import { useState, useEffect } from "react";
+import { useContainerTypeForm } from "../hooks/useContainerTypeForm";
 
 export function ContainerTypeForm({
   initialValues = { name: "", description: "" },
@@ -16,36 +17,12 @@ export function ContainerTypeForm({
   submitText = "Guardar",
   title = "Registrar tipo de contenedor",
 }) {
-  const [form, setForm] = useState(initialValues);
-  const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (
-      form.name !== initialValues.name ||
-      form.description !== initialValues.description
-    ) {
-      setForm(initialValues);
-    }
-    // eslint-disable-next-line
-  }, [initialValues]);
+  const { form, errors, setField, handleSubmit } = useContainerTypeForm({
+    initialValues,
+    onSubmit,
+  });
 
   const iconAddonProps = { bg: "teal.700", px: 3 };
-
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let newErrors = {};
-    if (!form.name) newErrors.name = "El nombre es obligatorio";
-    if (!form.description) newErrors.description = "La descripción es obligatoria";
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0 && onSubmit) {
-      await onSubmit(form);
-    }
-  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -68,7 +45,7 @@ export function ContainerTypeForm({
               type="text"
               placeholder="Ej: Papel, Plástico, Orgánicos..."
               value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
+              onChange={(e) => setField("name", e.target.value)}
               size="lg"
               color="blackAlpha.900"
               disabled={loading}
@@ -84,7 +61,7 @@ export function ContainerTypeForm({
               type="text"
               placeholder="Describe el tipo de desecho"
               value={form.description}
-              onChange={(e) => handleChange("description", e.target.value)}
+              onChange={(e) => setField("description", e.target.value)}
               size="lg"
               color="blackAlpha.900"
               disabled={loading}

@@ -48,6 +48,11 @@ export default function ReportDialog({
     await onDownload({ sortBy, sortDir });
     setParentSortBy(sortBy);
     setParentSortDir(sortDir);
+    setOpen(false); // <-- Cierra el diálogo después de descargar
+  };
+
+  const handleCancel = () => {
+    setOpen(false); // <-- Cierra el diálogo al cancelar
   };
 
   return (
@@ -138,17 +143,19 @@ export default function ReportDialog({
               justifyContent="flex-end"
               gap={2}
             >
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline" colorPalette="teal">
-                  Cancelar
-                </Button>
-              </Dialog.ActionTrigger>
+              <Button
+                variant="outline"
+                colorPalette="teal"
+                onClick={handleCancel}
+              >
+                Cancelar
+              </Button>
               <Button colorPalette="teal" onClick={handleDownload}>
                 Descargar
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
+              <CloseButton size="sm"/>
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
