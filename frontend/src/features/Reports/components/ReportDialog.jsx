@@ -7,52 +7,63 @@ import {
   CloseButton,
   Stack,
   HStack,
+  Spinner,
 } from "@chakra-ui/react";
 import MenuSelect from "./MenuSelect";
-import { HiSortAscending } from "react-icons/hi";
 import { useState } from "react";
-
-const sortByOptions = [
-  { label: "ID", value: "id" },
-  { label: "Nombre", value: "name" },
-];
-const sortDirOptions = [
-  { label: "Ascendente", value: "ASC" },
-  { label: "Descendente", value: "DESC" },
-];
 
 export default function ReportDialog({
   icon,
   iconColor,
   label,
   onDownload,
+  loading = false, // <-- nuevo prop
   sortBy: initialSortBy,
   setSortBy: setParentSortBy,
   sortDir: initialSortDir,
   setSortDir: setParentSortDir,
+  sortByOptions = [
+    { label: "ID", value: "id" },
+    { label: "Nombre", value: "name" },
+  ],
+  sortDirOptions = [
+    { label: "Ascendente", value: "ASC" },
+    { label: "Descendente", value: "DESC" },
+  ],
+  extraFilters = [],
+  onExtraFilterChange = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const [sortBy, setSortBy] = useState(initialSortBy);
   const [sortDir, setSortDir] = useState(initialSortDir);
+  const [extraFilterValues, setExtraFilterValues] = useState(
+    extraFilters.reduce((acc, f) => ({ ...acc, [f.value]: f.default || "" }), {})
+  );
 
-  // Solo resetea cuando el dialog se abre
   const handleOpenChange = (isOpen) => {
     setOpen(isOpen);
     if (isOpen) {
       setSortBy(initialSortBy);
       setSortDir(initialSortDir);
+      setExtraFilterValues(
+        extraFilters.reduce((acc, f) => ({ ...acc, [f.value]: f.default || "" }), {})
+      );
     }
   };
 
+  // Ahora espera la descarga y cierra solo si fue exitosa
   const handleDownload = async () => {
-    await onDownload({ sortBy, sortDir });
+    const result = await onDownload({ sortBy, sortDir, ...extraFilterValues });
     setParentSortBy(sortBy);
     setParentSortDir(sortDir);
-    setOpen(false); // <-- Cierra el diálogo después de descargar
+    onExtraFilterChange(extraFilterValues);
+    if (result?.success !== false) setOpen(false); // solo cierra si no hubo error
   };
 
-  const handleCancel = () => {
-    setOpen(false); // <-- Cierra el diálogo al cancelar
+  const handleCancel = () => setOpen(false);
+
+  const handleExtraFilterChange = (key, val) => {
+    setExtraFilterValues((prev) => ({ ...prev, [key]: val }));
   };
 
   return (
@@ -63,7 +74,6 @@ export default function ReportDialog({
           h="200px"
           borderRadius="xl"
           boxShadow="md"
-          bgGradient="linear(to-r, #c6ea8d, #feffb8, #c6ea8d)"
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -124,15 +134,25 @@ export default function ReportDialog({
                   value={sortBy}
                   options={sortByOptions}
                   onChange={setSortBy}
-                  icon={<HiSortAscending />}
+                  icon={sortByOptions.find(opt => opt.icon)?.icon}
                 />
                 <MenuSelect
                   label="Dirección de orden"
                   value={sortDir}
                   options={sortDirOptions}
                   onChange={setSortDir}
-                  icon={<HiSortAscending />}
+                  icon={sortDirOptions.find(opt => opt.icon)?.icon}
                 />
+                {extraFilters.map((filter) => (
+                  <MenuSelect
+                    key={filter.value}
+                    label={filter.label}
+                    value={extraFilterValues[filter.value]}
+                    options={filter.options}
+                    onChange={(val) => handleExtraFilterChange(filter.value, val)}
+                    icon={filter.icon}
+                  />
+                ))}
               </Stack>
             </Dialog.Body>
             <Dialog.Footer
@@ -147,15 +167,23 @@ export default function ReportDialog({
                 variant="outline"
                 colorPalette="teal"
                 onClick={handleCancel}
+                px={2}
+                disabled={loading}
               >
                 Cancelar
               </Button>
-              <Button colorPalette="teal" onClick={handleDownload}>
+              <Button
+                colorPalette="teal"
+                onClick={handleDownload}
+                px={2}
+                loading={loading}
+                loadingText="Descargando..."
+                disabled={loading}
+              >
                 Descargar
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm"/>
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
