@@ -6,41 +6,43 @@ import {
   Portal,
   Popover,
 } from "@chakra-ui/react";
-import { FiShield } from "react-icons/fi";
+import { FiShield, FiUsers, FiBox, FiDownload, FiUpload, FiList, FiFileText } from "react-icons/fi";
+import { useNavigate } from "react-router-dom"; // <-- agregado
 
 export default function AdminSection({ user }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate(); // <-- agregado
 
   const isAdmin =
     user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPERUSER";
   if (!isAdmin) return null;
 
   const userSubItems = [
-    { label: "Listado" },
-    { label: "Crear" },
-    { label: "Importar" },
-    { label: "Exportar" },
+    { label: "Listado", icon: FiList, action: () => navigate("/users/all") },
+    { label: "Crear", icon: FiUsers, action: () => navigate("/users/new") },
+    { label: "Reportes", icon: FiDownload },
   ];
-  
+
   const containerSubItems = [
-    { label: "Contenedor 1" },
-    { label: "Contenedor 2" },
-    { label: "Importar" },
-    { label: "Exportar" },
+    { label: "Contenedor 1", icon: FiBox },
+    { label: "Contenedor 2", icon: FiBox },
+    { label: "Reportes", icon: FiUpload },
   ];
-  
+
   const adminItems = [
     {
       type: "popover",
       label: "Usuarios ▸",
+      icon: FiUsers,
       subItems: userSubItems,
     },
     {
       type: "popover",
       label: "Contenedores",
+      icon: FiBox,
       subItems: containerSubItems,
     },
-    { label: "Logs" },
+    { label: "Logs", icon: FiFileText },
   ];
 
   const baseBtnProps = {
@@ -49,6 +51,9 @@ export default function AdminSection({ user }) {
     color: "white",
     fontSize: "sm",
     _hover: { bg: "whiteAlpha.200" },
+    display: "flex",
+    gap: 2,
+    alignItems: "center",
   };
 
   return (
@@ -79,6 +84,7 @@ export default function AdminSection({ user }) {
         <VStack mt={1} pl={6} align="stretch" spacing={1}>
           {adminItems.map(item => {
             if (item.type === "popover") {
+              const ItemIcon = item.icon;
               return (
                 <Popover.Root
                   key={item.label}
@@ -88,7 +94,10 @@ export default function AdminSection({ user }) {
                   }}
                 >
                   <Popover.Trigger asChild>
-                    <Button {...baseBtnProps}>{item.label}</Button>
+                    <Button {...baseBtnProps}>
+                      {ItemIcon && <Box as={ItemIcon} boxSize={4} opacity={0.9} />}
+                      {item.label}
+                    </Button>
                   </Popover.Trigger>
                   <Portal>
                     <Popover.Positioner>
@@ -100,14 +109,24 @@ export default function AdminSection({ user }) {
                         borderRadius="md"
                       >
                         <VStack align="stretch" spacing={1}>
-                          {item.subItems.map(sub => (
-                            <Button
-                              key={sub.label}
-                              {...baseBtnProps}
-                            >
-                              {sub.label}
-                            </Button>
-                          ))}
+                          {item.subItems.map(sub => {
+                            const SubIcon = sub.icon;
+                            return (
+                              <Button
+                                key={sub.label}
+                                {...baseBtnProps}
+                                onClick={() => {
+                                  if (sub.action) {
+                                    sub.action();
+                                    setOpen(false); // cerrar solo si navega
+                                  }
+                                }}
+                              >
+                                {SubIcon && <Box as={SubIcon} boxSize={4} opacity={0.9} />}
+                                {sub.label}
+                              </Button>
+                            );
+                          })}
                         </VStack>
                       </Popover.Content>
                     </Popover.Positioner>
@@ -115,8 +134,10 @@ export default function AdminSection({ user }) {
                 </Popover.Root>
               );
             }
+            const ItemIcon = item.icon;
             return (
               <Button key={item.label} {...baseBtnProps}>
+                {ItemIcon && <Box as={ItemIcon} boxSize={4} opacity={0.9} />}
                 {item.label}
               </Button>
             );
