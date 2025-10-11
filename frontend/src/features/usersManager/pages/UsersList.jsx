@@ -32,6 +32,7 @@ export function UsersList() {
     setSearchTerm,
     searchType,
     setSearchType,
+    refetch,
   } = useUserAdvancedSearch({
     initialPage: 1,
     pageSize: 10,
@@ -50,7 +51,7 @@ export function UsersList() {
   const handleDelete = async (row) => {
     const ok = await remove(row.id);
     if (ok) {
-      // Opcional: refetch o feedback
+      refetch();
     }
   };
 

@@ -45,7 +45,6 @@ export default function AdminSection({ user }) {
       icon: TbRecycle, // Aquí también usa TbRecycle para el grupo
       subItems: containerSubItems,
     },
-    { label: "Logs", icon: FiFileText },
     {
       label: "Reportes",
       icon: FiUpload,
