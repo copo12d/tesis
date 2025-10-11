@@ -70,6 +70,7 @@ export function Login() {
                   size="lg"
                   color={"blackAlpha.900"}
                   w="100%"
+                  pl = {2}
                   _placeholder={{ pl: 2 }}
                 />
               </InputGroup>
@@ -92,6 +93,7 @@ export function Login() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  pl = {2}
                   css={{ "--error-color": "red" }}
                   
                 />
