@@ -10,6 +10,6 @@ export const ReportsAPI = {
   downloadContainers: (params = {}) =>
     api.get("/reports/admin/containers/all", {
       responseType: "blob",
-      params: { sortBy: "id", sortDir: "ASC", ...params },
+      params: { sortBy: "createAt", sortDir: "ASC", ...params },
     }),
 };

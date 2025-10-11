@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useMemo, useEffect } from "react";
 import { useContainerType } from "../hooks/useContainerType";
 import { ContainerTypeForm } from "../components/ContainerTypeForm";
 
 export function ContainerTypeEdit() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     containerType,
     loading,
@@ -13,32 +14,18 @@ export function ContainerTypeEdit() {
     fetchContainerType,
     error,
   } = useContainerType(id);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchContainerType();
+    fetchContainerType(id);
   }, [id, fetchContainerType]);
 
-  const initialValues = useMemo(
-    () => ({
-      name: containerType?.name || "",
-      description: containerType?.description || "",
-    }),
-    [containerType?.name, containerType?.description]
-  );
+  // Asegúrate de que initialValues nunca sea null/undefined
+  const initialValues = containerType || { name: "", description: "" };
 
   const handleSubmit = async (form) => {
     const ok = await updateContainerType(form);
     if (ok) navigate("/container-type/list");
   };
-
-  if (error) {
-    return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <p>Error cargando tipo de contenedor.</p>
-      </div>
-    );
-  }
 
   return (
     <ContainerTypeForm
