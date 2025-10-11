@@ -56,6 +56,7 @@ export default function ForgotPassword() {
                   w="100%"
                   _placeholder={{ pl: 2 }}
                   autoFocus
+                  pl={2}
                 />
               </InputGroup>
             </Field.Root>

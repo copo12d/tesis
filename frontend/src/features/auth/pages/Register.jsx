@@ -18,7 +18,7 @@ export function Register() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const { register, loading, error } = useRegister();
+  const { register, loading } = useRegister();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -50,6 +50,7 @@ export function Register() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  pl={2}
                 />
               </InputGroup>
 
@@ -67,6 +68,7 @@ export function Register() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  pl={2}
                 />
               </InputGroup>
 
@@ -85,6 +87,7 @@ export function Register() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  pl={2}
                 />
               </InputGroup>
 
@@ -103,7 +106,7 @@ export function Register() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
-                  
+                  pl={2}
                 />
               </InputGroup>
             </Field.Root>
