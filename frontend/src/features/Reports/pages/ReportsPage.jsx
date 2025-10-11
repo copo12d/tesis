@@ -52,6 +52,16 @@ export function ReportsPage() {
     }
   };
 
+  const handleDownloadUsers = async ({ sortBy, sortDir }) => {
+    try {
+      const response = await downloadUsersReport({ sortBy, sortDir });
+      downloadFile(response, "reporte_usuarios.pdf");
+      toast.success("El reporte de usuarios se ha descargado.");
+    } catch {
+      // El toast de error ya lo muestra el hook
+    }
+  };
+
   const reports = [
     {
       label: "Reporte Batch 1",
@@ -71,15 +81,33 @@ export function ReportsPage() {
       label: "Reporte de Usuarios",
       icon: FiUsers,
       iconColor: "teal.600",
-      dialog: false,
-      onClick: downloadUsersReport,
-      isLoading: loadingUsers,
+      dialog: true, // Cambia a true para usar el dialog
+      onDownload: handleDownloadUsers,
+      loading: loadingUsers,
+      sortByOptions: [
+        { label: "ID", value: "id" },
+        { label: "Usuario", value: "user" },
+      ],
+      sortDirOptions: [
+        { label: "Ascendente", value: "ASC" },
+        { label: "Descendente", value: "DESC" },
+      ],
     },
     {
       label: "Reporte de Contenedores",
       icon: FiBox,
       iconColor: "teal.700",
       dialog: true,
+      onDownload: handleDownloadContainers,
+      loading: loadingContainers,
+      sortByOptions: [
+        { label: "Serial", value: "serial" },
+        { label: "Nombre", value: "name" },
+      ],
+      sortDirOptions: [
+        { label: "Ascendente", value: "ASC" },
+        { label: "Descendente", value: "DESC" },
+      ],
     },
   ];
 
@@ -102,12 +130,14 @@ export function ReportsPage() {
                 icon={report.icon}
                 iconColor={report.iconColor}
                 label={report.label}
-                onDownload={handleDownloadContainers}
+                onDownload={report.onDownload}
+                loading={report.loading}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
                 sortDir={sortDir}
                 setSortDir={setSortDir}
-                loading={loadingContainers}
+                sortByOptions={report.sortByOptions}
+                sortDirOptions={report.sortDirOptions}
               />
             ) : (
               <Button
