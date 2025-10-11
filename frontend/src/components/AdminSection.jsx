@@ -56,6 +56,7 @@ export default function AdminSection({ user }) {
   const baseBtnProps = {
     variant: "ghost",
     justifyContent: "flex-start",
+    px: 4,
     color: "white",
     fontSize: "sm",
     _hover: { bg: "whiteAlpha.200" },

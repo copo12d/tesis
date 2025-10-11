@@ -45,7 +45,7 @@ export function GenericTable({
   // ---- Actions column ----
   renderActions,
   actionHeader = "Acciones",
-  headerBg = "gray.800",
+  headerBg = "teal.700",
   headerColor = "whiteAlpha.900",
   headerBorderColor = "gray.700",
   borderColor = "blackAlpha.900",
@@ -54,7 +54,7 @@ export function GenericTable({
   rowHoverBg = "purple.50",
   stripe = false,
   stripeBg = "gray.50",
-  cellColor = "blackAlpha.800",
+  cellColor = "black",
   actionAlignment = "center",
   // ---- Card props ----
   cardTitle,
@@ -81,16 +81,16 @@ export function GenericTable({
   menuItems = [],
   menuButtonText = "Open",
   searchTerm = "",
-  onSearchTermChange = () => {},
+  onSearchTermChange = () => { },
   searchType = "",
-  onSearchTypeChange = () => {},
+  onSearchTypeChange = () => { },
 }) {
   const paginatedItems =
     pagination && totalPages
       ? items
       : pagination
-      ? items.slice((page - 1) * pageSize, page * pageSize)
-      : items;
+        ? items.slice((page - 1) * pageSize, page * pageSize)
+        : items;
   const hasActions = typeof renderActions === "function";
 
   const TableContent = (
@@ -104,12 +104,14 @@ export function GenericTable({
             borderColor={borderColor}
             bg={bodyBg}
           >
-            <Table.Caption color="blackAlpha.600">{caption}</Table.Caption>
+            <Table.Caption color={cellColor} mt={2}>{caption}</Table.Caption>
             <Table.Header>
               <Table.Row bg={headerBg} color={headerColor}>
                 {headers.map((h) => (
                   <Table.ColumnHeader
                     key={h.key}
+                    px={4}
+                    py={2}
                     textAlign={h.textAlign || "start"}
                     color={headerColor}
                     borderColor={headerBorderColor}
@@ -135,7 +137,7 @@ export function GenericTable({
                     colSpan={headers.length + (hasActions ? 1 : 0)}
                     bg={bodyBgCell}
                   >
-                    <Text fontSize="sm" color="gray.500" textAlign="center">
+                    <Text fontSize="sm" color={cellColor} textAlign="center">
                       Sin registros
                     </Text>
                   </Table.Cell>
@@ -152,6 +154,8 @@ export function GenericTable({
                     {headers.map((h) => (
                       <Table.Cell
                         key={h.key}
+                        px={4}
+                        py={2}
                         textAlign={h.textAlign || "start"}
                         color={cellColor}
                         borderColor="gray.200"
@@ -179,7 +183,7 @@ export function GenericTable({
   );
 
   return (
-    <Box p={4} w="100%" h="100%">
+    <Box mt={14} p={4} w="100%" h="100%">
       <Card.Root
         w="100%"
         maxW="100%"
@@ -212,15 +216,18 @@ export function GenericTable({
               <Menu.Trigger asChild gap={"unset"}>
                 <Button
                   variant="solid"
-                  borderLeftRadius={"10px"}
+                  borderLeftRadius="10px"
                   borderRightRadius={0}
-                  hover={{ bg: "gray.100" }}
-                  color={"gray.700"}
-                  bg={"gray.200"}
-                  px={1}
+                  bg={headerBg}
+                  color="white"
+                  px={2}
+                  _hover={{ bg: cardHeaderBg }}
                   focusRing={false}
                 >
-                  <LuChevronDown /> {menuButtonText}
+                  <Flex align="center" gap={2}>
+                    <LuChevronDown />
+                    {menuButtonText}
+                  </Flex>
                 </Button>
               </Menu.Trigger>
               <Portal>
@@ -261,14 +268,17 @@ export function GenericTable({
               bg="white"
               fontSize="sm"
               color={"blackAlpha.800"}
+              pl={2}
               value={searchTerm}
               onChange={onSearchTermChange} // <-- IMPORTANTE
             />
             <IconButton
               borderRightRadius={"10px"}
               borderLeftRadius={0}
-              bg="cyan.300"
+              color="white"
+              bg="teal.700"
               aria-label="Buscar"
+              _hover={{ bg: cardHeaderBg }}
             >
               <FaSearch />
             </IconButton>
@@ -277,7 +287,7 @@ export function GenericTable({
             + Añadir
           </Button>
         </Flex>
-        <Card.Body p={3}>
+        <Card.Body p={6}>
           {TableContent}
           {pagination && (
             <Box mt={3} display="flex" justifyContent="center">
@@ -299,7 +309,12 @@ export function GenericTable({
                         key={pageObj.value}
                         variant={{ base: "ghost", _selected: "outline" }}
                         aria-label={`Página ${pageObj.value}`}
+                        color={cellColor}
                         isActive={pageObj.selected}
+                        _hover={{
+                          bg: headerBg,         
+                          color: headerColor,      
+                        }}
                       >
                         {pageObj.value}
                       </IconButton>
