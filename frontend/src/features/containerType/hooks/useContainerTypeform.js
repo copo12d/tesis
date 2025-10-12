@@ -20,6 +20,18 @@ export function useContainerTypeForm({ initialValues = {}, onSubmit }) {
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  const validate = (values = form) => {
+    const newErrors = {};
+    if (!values.name || values.name.toString().trim() === "") {
+      newErrors.name = "El nombre es obligatorio";
+    }
+    if (!values.description || values.description.toString().trim() === "") {
+      newErrors.description = "La descripción es obligatoria";
+    }
+    setErrors(newErrors);
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
@@ -36,5 +48,6 @@ export function useContainerTypeForm({ initialValues = {}, onSubmit }) {
     errors,
     setField,
     handleSubmit,
+    validate,
   };
 }

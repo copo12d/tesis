@@ -6,7 +6,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { LiaTagSolid, LiaInfoCircleSolid } from "react-icons/lia";
-import { useContainerTypeForm } from "../hooks/useContainerTypeForm";
+import { useContainerTypeForm } from "../hooks/useContainerTypeform";
 import { IconInputField } from "@/components/ui/IconInputField";
 import { toast } from "react-hot-toast";
 
@@ -17,11 +17,15 @@ export function ContainerTypeForm({
   submitText = "Guardar",
   title,
 }) {
-  const { form, errors, setField, handleSubmit, validate } =
-    useContainerTypeForm({ initialValues, onSubmit });
+  const {
+    form,
+    errors,
+    setField,
+    handleSubmit,
+    validate,
+  } = useContainerTypeForm({ initialValues, onSubmit });
 
   const iconAddonProps = { bg: "teal.700", px: 3 };
-
   const isEdit = !!initialValues?.id;
 
   const handleFieldChange = (name, value) => {
@@ -50,7 +54,7 @@ export function ContainerTypeForm({
       mx="auto"
       mt={6}
     >
-      {/* Encabezado verde */}
+      {/* Encabezado */}
       <Box
         bg="green.600"
         color="white"
@@ -65,7 +69,7 @@ export function ContainerTypeForm({
         </Text>
       </Box>
 
-      {/* Contenido del formulario */}
+      {/* Formulario */}
       <Box px={6} py={6}>
         <form onSubmit={handleValidatedSubmit}>
           <Stack spacing={6}>

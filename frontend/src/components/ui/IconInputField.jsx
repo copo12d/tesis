@@ -30,7 +30,7 @@ export function IconInputField({
           onChange={onChange}
           size={size}
           color="blackAlpha.900"
-          isDisabled={disabled}
+          disabled={disabled} // ✅ corregido aquí
           {...inputProps}
         />
       </InputGroup>
