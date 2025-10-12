@@ -1,11 +1,9 @@
 import {
   Stack,
   Button,
-  Input,
-  InputGroup,
-  Field,
   Text,
   NativeSelect,
+  Field,
 } from "@chakra-ui/react";
 import {
   LiaUser,
@@ -17,6 +15,7 @@ import { useUserForm } from "../hooks/useUserForm";
 import { availableRolesFor } from "../api/user.api";
 import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
+import { IconInputField } from "@/components/ui/IconInputField";
 
 export function UserForm({
   loading = false,
@@ -25,10 +24,9 @@ export function UserForm({
   onSubmit,
   submitText = "Guardar",
   title,
-  fields, // <-- nuevo prop opcional
+  fields,
 }) {
   const { user } = useContext(AuthContext);
-
   const roles = availableRolesFor(user?.role);
 
   const {
@@ -40,9 +38,6 @@ export function UserForm({
   } = useUserForm({ initialValues, includeRole, onSubmit });
 
   const busy = loading;
-
-  const iconAddonProps = { bg: "teal.700", px: 3 };
-
   const isEdit = !!initialValues?.id;
 
   const FIELDS = [
@@ -77,11 +72,10 @@ export function UserForm({
       icon: <LiaLockSolid />,
       type: "password",
       autoComplete: isEdit ? "off" : "new-password",
-      required: !isEdit, // Solo requerido si es creación
+      required: !isEdit,
     },
   ];
 
-  // Filtra los campos si se pasa el prop fields
   const filteredFields = fields
     ? FIELDS.filter((f) => fields.includes(f.name))
     : FIELDS;
@@ -94,7 +88,7 @@ export function UserForm({
         bg="whiteAlpha.900"
         boxShadow="md"
         w="100%"
-        h={"100vh"}
+        h="100vh"
       >
         {title && (
           <Text fontSize="2xl" fontWeight="bold" mb={2} color="black">
@@ -103,27 +97,26 @@ export function UserForm({
         )}
 
         {filteredFields.map((f) => (
-          <Field.Root key={f.name} required={f.required} invalid={!!errors[f.name]}>
-            <Field.Label color="black">{f.label}</Field.Label>
-            <InputGroup
-              startAddon={f.icon}
-              startAddonProps={iconAddonProps}
-            >
-              <Input
-                type={f.type}
-                placeholder={f.placeholder}
-                value={form[f.name]}
-                onChange={(e) => setField(f.name, e.target.value)}
-                size="lg"
-                color="blackAlpha.900"
-                autoComplete={f.autoComplete}
-                isDisabled={busy}
-              />
-            </InputGroup>
-            {errors[f.name] && (
-              <Field.ErrorText>{errors[f.name]}</Field.ErrorText>
-            )}
-          </Field.Root>
+          <IconInputField
+            key={f.name}
+            label={f.label}
+            name={f.name}
+            value={form[f.name]}
+            onChange={(e) => setField(f.name, e.target.value)}
+            placeholder={f.placeholder}
+            icon={f.icon}
+            iconProps={{ bg: "teal.700", px: 3 }}
+            type={f.type}
+            required={f.required}
+            disabled={busy}
+            error={errors[f.name]}
+            inputProps={{
+              autoComplete: f.autoComplete,
+              w: "100%",
+              pl: 2,
+              _placeholder: { pl: 2 },
+            }}
+          />
         ))}
 
         {includeRoleComputed && (
@@ -158,7 +151,7 @@ export function UserForm({
           type="submit"
           colorPalette="green"
           size="lg"
-          loading={busy}
+          isLoading={busy}
           loadingText="Guardando..."
           spinnerPlacement="end"
           alignSelf="flex-end"
@@ -168,7 +161,7 @@ export function UserForm({
           {submitText}
         </Button>
 
-        {Object.keys(errors).length > 0 && (
+        {Object.values(errors).some((msg) => !!msg) && (
           <Text fontSize="sm" color="red.500">
             Corrige los campos marcados.
           </Text>
