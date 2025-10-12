@@ -112,7 +112,7 @@ public class ReportBuilderConfig {
                 dto.getLatitude() != null ? dto.getLatitude().toPlainString() : "",
                 dto.getLongitude() != null ? dto.getLongitude().toPlainString() : "",
                 dto.getCapacity() != null ? dto.getCapacity().toPlainString() : "",
-                dto.getStatus() != null ? NormalizationUtils.translateContainerStatus(dto.getStatus().name()) : "",
+                dto.getStatus() != null ? NormalizationUtils.translateContainerStatus(dto.getStatus().getDescription()) : "",
                 dto.getContainerTypeName() != null ? dto.getContainerTypeName() : "",
                 dto.getCreatedAt() != null ? NormalizationUtils.formatDateTime(dto.getCreatedAt()) : ""
         );
