@@ -1,27 +1,10 @@
-import {
-  Stack,
-  Button,
-  Input,
-  InputGroup,
-  Field,
-  Text,
-  NativeSelect,
-  Box,
-} from "@chakra-ui/react";
+import {  Stack,  Button,  Input,  InputGroup,  Field,  Text,  NativeSelect,  Box} from "@chakra-ui/react";
 import { LiaBarcodeSolid, LiaRulerCombinedSolid } from "react-icons/lia";
 import { useContainerForm } from "../hooks/useContainerForm";
 import { useContainerTypes } from "../hooks/useContainerTypes";
 import { useState, useCallback, useRef } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMapEvents,
-  useMap,
-  Popup,
-} from "react-leaflet";
+import {  MapContainer,  TileLayer,  Marker,  useMapEvents,  useMap,  Popup} from "react-leaflet";
 import L from "leaflet";
-
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
@@ -79,7 +62,6 @@ export function ContainerForm({
       setField("latitude", latlng.lat);
       setField("longitude", latlng.lng);
 
-      // Espera a que el marker se monte y luego abre el popup
       setTimeout(() => {
         if (markerRef.current) {
           markerRef.current.openPopup();
