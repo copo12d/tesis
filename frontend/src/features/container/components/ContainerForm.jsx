@@ -159,14 +159,15 @@ export function ContainerForm({
 
         {/* Ubicación - MAPA */}
         <Field.Root required invalid={!!(errors.latitude || errors.longitude)}>
-          <Field.Label color="black">Ubicación (haz clic en el mapa para seleccionar)</Field.Label>
+          <Field.Label color="black" mx="auto">Ubicación (haz clic en el mapa para seleccionar)</Field.Label>
           <Box
             borderWidth={1}
             borderRadius="md"
             overflow="hidden"
             boxShadow="sm"
             bg="white"
-            width="100%"
+            width="80%"
+            mx="auto"
           >
             <Box width="100%" height="400px">
               <MapContainer
@@ -221,7 +222,7 @@ export function ContainerForm({
           {(errors.latitude || errors.longitude) && (
             <Field.ErrorText>{errors.latitude || errors.longitude}</Field.ErrorText>
           )}
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="gray.600" mx="auto">
             Haz clic en el mapa para colocar el contenedor. Puedes ajustar el centro inicial en la constante MAP_CENTER.
           </Text>
         </Field.Root>
