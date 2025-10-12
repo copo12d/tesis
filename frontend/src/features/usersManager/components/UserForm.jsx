@@ -259,7 +259,7 @@ export function UserForm({
               type="submit"
               colorPalette="green"
               size="lg"
-              isLoading={loading}
+              loading={loading}
               loadingText="Guardando..."
               spinnerPlacement="end"
               alignSelf="flex-end"

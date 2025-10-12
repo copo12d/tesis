@@ -61,19 +61,23 @@ function App() {
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route
-            path="/mobile"
+            path="/mobile/containers/:id"
             element={
-              <MobileRoute>
-                <MobileReportPage />
-              </MobileRoute>
+              <PublicRoute>
+                <MobileRoute>
+                  <MobileReportPage />
+                </MobileRoute>
+              </PublicRoute>
             }
           />
           <Route
             path="/mobile/login"
             element={
-              <MobileRoute>
-                <MobileCollectorLogin />
-              </MobileRoute>
+              <PublicRoute>
+                <MobileRoute>
+                  <MobileCollectorLogin />
+                </MobileRoute>
+              </PublicRoute>
             }
           />
 
