@@ -49,7 +49,7 @@ export default function AdminSection({ user }) {
     {
       label: "Lotes",
       icon: FiPackage, // <-- icono de paquete/lote
-      action: () => navigate("/batch"),
+      action: () => navigate("/batch/list"),
     },
     {
       label: "Reportes",

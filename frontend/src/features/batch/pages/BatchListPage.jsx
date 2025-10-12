@@ -17,26 +17,22 @@ const headers = [
 
 export function BatchListPage() {
   const navigate = useNavigate();
-  const { data, loading, error, params, setParams, refetch } = useBatchList();
+  const {
+    items,
+    total,
+    loading,
+    page,
+    setPage,
+    totalPages,
+    error,
+    refetch,
+  } = useBatchList();
+
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     if (!loading) setHasLoaded(true);
   }, [loading]);
-
-  // Formatea los datos para la tabla
-  const items = (data?.content ?? []).map((batch) => ({
-    ...batch,
-    totalWeight: `${batch.totalWeight?.toFixed(2) ?? "0.00"} kg`,
-    creationDate: batch.creationDate
-      ? new Date(batch.creationDate).toLocaleString()
-      : "-",
-    processedAt: batch.processedAt
-      ? new Date(batch.processedAt).toLocaleString()
-      : "-",
-    processedByUsername: batch.processedByUsername || "-",
-    createdByUsername: batch.createdByUsername || "-",
-  }));
 
   // Acciones por fila (puedes personalizar)
   const renderActions = (batch) => (
@@ -66,17 +62,17 @@ export function BatchListPage() {
       <GenericTable
         headers={headers}
         items={items}
-        page={params.page + 1}
-        totalPages={data.totalPages}
-        totalElements={data.totalElements}
+        page={page}
+        totalPages={totalPages}
+        totalElements={total}
         cardTitle="Lista de lotes"
         caption={error ? error : undefined}
         loading={loading}
         onPageChange={(newPage) => {
-          setParams((prev) => ({ ...prev, page: newPage.page - 1 }));
+          setPage(newPage.page);
         }}
         renderActions={renderActions}
-        // Si en el futuro agregas búsqueda, aquí puedes poner los props de búsqueda
+        onAdd={() => navigate("/batch/create")}
       />
     </Stack>
   );
