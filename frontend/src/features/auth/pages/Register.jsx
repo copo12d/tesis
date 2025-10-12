@@ -7,131 +7,128 @@ import {
   Stack,
   Text,
   Button,
-  Input,
-  InputGroup,
-  Field,
 } from "@chakra-ui/react";
-import { LiaUser, LiaLockSolid, LiaEnvelope, LiaIdCard } from "react-icons/lia";
+import {
+  LiaUser,
+  LiaLockSolid,
+  LiaEnvelope,
+  LiaIdCard,
+} from "react-icons/lia";
+import { IconInputField } from "@/components/ui/IconInputField"; 
 
 export function Register() {
   const [fullName, setFullName] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+
   const { register, loading } = useRegister();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await register(fullName, userName, password, email );
+    await register(fullName, userName, password, email);
   };
 
   return (
     <Center h="100vh" bg="#e6f4ea">
-      <Stack boxShadow="md" bg="white" p={10} rounded={"md"} w={600}>
-        <Heading color={"#00695c"}>Registro</Heading>
-        <Text fontSize={"lg"} color={"#00695c"}>
+      <Stack boxShadow="md" bg="white" p={10} rounded="md" w={600} spacing={6}>
+        <Heading color="#00695c">Registro</Heading>
+        <Text fontSize="lg" color="#00695c">
           Crea tu cuenta
         </Text>
+
         <form onSubmit={handleSubmit}>
-          <Stack spacing={6} my={4}>
-            <Field.Root required>
-              <Field.Label htmlFor="fullName" color={"black"}>
-                Nombre completo
-              </Field.Label>
-              <InputGroup startAddon={<LiaIdCard />} startAddonProps={{ bg: "#009688", px: 3 }}>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Nombre completo"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  _placeholder={{ pl: 2 }}
-                  pl={2}
-                />
-              </InputGroup>
+          <Stack spacing={6} mt={4}>
+            <IconInputField
+              label="Nombre completo"
+              name="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Nombre completo"
+              icon={<LiaIdCard />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
-              <Field.Label htmlFor="userName" color={"black"}>
-                Nombre de usuario
-              </Field.Label>
-              <InputGroup startAddon={<LiaUser />} startAddonProps={{ bg: "#009688", px: 3 }}>
-                <Input
-                  id="userName"
-                  name="userName"
-                  placeholder="Nombre de usuario"
-                  value={userName}
-                  onChange={e => setUserName(e.target.value)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  _placeholder={{ pl: 2 }}
-                  pl={2}
-                />
-              </InputGroup>
+            <IconInputField
+              label="Nombre de usuario"
+              name="userName"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Nombre de usuario"
+              icon={<LiaUser />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
-              <Field.Label htmlFor="email" color={"black"}>
-                Email
-              </Field.Label>
-              <InputGroup startAddon={<LiaEnvelope />} startAddonProps={{ bg: "#009688", px: 3 }}>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Correo electrónico"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  _placeholder={{ pl: 2 }}
-                  pl={2}
-                />
-              </InputGroup>
+            <IconInputField
+              label="Correo electrónico"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Correo electrónico"
+              icon={<LiaEnvelope />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
-              <Field.Label htmlFor="password" color={"black"}>
-                Contraseña
-              </Field.Label>
-              <InputGroup startAddon={<LiaLockSolid />} startAddonProps={{ bg: "#009688", px: 3 }}>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  _placeholder={{ pl: 2 }}
-                  pl={2}
-                />
-              </InputGroup>
-            </Field.Root>
+            <IconInputField
+              label="Contraseña"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Contraseña"
+              icon={<LiaLockSolid />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
+
             <Button
               type="submit"
               bg="#009688"
               color="white"
               size="lg"
-              loading={loading}
+              isLoading={loading}
               loadingText="Registrando..."
               spinnerPlacement="end"
-              marginTop={4}
               _hover={{ bg: "#00695c" }}
+              mt={2}
             >
               Registrarse
             </Button>
           </Stack>
         </form>
-  <Stack justify={"center"} spacing={4} color={"#00695c"}>
+
+        <Stack justify="center" spacing={4} color="#00695c">
           <Text
-            as={"div"}
-            textAlign={"center"}
-            display={"inline-flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
+            as="div"
+            textAlign="center"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
           >
             <span>¿Ya tienes una cuenta? </span>
             <Button

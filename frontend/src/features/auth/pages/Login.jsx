@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
-import AuthContext from "../../../context/Authcontext";
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Center,
@@ -9,11 +6,11 @@ import {
   Stack,
   Text,
   Button,
-  Input,
-  InputGroup,
-  Field,
 } from "@chakra-ui/react";
 import { LiaUser, LiaLockSolid } from "react-icons/lia";
+import { useAuth } from "../hooks/useAuth";
+import AuthContext from "../../../context/Authcontext";
+import { IconInputField } from "@/components/ui/IconInputField";
 
 export function Login() {
   const [userName, setUserName] = useState("");
@@ -38,89 +35,77 @@ export function Login() {
       result.error &&
       result.error.toLowerCase().includes("bloqueada")
     ) {
-      // Si el mensaje de error contiene "bloqueada", redirige
       navigate("/account-locked");
     }
   };
 
   return (
     <Center h="100vh" bg="#e6f4ea">
-      <Stack boxShadow="md" bg="white" p={10} rounded={"md"} w={600}>
-        <Heading color={"#00695c"}>Iniciar Sesión</Heading>
-        <Text fontSize={"lg"} color={"#00695c"}>
+      <Stack boxShadow="md" bg="white" p={10} rounded="md" w={600} spacing={6}>
+        <Heading color="#00695c">Iniciar Sesión</Heading>
+        <Text fontSize="lg" color="#00695c">
           Por favor, ingresa tus credenciales
         </Text>
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={6} my={4}>
-            <Field.Root required >
-              <Field.Label htmlFor="userName" color={"black"}>
-                Nombre de usuario
-              </Field.Label>
-              <InputGroup
-                  startAddon={<LiaUser />}
-                  startAddonProps={{ bg: "#009688", px: 3 }}
-                >
-                <Input
-                  id="userName"
-                  name="userName"
-                  placeholder="Nombre de usuario"
-                  colorPalette={"black"}
-                  value={userName}
-                  onChange={handleInputChange(setUserName)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  pl = {2}
-                  _placeholder={{ pl: 2 }}
-                />
-              </InputGroup>
 
-              <Field.Label htmlFor="password" color={"black"}>
-                Contraseña
-              </Field.Label>
-              <InputGroup
-                startAddon={<LiaLockSolid />}
-                startAddonProps={{ bg: "#009688", px: 3 }}
-              >
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={handleInputChange(setPassword)}
-                  size="lg"
-                  color={"blackAlpha.900"}
-                  w="100%"
-                  _placeholder={{ pl: 2 }}
-                  pl = {2}
-                  css={{ "--error-color": "red" }}
-                  
-                />
-              </InputGroup>
-            </Field.Root>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={6} mt={4}>
+            <IconInputField
+              label="Nombre de usuario"
+              name="userName"
+              value={userName}
+              onChange={handleInputChange(setUserName)}
+              placeholder="Nombre de usuario"
+              icon={<LiaUser />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
+
+            <IconInputField
+              label="Contraseña"
+              name="password"
+              type="password"
+              value={password}
+              onChange={handleInputChange(setPassword)}
+              placeholder="Contraseña"
+              icon={<LiaLockSolid />}
+              iconProps={{ bg: "#009688", px: 3 }}
+              required
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+                css: { "--error-color": "red" },
+              }}
+            />
+
             <Button
               type="submit"
               bg="#009688"
               color="white"
               size="lg"
-              loading={loading}
+              isLoading={loading}
               loadingText="Iniciando..."
-              marginTop={4}
               spinnerPlacement="end"
               _hover={{ bg: "#00695c" }}
+              mt={2}
             >
               Iniciar Sesión
             </Button>
           </Stack>
         </form>
-  <Stack justify={"center"} spacing={4} color={"#00695c"}>
+
+        <Stack justify="center" spacing={4} color="#00695c">
           <Text
-            as={"div"}
-            textAlign={"center"}
-            display={"inline-flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
+            as="div"
+            textAlign="center"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
           >
             <span>No tienes una cuenta? </span>
             <Button

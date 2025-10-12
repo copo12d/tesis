@@ -1,13 +1,7 @@
-import {
-  Stack,
-  Button,
-  Input,
-  InputGroup,
-  Field,
-  Text,
-} from "@chakra-ui/react";
+import { Stack, Button, Text } from "@chakra-ui/react";
 import { LiaFileAltSolid } from "react-icons/lia";
 import { useState } from "react";
+import { IconInputField } from "@/components/ui/IconInputField";
 
 export function BatchForm({
   loading = false,
@@ -30,7 +24,6 @@ export function BatchForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Validación simple
     let newErrors = {};
     if (!form.description || form.description.trim().length < 3) {
       newErrors.description = "La descripción es obligatoria";
@@ -43,12 +36,12 @@ export function BatchForm({
   return (
     <form onSubmit={handleSubmit}>
       <Stack
-       spacing={6}
+        spacing={6}
         p={4}
         bg="whiteAlpha.900"
         boxShadow="md"
         w="100%"
-        h={"100vh"}
+        h="100vh"
       >
         {title && (
           <Text fontSize="2xl" fontWeight="bold" mb={2} color="black">
@@ -56,30 +49,30 @@ export function BatchForm({
           </Text>
         )}
 
-        <Field.Root required invalid={!!errors.description}>
-          <Field.Label color="black">Descripción</Field.Label>
-          <InputGroup startAddon={<LiaFileAltSolid />} startAddonProps={{ bg: "teal.700", px: 3 }}>
-            <Input
-              type="text"
-              placeholder="Descripción del lote"
-              value={form.description}
-              onChange={(e) => setField("description", e.target.value)}
-              size="lg"
-              color="blackAlpha.900"
-              disabled={busy}
-              autoComplete="off"
-            />
-          </InputGroup>
-          {errors.description && (
-            <Field.ErrorText>{errors.description}</Field.ErrorText>
-          )}
-        </Field.Root>
+        <IconInputField
+          label="Descripción"
+          name="description"
+          value={form.description}
+          onChange={(e) => setField("description", e.target.value)}
+          placeholder="Descripción del lote"
+          icon={<LiaFileAltSolid />}
+          iconProps={{ bg: "teal.700", px: 3 }}
+          required
+          disabled={busy}
+          error={errors.description}
+          inputProps={{
+            w: "100%",
+            pl: 2,
+            _placeholder: { pl: 2 },
+            autoComplete: "off",
+          }}
+        />
 
         <Button
           type="submit"
           colorPalette="green"
           size="lg"
-          loading={busy}
+          isLoading={busy}
           loadingText="Registrando..."
           spinnerPlacement="end"
           alignSelf="flex-end"
@@ -89,11 +82,6 @@ export function BatchForm({
           {submitText}
         </Button>
 
-        {Object.keys(errors).length > 0 && (
-          <Text fontSize="sm" color="red.500">
-            Corrige los campos marcados.
-          </Text>
-        )}
       </Stack>
     </form>
   );
