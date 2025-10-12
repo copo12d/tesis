@@ -2,18 +2,28 @@ import { Center, Stack, Heading, Text, Box, Badge, Button, Spinner } from "@chak
 import { MdQrCodeScanner } from "react-icons/md";
 import { useMobileContainer } from "../hooks/useMobileContainer";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { useState } from "react";
 import { useReportContainer } from "../hooks/useReportContainer";
-import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function MobileReportPage() {
   const { container, loading, error } = useMobileContainer();
   const { reportContainer, loading: reportingLoading } = useReportContainer();
-  const [reporting, setReporting] = useState(false);
+  const navigate = useNavigate();
+
+  // Guarda el containerId en localStorage cuando esté disponible
+  useEffect(() => {
+    if (container?.id) {
+      localStorage.setItem("containerId", container.id);
+    }
+  }, [container?.id]);
 
   const handleReport = async () => {
     if (!container?.serial) return;
-    await reportContainer(container.serial);
+    const ok = await reportContainer(container.serial);
+    if (ok) {
+      navigate("/mobile/thanks");
+    }
   };
 
   return (
@@ -61,7 +71,7 @@ export default function MobileReportPage() {
 
         <ConfirmDialog
           trigger={
-            <Button colorPalette="teal" px={"70px"} size="lg" disabled={!container} loading={reporting || reportingLoading}>
+            <Button colorPalette="teal" px={"70px"} size="lg" disabled={!container} loading={reportingLoading}>
               Notificar estado
             </Button>
           }
@@ -73,8 +83,16 @@ export default function MobileReportPage() {
           loading={reportingLoading}
         />
 
-        <Text fontSize="sm" color="gray.500" textAlign="center">
-          Escanea el QR de otro contenedor para continuar.
+        <Text
+          fontSize="sm"
+          color="teal.700"
+          textAlign="center"
+          fontWeight="bold"
+          cursor="pointer"
+          _hover={{ textDecoration: "underline" }}
+          onClick={() => navigate("/mobile/login")}
+        >
+          ¿Eres recolector? Inicia sesión
         </Text>
       </Stack>
     </Center>

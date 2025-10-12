@@ -3,6 +3,10 @@ import { useBatchList } from "../hooks/useBatchList";
 import { GenericTable } from "@/components/GenericTable";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useDeleteBatch } from "../hooks/useDeleteBatch";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { IconButton } from "@chakra-ui/react";
+import { LiaTrashAltSolid, LiaEyeSolid } from "react-icons/lia";
 
 const headers = [
   { key: "id", label: "ID" },
@@ -27,6 +31,7 @@ export function BatchListPage() {
     error,
     refetch,
   } = useBatchList();
+  const { remove, deletingId } = useDeleteBatch();
 
   const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -34,16 +39,47 @@ export function BatchListPage() {
     if (!loading) setHasLoaded(true);
   }, [loading]);
 
+  const handleDelete = async (row) => {
+    const ok = await remove(row.id);
+    if (ok) {
+      refetch();
+    }
+  };
+
   // Acciones por fila (puedes personalizar)
   const renderActions = (batch) => (
-    <Button
-      size="xs"
-      colorScheme="teal"
-      variant="outline"
-      onClick={() => navigate(`/batch/${batch.id}`)}
-    >
-      Ver
-    </Button>
+    <>
+      <IconButton
+        aria-label="Ver"
+        size="xs"
+        variant="subtle"
+        colorPalette="blue"
+        onClick={() => navigate(`/batch/${batch.id}`)}
+      >
+        <LiaEyeSolid />
+      </IconButton>
+      <ConfirmDialog
+        title="Eliminar lote"
+        description={`¿Seguro que deseas eliminar el lote "${batch.description}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmColorPalette="red"
+        loading={deletingId === batch.id}
+        onConfirm={() => handleDelete(batch)}
+        trigger={
+          <IconButton
+            aria-label="Eliminar"
+            size="xs"
+            variant="subtle"
+            colorPalette="red"
+            disabled={deletingId === batch.id}
+            ml={2}
+          >
+            <LiaTrashAltSolid />
+          </IconButton>
+        }
+      />
+    </>
   );
 
   if (loading && !hasLoaded) {

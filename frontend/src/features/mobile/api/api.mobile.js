@@ -7,4 +7,11 @@ export const MobileAPI = {
   // Reportar un contenedor por serial
   reportContainer: (serial) =>
     api.post(`/container/public/report`, null, { params: { serial } }),
+
+  // Registrar waste
+  registerWaste: ({ weight, containerId, batchId }) =>
+    api.post("/waste/admin/register", { weight, containerId, batchId }),
+
+  // Obtener batches en progreso (dropdown)
+  getInProgressBatches: () => api.get("/batch/admin/dropdown/in-progress"),
 };
