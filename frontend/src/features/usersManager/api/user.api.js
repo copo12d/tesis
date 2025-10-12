@@ -40,17 +40,26 @@ export const UsersAPI = {
   // ...existing methods...
 };
 
-export const ALL_ROLES = [
-  { value: "ROLE_SUPERUSER", label: "Superusuario" },
-  { value: "ROLE_ADMIN", label: "Administrador" },
-  { value: "ROLE_USER", label: "Usuario" },
-];
+export async function availableRolesFor(currentRole) {
+  try {
+    const { data } = await api.get("/role/admin/all");
 
-export function availableRolesFor(currentRole) {
-  if (currentRole === "ROLE_SUPERUSER") return ALL_ROLES;
-  if (currentRole === "ROLE_ADMIN")
-    return ALL_ROLES.filter(
-      (r) => r.value !== "ROLE_SUPERUSER" && r.label !== "Superusuario"
-    );
-  return [];
+    if (!Array.isArray(data?.data)) return [];
+
+    const allRoles = data.data.map((r) => ({
+      value: r.name,
+      label: r.name.replace("ROLE_", "").toLowerCase().replace(/^\w/, c => c.toUpperCase()),
+    }));
+
+    if (currentRole === "ROLE_SUPERUSER") return allRoles;
+
+    if (currentRole === "ROLE_ADMIN") {
+      return allRoles.filter((r) => r.value !== "ROLE_SUPERUSER");
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Error al obtener roles:", error);
+    return [];
+  }
 }

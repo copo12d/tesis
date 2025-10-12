@@ -2,8 +2,7 @@ import {
   Stack,
   Button,
   Text,
-  NativeSelect,
-  Field,
+  Box,
 } from "@chakra-ui/react";
 import {
   LiaUser,
@@ -11,12 +10,92 @@ import {
   LiaIdBadgeSolid,
   LiaAtSolid,
 } from "react-icons/lia";
-import { useUserForm } from "../hooks/useUserForm";
-import { availableRolesFor } from "../api/user.api";
-import { useContext } from "react";
+import { useState, useEffect, useContext } from "react";
+import { toast } from "react-hot-toast";
 import AuthContext from "@/context/AuthContext";
+import { availableRolesFor } from "../api/user.api";
 import { IconInputField } from "@/components/ui/IconInputField";
+import { StyledSelectField } from "@/components/ui/StyledSelectField";
 
+// Hook integrado
+function useUserForm({ initialValues = {}, includeRole = true, onSubmit }) {
+  const [form, setForm] = useState({
+    fullName: "",
+    userName: "",
+    email: "",
+    password: "",
+    repeatPassword: "",
+    role: "",
+    ...initialValues,
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const validate = (values) => {
+    const newErrors = {};
+
+    if (!values.fullName) {
+      newErrors.fullName = "El nombre es obligatorio";
+    } else if (/\d/.test(values.fullName)) {
+      newErrors.fullName = "El nombre no debe contener números";
+    }
+
+    if (!values.userName) {
+      newErrors.userName = "El usuario es obligatorio";
+    }
+
+    if (!values.email) {
+      newErrors.email = "El correo es obligatorio";
+    }
+
+    if (!values.password && !values.id) {
+      newErrors.password = "La contraseña es obligatoria";
+    }
+
+    if (!values.repeatPassword && !values.id) {
+      newErrors.repeatPassword = "Debes repetir la contraseña";
+    }
+
+    if (
+      values.password &&
+      values.repeatPassword &&
+      values.password !== values.repeatPassword
+    ) {
+      newErrors.repeatPassword = "Las contraseñas no coinciden";
+    }
+
+    if (includeRole && !values.role) {
+      newErrors.role = "Debes seleccionar un rol";
+    }
+
+    setErrors(newErrors);
+    return newErrors;
+  };
+
+  const setField = (field, value) => {
+    const updated = { ...form, [field]: value };
+    setForm(updated);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const validationErrors = validate(form);
+    if (Object.keys(validationErrors).length === 0) {
+      onSubmit(form);
+    }
+  };
+
+  return {
+    form,
+    errors,
+    setField,
+    handleSubmit,
+    includeRole,
+    validate,
+  };
+}
+
+// Componente principal
 export function UserForm({
   loading = false,
   initialValues = {},
@@ -27,7 +106,7 @@ export function UserForm({
   fields,
 }) {
   const { user } = useContext(AuthContext);
-  const roles = availableRolesFor(user?.role);
+  const [roles, setRoles] = useState([]);
 
   const {
     form,
@@ -35,10 +114,18 @@ export function UserForm({
     setField,
     handleSubmit,
     includeRole: includeRoleComputed,
+    validate,
   } = useUserForm({ initialValues, includeRole, onSubmit });
 
-  const busy = loading;
   const isEdit = !!initialValues?.id;
+
+  useEffect(() => {
+    async function fetchRoles() {
+      const result = await availableRolesFor(user?.role);
+      setRoles(result);
+    }
+    fetchRoles();
+  }, [user?.role]);
 
   const FIELDS = [
     {
@@ -72,7 +159,14 @@ export function UserForm({
       icon: <LiaLockSolid />,
       type: "password",
       autoComplete: isEdit ? "off" : "new-password",
-      required: !isEdit,
+    },
+    {
+      name: "repeatPassword",
+      label: "Repetir contraseña",
+      placeholder: "********",
+      icon: <LiaLockSolid />,
+      type: "password",
+      autoComplete: "off",
     },
   ];
 
@@ -80,93 +174,102 @@ export function UserForm({
     ? FIELDS.filter((f) => fields.includes(f.name))
     : FIELDS;
 
+  const handleFieldChange = (name, value) => {
+    setField(name, value);
+  };
+
+  const handleValidatedSubmit = (e) => {
+    e.preventDefault();
+    const validationErrors = validate(form);
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error("Debes llenar todos los campos");
+      return;
+    }
+    onSubmit(form);
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack
-        spacing={6}
-        p={4}
-        bg="whiteAlpha.900"
-        boxShadow="md"
-        w="100%"
-        h="100vh"
+    <Stack
+      spacing={0}
+      borderRadius="md"
+      boxShadow="md"
+      borderWidth={1}
+      borderColor="green.600"
+      bg="whiteAlpha.900"
+      maxW="6xl"
+      mx="auto"
+      mt={6}
+    >
+      <Box
+        bg="green.600"
+        color="white"
+        px={6}
+        py={4}
+        borderTopRadius="md"
+        borderBottom="1px solid"
+        borderColor="green.700"
       >
-        {title && (
-          <Text fontSize="2xl" fontWeight="bold" mb={2} color="black">
-            {title}
-          </Text>
-        )}
+        <Text fontSize="xl" fontWeight="bold">
+          {title || (isEdit ? "Editar usuario" : "Nuevo usuario")}
+        </Text>
+      </Box>
 
-        {filteredFields.map((f) => (
-          <IconInputField
-            key={f.name}
-            label={f.label}
-            name={f.name}
-            value={form[f.name]}
-            onChange={(e) => setField(f.name, e.target.value)}
-            placeholder={f.placeholder}
-            icon={f.icon}
-            iconProps={{ bg: "teal.700", px: 3 }}
-            type={f.type}
-            required={f.required}
-            disabled={busy}
-            error={errors[f.name]}
-            inputProps={{
-              autoComplete: f.autoComplete,
-              w: "100%",
-              pl: 2,
-              _placeholder: { pl: 2 },
-            }}
-          />
-        ))}
+      <Box px={6} py={6}>
+        <form onSubmit={handleValidatedSubmit}>
+          <Stack spacing={6}>
+            {filteredFields.map((f) => (
+              <IconInputField
+                key={f.name}
+                label={f.label}
+                name={f.name}
+                value={form[f.name] ?? ""}
+                onChange={(e) => handleFieldChange(f.name, e.target.value)}
+                placeholder={f.placeholder}
+                icon={f.icon}
+                iconProps={{ bg: "teal.700", px: 3 }}
+                type={f.type}
+                disabled={loading}
+                error={errors[f.name]}
+                inputProps={{
+                  autoComplete: f.autoComplete,
+                  w: "100%",
+                  pl: 2,
+                  _placeholder: { pl: 2 },
+                }}
+              />
+            ))}
 
-        {includeRoleComputed && (
-          <Field.Root required invalid={!!errors.role}>
-            <Field.Label color="black">Rol</Field.Label>
-            <NativeSelect.Root size="lg">
-              <NativeSelect.Field
-                value={form.role}
-                onChange={(e) => setField("role", e.target.value)}
-                color="blackAlpha.900"
-                disabled={busy}
-              >
-                {roles.map((r) => (
-                  <option
-                    key={r.value}
-                    value={r.value}
-                    style={{ backgroundColor: "white", color: "black" }}
-                  >
-                    {r.label}
-                  </option>
-                ))}
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-            {errors.role && (
-              <Field.ErrorText>{errors.role}</Field.ErrorText>
+            {includeRoleComputed && (
+              <StyledSelectField
+                label="Rol"
+                name="role"
+                value={form.role ?? ""}
+                onChange={(e) => handleFieldChange("role", e.target.value)}
+                options={roles.map((r) => ({
+                  value: r.value,
+                  label: r.label,
+                }))}
+                error={errors.role}
+                disabled={loading}
+                placeholder="Seleccione una opción"
+              />
             )}
-          </Field.Root>
-        )}
 
-        <Button
-          type="submit"
-          colorPalette="green"
-          size="lg"
-          isLoading={busy}
-          loadingText="Guardando..."
-          spinnerPlacement="end"
-          alignSelf="flex-end"
-          disabled={busy}
-          px={2}
-        >
-          {submitText}
-        </Button>
-
-        {Object.values(errors).some((msg) => !!msg) && (
-          <Text fontSize="sm" color="red.500">
-            Corrige los campos marcados.
-          </Text>
-        )}
-      </Stack>
-    </form>
+            <Button
+              type="submit"
+              colorPalette="green"
+              size="lg"
+              isLoading={loading}
+              loadingText="Guardando..."
+              spinnerPlacement="end"
+              alignSelf="flex-end"
+              px={2}
+            >
+              {submitText}
+            </Button>
+          </Stack>
+        </form>
+      </Box>
+    </Stack>
   );
 }

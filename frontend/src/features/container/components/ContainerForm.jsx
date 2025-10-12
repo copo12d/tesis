@@ -1,13 +1,15 @@
-import { Stack, Button, Input, InputGroup, Field, Text, NativeSelect, Box } from "@chakra-ui/react";
-import { LiaBarcodeSolid, LiaRulerCombinedSolid } from "react-icons/lia";
+import {  Stack,  Button,  Text,  Field,  Box,} from "@chakra-ui/react";
+import {  LiaBarcodeSolid,  LiaRulerCombinedSolid,} from "react-icons/lia";
 import { useContainerForm } from "../hooks/useContainerForm";
 import { useContainerTypes } from "../hooks/useContainerTypes";
 import { useState, useCallback, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Popup } from "react-leaflet";
+import {  MapContainer,  TileLayer,  Marker,  useMapEvents,  useMap,  Popup,} from "react-leaflet";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { IconInputField } from "@/components/ui/IconInputField";
+import { StyledSelectField } from "@/components/ui/StyledSelectField";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -44,7 +46,6 @@ export function ContainerForm({
 
   const busy = loading;
   const isEdit = !!initialValues?.id;
-  const iconAddonProps = { bg: "teal.700", px: 3 };
 
   const { types: containerTypes, loading: loadingTypes } = useContainerTypes();
 
@@ -112,64 +113,59 @@ export function ContainerForm({
         <form onSubmit={handleSubmit}>
           <Stack spacing={6}>
             {/* Tipo de contenedor */}
-            <Field.Root required invalid={!!errors.containerTypeId}>
-              <Field.Label color="black">Tipo de contenedor</Field.Label>
-              <NativeSelect.Root size="lg">
-                <NativeSelect.Field
-                  value={form.containerTypeId ?? ""}
-                  onChange={(e) => setField("containerTypeId", e.target.value)}
-                  color="blackAlpha.900"
-                  disabled={busy || loadingTypes}
-                >
-                  <option value="" disabled hidden>
-                    Seleccione un tipo de contenedor
-                  </option>
-                  {containerTypes.map((type) => (
-                    <option key={type.id} value={type.id} style={{ backgroundColor: "#fff" }}>
-                      {type.name}
-                    </option>
-                  ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
-              {errors.containerTypeId && (
-                <Field.ErrorText>{errors.containerTypeId}</Field.ErrorText>
-              )}
-            </Field.Root>
+            <StyledSelectField
+              label="Tipo de contenedor"
+              name="containerTypeId"
+              value={form.containerTypeId ?? ""}
+              onChange={(e) => setField("containerTypeId", e.target.value)}
+              options={containerTypes.map((type) => ({
+                value: type.id,
+                label: type.name,
+              }))}
+              required
+              error={errors.containerTypeId}
+              disabled={busy || loadingTypes}
+              placeholder="Seleccione un tipo de contenedor"
+            />
 
             {/* Serial */}
-            <Field.Root required invalid={!!errors.serial}>
-              <Field.Label color="black">Serial</Field.Label>
-              <InputGroup startAddon={<LiaBarcodeSolid />} startAddonProps={iconAddonProps}>
-                <Input
-                  type="text"
-                  placeholder="Serial del contenedor"
-                  value={form.serial}
-                  onChange={(e) => setField("serial", e.target.value)}
-                  size="lg"
-                  color="blackAlpha.900"
-                  isDisabled={busy}
-                />
-              </InputGroup>
-              {errors.serial && <Field.ErrorText>{errors.serial}</Field.ErrorText>}
-            </Field.Root>
+            <IconInputField
+              label="Serial"
+              name="serial"
+              value={form.serial}
+              onChange={(e) => setField("serial", e.target.value)}
+              placeholder="Serial del contenedor"
+              icon={<LiaBarcodeSolid />}
+              iconProps={{ bg: "teal.700", px: 3 }}
+              required
+              disabled={busy}
+              error={errors.serial}
+              inputProps={{
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
             {/* Capacidad */}
-            <Field.Root required invalid={!!errors.capacity}>
-              <Field.Label color="black">Capacidad (L)</Field.Label>
-              <InputGroup startAddon={<LiaRulerCombinedSolid />} startAddonProps={iconAddonProps}>
-                <Input
-                  type="number"
-                  placeholder="Capacidad en litros"
-                  value={form.capacity}
-                  onChange={(e) => setField("capacity", e.target.value)}
-                  size="lg"
-                  color="blackAlpha.900"
-                  isDisabled={busy}
-                />
-              </InputGroup>
-              {errors.capacity && <Field.ErrorText>{errors.capacity}</Field.ErrorText>}
-            </Field.Root>
+            <IconInputField
+              label="Capacidad (L)"
+              name="capacity"
+              value={form.capacity}
+              onChange={(e) => setField("capacity", e.target.value)}
+              placeholder="Capacidad en litros"
+              icon={<LiaRulerCombinedSolid />}
+              iconProps={{ bg: "teal.700", px: 3 }}
+              required
+              disabled={busy}
+              error={errors.capacity}
+              inputProps={{
+                type: "number",
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
             {/* Ubicación - MAPA */}
             <Field.Root required invalid={!!(errors.latitude || errors.longitude)}>
@@ -190,7 +186,11 @@ export function ContainerForm({
                     center={markerPosition ?? MAP_CENTER}
                     zoom={MAP_ZOOM}
                     scrollWheelZoom={false}
-                    style={{ width: "100%", height: "100%", position: "relative" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      position: "relative",
+                    }}
                   >
                     <CenterMapButton center={MAP_CENTER} zoom={MAP_ZOOM} />
                     <TileLayer
@@ -236,7 +236,9 @@ export function ContainerForm({
               </Box>
 
               {(errors.latitude || errors.longitude) && (
-                <Field.ErrorText>{errors.latitude || errors.longitude}</Field.ErrorText>
+                <Field.ErrorText>
+                  {errors.latitude || errors.longitude}
+                </Field.ErrorText>
               )}
               <Text fontSize="sm" color="gray.600" mx="auto">
                 Haz clic en el mapa para colocar el contenedor. Puedes ajustar el centro inicial en la constante MAP_CENTER.
@@ -247,7 +249,7 @@ export function ContainerForm({
               type="submit"
               colorPalette="green"
               size="lg"
-              loading={busy}
+              isLoading={busy}
               loadingText="Guardando..."
               spinnerPlacement="end"
               alignSelf="flex-end"
@@ -257,7 +259,7 @@ export function ContainerForm({
               {submitText}
             </Button>
 
-            {Object.keys(errors).length > 0 && (
+            {Object.values(errors).some((msg) => !!msg) && (
               <Text fontSize="sm" color="red.500">
                 Corrige los campos marcados.
               </Text>
