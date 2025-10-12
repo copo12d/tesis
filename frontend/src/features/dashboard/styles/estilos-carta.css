@@ -1,9 +1,13 @@
+/* ===================== */
+/* ESTILOS VIEJOS (ACTIVOS) */
+/* ===================== */
+
 .carta-container {
   width: 220px;
   height: 172px;
   border-radius: 15px;
   padding: 10px 18px;
-  background: linear-gradient(to left, #5a9e18, #d9cc1d);
+  background: #247158;
   color: #1a1a2e;
   display: flex;
   flex-direction: column;
@@ -19,7 +23,7 @@
 }
 
 .title {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: bold;
   color: #1b1c31;
 }
@@ -28,7 +32,7 @@
   margin: 0 auto;
   margin-bottom: 12px;
   margin-top: 8px;
-  width: 80px;
+  width: 100px;
   height: 80px;
   position: relative;
   z-index: 1;
@@ -38,6 +42,46 @@
   font-size: 14px;
   font-weight: bold;
   text-align: center;
+}
+
+.graphic {
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-graphic {
+  font-size: 20px;
+  fill: #1b1c31;
+  font-weight: bold;
+}
+
+.footer {
+  text-align: center;
+  color: #1b1c31;
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.carta-title {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ===================== */
+/* ESTILOS NUEVOS (COMENTADOS) */
+/* ===================== */
+
+/*
+.carta-progress {
+  width: 100%;
+  height: 60px;
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .dropdown {
@@ -155,3 +199,4 @@
   font-weight: 900;
   font-size: 18px;
 }
+*/
