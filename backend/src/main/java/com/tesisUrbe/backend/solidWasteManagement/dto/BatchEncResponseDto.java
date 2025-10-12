@@ -20,7 +20,7 @@ public class BatchEncResponseDto {
     private LocalDateTime creationDate;
     private String description;
     private BigDecimal totalWeight;
-    private BatchStatus status;
+    private String status;
     private LocalDateTime processedAt;
     private String createdByUsername;
     private String processedByUsername;

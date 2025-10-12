@@ -61,7 +61,7 @@ public class ReportBuilderConfig {
                 dto.getDescription() != null ? dto.getDescription().replaceAll("[\\r\\n]+", " ") : "",
                 dto.getTotalWeight() != null ? dto.getTotalWeight().toPlainString() : "0",
                 dto.getStatus() != null
-                        ? NormalizationUtils.translateStatus(dto.getStatus())
+                        ? dto.getStatus()
                         : "",
                 dto.getProcessedAt() != null
                         ? NormalizationUtils.formatDateTime(dto.getProcessedAt())
@@ -88,7 +88,7 @@ public class ReportBuilderConfig {
                 user.getFullName() != null ? user.getFullName().replaceAll("[\\r\\n]+", " ") : "",
                 user.getUserName() != null ? user.getUserName() : "",
                 user.getEmail() != null ? user.getEmail() : "",
-                user.getRole() != null ? NormalizationUtils.translateRole(user.getRole()) : "",
+                user.getRole() != null ? user.getRole(): "",
                 user.isVerified() ? "Sí" : "No",
                 user.isAccountLocked() ? "Sí" : "No",
                 user.isUserLocked() ? "Sí" : "No"
@@ -112,7 +112,7 @@ public class ReportBuilderConfig {
                 dto.getLatitude() != null ? dto.getLatitude().toPlainString() : "",
                 dto.getLongitude() != null ? dto.getLongitude().toPlainString() : "",
                 dto.getCapacity() != null ? dto.getCapacity().toPlainString() : "",
-                dto.getStatus() != null ? NormalizationUtils.translateContainerStatus(dto.getStatus().getDescription()) : "",
+                dto.getStatus() != null ? dto.getStatus() : "",
                 dto.getContainerTypeName() != null ? dto.getContainerTypeName() : "",
                 dto.getCreatedAt() != null ? NormalizationUtils.formatDateTime(dto.getCreatedAt()) : ""
         );

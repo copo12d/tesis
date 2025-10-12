@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.usersManagement.services;
 
 import com.tesisUrbe.backend.entities.account.Role;
 import com.tesisUrbe.backend.entities.enums.RoleList;
+import com.tesisUrbe.backend.usersManagement.dto.RoleRespondDto;
 import com.tesisUrbe.backend.usersManagement.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -33,7 +34,7 @@ public class RoleService {
         return roleRepository.existsByName(role);
     }
 
-    public List<Role> getVisibleRolesForCurrentUser() {
+    public List<RoleRespondDto> getVisibleRolesForCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return List.of();
@@ -42,11 +43,24 @@ public class RoleService {
         boolean isSuperuser = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERUSER"));
 
+
         if (isSuperuser) {
-            return roleRepository.findAll();
+              
+            return roleRepository.findAll().stream()
+                    .map(role -> RoleRespondDto.builder()
+                        .id(role.getId())
+                        .name(role.getName().name())
+                        .value(role.getName().getDescription())
+                        .build())
+                    .toList();
         } else {
             return roleRepository.findAll().stream()
                     .filter(role -> role.getName() != RoleList.ROLE_SUPERUSER)
+                    .map(role -> RoleRespondDto.builder()
+                        .id(role.getId())
+                        .name(role.getName().name())
+                        .value(role.getName().getDescription())
+                        .build())
                     .toList();
         }
     }

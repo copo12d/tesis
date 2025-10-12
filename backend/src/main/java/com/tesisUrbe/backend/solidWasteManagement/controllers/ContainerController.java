@@ -15,9 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.MediaType;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 
 import java.util.List;
 
