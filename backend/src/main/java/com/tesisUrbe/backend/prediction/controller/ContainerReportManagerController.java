@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${api.base-path}/container/report")
+@RequestMapping("${api.base-path}/container/public/report")
 public class ContainerReportManagerController {
 
     private final ContainerFillCycleService containerFillCycleService;
