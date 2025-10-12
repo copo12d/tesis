@@ -56,4 +56,6 @@ public interface ContainerRepository extends JpaRepository<Container, Long> {
 
     List<Container> findByStatusAndDeletedFalse(ContainerStatus status);
 
+    Long countByStatusAndDeletedFalse(ContainerStatus status);
+
 }
