@@ -11,6 +11,8 @@ import ForgotPassword from './features/auth/pages/ForgotPassword';
 import AccountLocked from './features/auth/pages/AccountLocked';
 import MobileReportPage from './features/mobile/pages/MobileReportPage';
 import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
+import MobileCollectorPage from './features/mobile/pages/MobileCollectorPage';
+import ThanksPage from './features/mobile/pages/ThanksPage';
 import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeList";
 import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
 import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
@@ -60,6 +62,13 @@ function App() {
             <Route path="/batch/create" element={<BatchCreate />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
+          <Route path="mobile/containers/collect/" element={
+            <PrivateRoute>
+              <MobileRoute>
+                <MobileCollectorPage />
+              </MobileRoute>
+            </PrivateRoute>
+          } />
           <Route
             path="/mobile/containers/:id"
             element={
@@ -80,6 +89,7 @@ function App() {
               </PublicRoute>
             }
           />
+          <Route path="/mobile/thanks" element={<ThanksPage />} />
 
             <Route
               path="/login"

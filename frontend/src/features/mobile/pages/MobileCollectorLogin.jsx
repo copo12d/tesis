@@ -1,7 +1,6 @@
 import { useState, useContext } from "react";
-import { useAuth } from "../../auth/hooks/useAuth";
-import AuthContext from "../../../context/Authcontext";
-import { useNavigate } from "react-router-dom";
+import AuthContext from "@/context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Center,
   Heading,
@@ -13,14 +12,17 @@ import {
   Field,
 } from "@chakra-ui/react";
 import { LiaUser, LiaLockSolid } from "react-icons/lia";
+import { useMobileCollectorLogin } from "../hooks/useMobileCollectorLogin";
 
 export default function MobileCollectorLogin() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
-  const { loginRequest, loading, error, setError } = useAuth();
+  const { handleLogin, loading, error, setError } = useMobileCollectorLogin();
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from || "/mobile/containers/collect"; // 1 es un fallback
 
   const handleInputChange = (setter) => (e) => {
     setter(e.target.value);
@@ -29,16 +31,12 @@ export default function MobileCollectorLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await loginRequest(userName, password);
+    const result = await handleLogin(userName, password);
     if (result.success) {
       login(result.accessToken, result.refreshToken);
-      navigate("/mobile/recolector");
-    } else if (
-      result.error &&
-      result.error.toLowerCase().includes("bloqueada")
-    ) {
-      navigate("/account-locked");
+      navigate(redirectTo, { replace: true });
     }
+    // El resto de la lógica de error/redirección ya la tienes
   };
 
   return (
@@ -101,7 +99,7 @@ export default function MobileCollectorLogin() {
               bg="#009688"
               color="white"
               size="lg"
-              isLoading={loading}
+              loading={loading}
               loadingText="Ingresando..."
               marginTop={4}
               spinnerPlacement="end"
@@ -115,7 +113,7 @@ export default function MobileCollectorLogin() {
           <Button
             variant="link"
             color="#009688"
-            onClick={() => navigate("/mobile")}
+            onClick={() => navigate(-1)}
           >
             Volver
           </Button>
