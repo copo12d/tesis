@@ -52,4 +52,8 @@ public interface ContainerRepository extends JpaRepository<Container, Long> {
 """)
     List<Container> findAllBySerialContainingIgnoreCaseAndDeletedFalse(@Param("serial") String serial);
 
+    long countByDeletedFalse();
+
+    List<Container> findByStatusAndDeletedFalse(ContainerStatus status);
+
 }

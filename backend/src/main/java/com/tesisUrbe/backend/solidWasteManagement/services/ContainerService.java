@@ -7,8 +7,10 @@ import com.tesisUrbe.backend.common.util.ValidationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerAlertDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerUpdateDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -39,6 +41,7 @@ import com.google.zxing.common.BitMatrix;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -103,16 +106,6 @@ public class ContainerService {
             );
         }
 
-        ContainerStatus statusEnum;
-        try {
-            statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return errorFactory.build(
-                    HttpStatus.BAD_REQUEST,
-                    List.of(new ApiError("INVALID_STATUS", "status", "Estado inválido. Valores permitidos: AVAILABLE, UNDER_MAINTENANCE, FULL"))
-            );
-        }
-
         Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
 
         if (typeOpt.isEmpty()) {
@@ -134,7 +127,7 @@ public class ContainerService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .capacity(dto.getCapacity())
-                .status(statusEnum)
+                .status(ContainerStatus.AVAILABLE)
                 .containerType(typeOpt.get())
                 .createdBy(userOpt.get())
                 .deleted(false)
@@ -149,6 +142,42 @@ public class ContainerService {
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al registrar el contenedor"))
             );
         }
+    }
+
+    @Transactional
+    public Container save(Container container) {
+        return containerRepository.save(container);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<ContainerAlertDto>> getFullContainerAlerts() {
+        List<Container> fullContainers = containerRepository.findByStatusAndDeletedFalse(ContainerStatus.FULL);
+
+        if (fullContainers.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No hay contenedores llenos"),
+                    List.of(),
+                    List.of(new ApiError("NO_FULL_CONTAINERS", null, "No se encontraron contenedores con estado FULL"))
+            );
+        }
+
+        List<ContainerAlertDto> alerts = fullContainers.stream()
+                .map(container -> new ContainerAlertDto(
+                        container.getId(),
+                        container.getSerial(),
+                        container.getLatitude(),
+                        container.getLongitude(),
+                        container.getContainerType().getName(),
+                        container.getStatus(),
+                        container.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Contenedores llenos obtenidos correctamente"),
+                alerts,
+                null
+        );
     }
 
     @Transactional(readOnly = true)
@@ -246,8 +275,27 @@ public class ContainerService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<Long> getActiveContainerCount() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        long count = containerRepository.countByDeletedFalse();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Total de contenedores activos obtenido correctamente"),
+                count,
+                null
+        );
+    }
+
     @Transactional
-    public ApiResponse<Void> updateContainer(Long id, ContainerRequestDto dto) {
+    public ApiResponse<Void> updateContainer(Long id, ContainerUpdateDto dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null || !auth.isAuthenticated()) {
@@ -303,8 +351,13 @@ public class ContainerService {
             container.setSerial(dto.getSerial());
         }
 
-        if (dto.getLatitude() != null) container.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) container.setLongitude(dto.getLongitude());
+        if (dto.getLatitude() != null) {
+            container.setLatitude(dto.getLatitude());
+        }
+
+        if (dto.getLongitude() != null) {
+            container.setLongitude(dto.getLongitude());
+        }
 
         if (dto.getCapacity() != null) {
             if (dto.getCapacity().compareTo(BigDecimal.ZERO) <= 0) {
@@ -316,17 +369,8 @@ public class ContainerService {
             container.setCapacity(dto.getCapacity());
         }
 
-        if (StringUtils.hasText(dto.getStatus())) {
-            try {
-                ContainerStatus statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
-                container.setStatus(statusEnum);
-            } catch (IllegalArgumentException e) {
-                return errorFactory.build(
-                        HttpStatus.BAD_REQUEST,
-                        List.of(new ApiError("INVALID_STATUS", "status",
-                                ValidationUtils.buildValidEnumMessage(ContainerStatus.class, "Estado")))
-                );
-            }
+        if (dto.getStatus() != null) {
+            container.setStatus(dto.getStatus());
         }
 
         if (dto.getContainerTypeId() != null && dto.getContainerTypeId() > 0) {

@@ -67,7 +67,7 @@ public class ContainerFillCycleService {
         long distinctReporters = containerFillCycleDataRepository
                 .countDistinctReporterIpByContainerAndTimeFillingNoticeAfter(
                         container, LocalDateTime.now().minusHours(1));
-        boolean shouldMarkAsFull = distinctReporters + 1 >= 5; // +1 porque este reporte aún no está guardado
+        boolean shouldMarkAsFull = distinctReporters + 1 >= 3; // CANTIDAD DE REPORTES PARA VALIDAR ESTADO FULL
         Optional<ContainerFillCycleData> lastNotice = containerFillCycleDataRepository
                 .findTop1ByContainerAndDeletedFalseOrderByTimeFillingNoticeDesc(container);
         int fillingNumber;
