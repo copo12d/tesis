@@ -7,8 +7,10 @@ import com.tesisUrbe.backend.common.util.ValidationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerAlertDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerUpdateDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -28,6 +30,18 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +50,12 @@ public class ContainerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
     private final UserService userService;
+    
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:5173}")
+    private String frontendBaseUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${app.qr.size:300}")
+    private int frontendQrSize;
 
     @Transactional
     public ApiResponse<Void> registerContainer(ContainerRequestDto dto) {
@@ -86,16 +106,6 @@ public class ContainerService {
             );
         }
 
-        ContainerStatus statusEnum;
-        try {
-            statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return errorFactory.build(
-                    HttpStatus.BAD_REQUEST,
-                    List.of(new ApiError("INVALID_STATUS", "status", "Estado inválido. Valores permitidos: AVAILABLE, UNDER_MAINTENANCE, FULL"))
-            );
-        }
-
         Optional<ContainerType> typeOpt = containerTypeService.findById(dto.getContainerTypeId());
 
         if (typeOpt.isEmpty()) {
@@ -117,7 +127,7 @@ public class ContainerService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .capacity(dto.getCapacity())
-                .status(statusEnum)
+                .status(ContainerStatus.AVAILABLE)
                 .containerType(typeOpt.get())
                 .createdBy(userOpt.get())
                 .deleted(false)
@@ -132,6 +142,42 @@ public class ContainerService {
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al registrar el contenedor"))
             );
         }
+    }
+
+    @Transactional
+    public Container save(Container container) {
+        return containerRepository.save(container);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<ContainerAlertDto>> getFullContainerAlerts() {
+        List<Container> fullContainers = containerRepository.findByStatusAndDeletedFalse(ContainerStatus.FULL);
+
+        if (fullContainers.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No hay contenedores llenos"),
+                    List.of(),
+                    List.of(new ApiError("NO_FULL_CONTAINERS", null, "No se encontraron contenedores con estado FULL"))
+            );
+        }
+
+        List<ContainerAlertDto> alerts = fullContainers.stream()
+                .map(container -> new ContainerAlertDto(
+                        container.getId(),
+                        container.getSerial(),
+                        container.getLatitude(),
+                        container.getLongitude(),
+                        container.getContainerType().getName(),
+                        container.getStatus(),
+                        container.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Contenedores llenos obtenidos correctamente"),
+                alerts,
+                null
+        );
     }
 
     @Transactional(readOnly = true)
@@ -229,8 +275,27 @@ public class ContainerService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<Long> getActiveContainerCount() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        long count = containerRepository.countByDeletedFalse();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Total de contenedores activos obtenido correctamente"),
+                count,
+                null
+        );
+    }
+
     @Transactional
-    public ApiResponse<Void> updateContainer(Long id, ContainerRequestDto dto) {
+    public ApiResponse<Void> updateContainer(Long id, ContainerUpdateDto dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null || !auth.isAuthenticated()) {
@@ -286,8 +351,13 @@ public class ContainerService {
             container.setSerial(dto.getSerial());
         }
 
-        if (dto.getLatitude() != null) container.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) container.setLongitude(dto.getLongitude());
+        if (dto.getLatitude() != null) {
+            container.setLatitude(dto.getLatitude());
+        }
+
+        if (dto.getLongitude() != null) {
+            container.setLongitude(dto.getLongitude());
+        }
 
         if (dto.getCapacity() != null) {
             if (dto.getCapacity().compareTo(BigDecimal.ZERO) <= 0) {
@@ -299,17 +369,8 @@ public class ContainerService {
             container.setCapacity(dto.getCapacity());
         }
 
-        if (StringUtils.hasText(dto.getStatus())) {
-            try {
-                ContainerStatus statusEnum = ContainerStatus.valueOf(dto.getStatus().toUpperCase());
-                container.setStatus(statusEnum);
-            } catch (IllegalArgumentException e) {
-                return errorFactory.build(
-                        HttpStatus.BAD_REQUEST,
-                        List.of(new ApiError("INVALID_STATUS", "status",
-                                ValidationUtils.buildValidEnumMessage(ContainerStatus.class, "Estado")))
-                );
-            }
+        if (dto.getStatus() != null) {
+            container.setStatus(dto.getStatus());
         }
 
         if (dto.getContainerTypeId() != null && dto.getContainerTypeId() > 0) {
@@ -383,6 +444,44 @@ public class ContainerService {
             return errorFactory.build(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al eliminar el contenedor"))
+            );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<byte[]> generateContainerQrById(Long id) {
+        Optional<Container> containerOpt = containerRepository.findById(id);
+
+        if (containerOpt.isEmpty() || containerOpt.get().isDeleted()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Contenedor no encontrado o eliminado"),
+                    null,
+                    List.of(new ApiError("CONTAINER_NOT_FOUND", "id", "Contenedor con ID " + id + " no fue encontrado o está eliminado"))
+            );
+        }
+
+        Container container = containerOpt.get();
+        String path = String.format("/containers/%d", container.getId());
+        String target = frontendBaseUrl + path;
+
+        try {
+            int size = frontendQrSize;
+            Map<EncodeHintType, Object> hints = Map.of(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8.name());
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(target, BarcodeFormat.QR_CODE, size, size, hints);
+
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+                return new ApiResponse<>(
+                        errorFactory.buildMeta(HttpStatus.OK, "Código QR generado exitosamente"),
+                        baos.toByteArray(),
+                        null
+                );
+            }
+        } catch (Exception e) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el código QR"),
+                    null,
+                    List.of(new ApiError("QR_GENERATION_ERROR", null, "Error interno al generar el código QR"))
             );
         }
     }

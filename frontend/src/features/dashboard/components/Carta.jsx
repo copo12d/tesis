@@ -2,26 +2,40 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import 'react-circular-progressbar/dist/styles.css';
 import '../styles/estilos-carta.css';
 
-export const Carta = ({ value }) => {
+// --- Cambios nuevos comentados ---
+// import { MiniGrafica } from "./MiniGrafica";
 
+// export const Carta = ({ value, title, graficaData }) => {
+//   return (
+//     <div className="carta-container">
+//       <div className="header">
+//         <div className="title" style={{ color: "#fff" }}>{title}</div>
+//       </div>
+//       <div style={{ margin: "10px 0 0 0", textAlign: "left" }}>
+//         <MiniGrafica data={graficaData} />
+//       </div>
+//       <div
+//         className="carta-value"
+//         style={{
+//           fontSize: "2rem",
+//           fontWeight: "bold",
+//           color: "#d9cc1d",
+//           margin: "0.2rem 0 0 0",
+//           textAlign: "left"
+//         }}
+//       >
+//         {value}
+//       </div>
+//     </div>
+//   );
+// };
+
+// --- Versión anterior con CircularProgressbar ---
+export const Carta = ({ value, title }) => {
   return (
     <div className="carta-container">
       <div className="header">
-        <div className="title">Día</div>
-        <div className="dropdown">
-          <button
-            className="dropdown-button"
-          >
-            <span>...</span>
-          </button>
-          
-        <div className="dropdown-content">
-            <a href="#">Opción 1</a>
-            <a href="#">Opción 2</a>
-            <a href="#">Opción 3</a>
-        </div>
-
-        </div>
+        <div className="title">{title}</div>
       </div>
       <div className="carta-progress">
         <CircularProgressbar
@@ -31,16 +45,13 @@ export const Carta = ({ value }) => {
           strokeWidth={12}
           styles={buildStyles({
             textSize: "22px",
-            textColor: "#1a1a2e",
-            pathColor: "#1a1a2e",
-            trailColor: "#fff",
+            textColor: "#1b1c31",
+            pathColor: "#5a9e18",
+            trailColor: "#d9cc1d",
             pathTransitionDuration: 0.5,
             strokeLinecap: "round"
           })}
         />
-      </div>
-      <div className="carta-title">
-        Contenedores activos
       </div>
     </div>
   );

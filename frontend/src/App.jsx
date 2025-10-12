@@ -7,13 +7,28 @@ import { Dashboard } from './features/dashboard/pages/Dashboard';
 import { UserCreate } from './features/usersManager/pages/UserCreate';
 import { UsersList } from './features/usersManager/pages/UsersList';
 import { UserEdit } from './features/usersManager/pages/UserEdit';
+import ForgotPassword from './features/auth/pages/ForgotPassword';
+import AccountLocked from './features/auth/pages/AccountLocked';
+import MobileReportPage from './features/mobile/pages/MobileReportPage';
+import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
+import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeList";
+import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
+import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
+import { UserProfileEdit } from './features/usersManager/pages/UserProfileEdit';
+import { ReportsPage } from './features/Reports/pages/ReportsPage';
+import { ContainerList } from "./features/container/pages/ContainerList";
+import { ContainerCreate } from "./features/container/pages/ContainerCreate";
+import { BatchListPage } from './features/batch/pages/BatchListPage';
+import { BatchCreate } from "./features/batch/pages/BatchCreate";
+
 
 import MainLayout from './layouts/MainLayout';
 
 import PrivateRoute from './routes/PrivateRoute';
 import PublicRoute from './routes/PublicRoute';
+import MobileRoute from './routes/MobileRoute';
 
-import AuthProvider from './context/AuthProvider';
+import { AuthProvider } from './context/AuthProvider';
 
 
 function App() {
@@ -34,8 +49,33 @@ function App() {
             <Route path="users/new" element={<UserCreate />} />
             <Route path='users/all' element={<UsersList />} />
             <Route path='users/edit/:id' element={<UserEdit />} />
+            <Route path="/container-type/new" element={<ContainerTypeCreate />} />
+            <Route path="/container-type/edit/:id" element={<ContainerTypeEdit />} />
+            <Route path="/container-type/list" element={<ContainerTypeList />} />
+            <Route path="/profile" element={<UserProfileEdit />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/container/list" element={<ContainerList />} />
+            <Route path="container/new" element={<ContainerCreate />} />
+            <Route path="/batch/list" element={<BatchListPage />} />
+            <Route path="/batch/create" element={<BatchCreate />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
+          <Route
+            path="/mobile"
+            element={
+              <MobileRoute>
+                <MobileReportPage />
+              </MobileRoute>
+            }
+          />
+          <Route
+            path="/mobile/login"
+            element={
+              <MobileRoute>
+                <MobileCollectorLogin />
+              </MobileRoute>
+            }
+          />
 
             <Route
               path="/login"
@@ -52,6 +92,14 @@ function App() {
                   <Register />
                 </PublicRoute>
               }
+            />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+            <Route
+              path="/account-locked"
+              element={<AccountLocked />}
             />
 
           <Route path="*" element={<Navigate to="/login" replace />} />

@@ -8,12 +8,15 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.Waste;
+import com.tesisUrbe.backend.prediction.service.ContainerFillCycleService;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
+import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.WasteRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WasteService {
@@ -38,6 +42,7 @@ public class WasteService {
     private final BatchRegService batchRegService;
     private final UserService userService;
     private final ApiErrorFactory errorFactory;
+    private final ContainerFillCycleService containerFillCycleService;
 
     @Transactional
     public ApiResponse<Void> registerWaste(WasteRequestDto dto) {
@@ -82,10 +87,12 @@ public class WasteService {
                     List.of(new ApiError("INVALID_WEIGHT", "weight", "El peso debe ser mayor a cero")));
         }
 
+        Container container = containerOpt.get();
+
         Waste waste = new Waste();
         waste.setWeight(dto.getWeight());
         waste.setCollectionDate(LocalDateTime.now());
-        waste.setContainer(containerOpt.get());
+        waste.setContainer(container);
         waste.setBatch(batch);
         waste.setCreatedBy(userOpt.get());
         waste.setDeleted(false);
@@ -98,15 +105,20 @@ public class WasteService {
         BatchReg reg = new BatchReg();
         reg.setWeight(dto.getWeight());
         reg.setCollectionDate(LocalDateTime.now());
-        reg.setContainer(containerOpt.get());
+        reg.setContainer(container);
         reg.setBatchEnc(batch);
         reg.setCreatedBy(userOpt.get());
         reg.setDeleted(false);
         batchRegService.save(reg);
 
+        container.setStatus(ContainerStatus.AVAILABLE);
+        containerService.save(container);
+
+        containerFillCycleService.completeFillingCycle(container)
+                .ifPresent(error -> log.warn("Ciclo de llenado no completado: {}", error.meta().message()));
+
         return errorFactory.buildSuccess(HttpStatus.CREATED, "Residuo registrado exitosamente");
     }
-
 
     @Transactional(readOnly = true)
     public ApiResponse<WasteResponseDto> getWasteById(Long id) {

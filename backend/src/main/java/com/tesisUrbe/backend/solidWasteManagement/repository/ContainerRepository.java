@@ -37,25 +37,23 @@ public interface ContainerRepository extends JpaRepository<Container, Long> {
     @Query("""
     SELECT c FROM Container c
     WHERE c.deleted = false
-    """)
+""")
     List<Container> findAllByDeletedFalse();
 
     @Query("""
     SELECT c FROM Container c
     WHERE c.deleted = false AND c.id = :id
-    """)
+""")
     List<Container> findAllByIdAndDeletedFalse(@Param("id") Long id);
 
     @Query("""
     SELECT c FROM Container c
     WHERE c.deleted = false AND LOWER(c.serial) LIKE LOWER(CONCAT('%', :serial, '%'))
-    """)
+""")
     List<Container> findAllBySerialContainingIgnoreCaseAndDeletedFalse(@Param("serial") String serial);
 
-    @Query("""
-    SELECT c FROM Container c
-    WHERE c.status = :status AND c.deleted = false
-    """)
-    List<Container> findAllByStatusAndDeletedFalse(@Param("status") ContainerStatus status);
+    long countByDeletedFalse();
+
+    List<Container> findByStatusAndDeletedFalse(ContainerStatus status);
 
 }

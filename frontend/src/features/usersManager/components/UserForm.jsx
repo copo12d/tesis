@@ -22,9 +22,10 @@ export function UserForm({
   loading = false,
   initialValues = {},
   includeRole = true,
-  onSubmit, // <-- ahora se usa el onSubmit que viene del padre
+  onSubmit,
   submitText = "Guardar",
   title,
+  fields, // <-- nuevo prop opcional
 }) {
   const { user } = useContext(AuthContext);
 
@@ -80,6 +81,11 @@ export function UserForm({
     },
   ];
 
+  // Filtra los campos si se pasa el prop fields
+  const filteredFields = fields
+    ? FIELDS.filter((f) => fields.includes(f.name))
+    : FIELDS;
+
   return (
     <form onSubmit={handleSubmit}>
       <Stack
@@ -96,7 +102,7 @@ export function UserForm({
           </Text>
         )}
 
-        {FIELDS.map((f) => (
+        {filteredFields.map((f) => (
           <Field.Root key={f.name} required={f.required} invalid={!!errors[f.name]}>
             <Field.Label color="black">{f.label}</Field.Label>
             <InputGroup

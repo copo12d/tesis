@@ -24,15 +24,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
- * Servicio encargado de gestionar y persistir los cronogramas de llenado (schedulers) de contenedores.
- * <p>Este servicio maneja dos flujos principales: la generación automática de cronogramas
- * a partir de predicciones estadísticas y el registro manual de horarios por parte de un usuario.</p>
- *
- * @author José
- * @version 1.0
- * @since 2025-10-05
- */
 @Service
 @RequiredArgsConstructor
 public class ContainerSchedulerService {
@@ -42,17 +33,6 @@ public class ContainerSchedulerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
 
-    /**
-     * Genera y persiste un cronograma de llenado para una lista de contenedores
-     * basándose en las predicciones estadísticas calculadas para el día de hoy.
-     * <p>El proceso llama al ContainerFillCycleService para obtener los horarios predichos
-     * y maneja los errores de contenedores no encontrados o con data insuficiente.</p>
-     *
-     * @param containerSerial Lista de seriales de los contenedores para los que se generarán predicciones.
-     * @return ApiResponse con una lista de listas de ContainerScheduler (cada lista interna corresponde a un contenedor),
-     * y una lista de errores si algún contenedor no pudo ser procesado.
-     * @see ContainerFillCycleService#createPrediction(Container)
-     */
     @Transactional
     public ApiResponse<List<List<ContainerScheduler>>> schedulerPredictions(List<String> containerSerial) {
 
@@ -96,16 +76,6 @@ public class ContainerSchedulerService {
 
     }
 
-    /**
-     * Registra manualmente un cronograma de llenado para una lista de contenedores.
-     * <p>Este método toma una lista de objetos que contienen el serial del contenedor y
-     * los horarios de llenado deseados (LocalDateTime), y los persiste directamente.</p>
-     *
-     * @param scheduler Lista de objetos ManualSchedulerDto que contienen el serial del contenedor
-     * y los horarios de llenado manuales.
-     * @return ApiResponse con una lista de listas de ContainerScheduler creados y una lista
-     * de errores si algún contenedor no pudo ser encontrado.
-     */
     @Transactional
     public ApiResponse<List<List<ContainerScheduler>>>  schedulerManual(List<ManualSchedulerDto> scheduler){
         List<List<ContainerScheduler>> allContainerSchedulers = new ArrayList<>(List.of());
@@ -139,20 +109,12 @@ public class ContainerSchedulerService {
         );
     }
 
-
-    /**
-     * Tarea programada que se ejecuta cada 15 minutos.
-     * Revisa los cronogramas de llenado cuya hora de activación (schedulerFillTime)
-     * ha pasado, y que no han sido usados ni suspendidos.
-     * Se usa 'fixedRate' para iniciar el conteo de 15 minutos al finalizar la ejecución previa.
-     */
     @Transactional
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES) // Ejecuta cada 15 minutos
     public void checkOverdueSchedules() {
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 1. Obtener la lista de cronogramas pasados y activos
         List<ContainerScheduler> overdueSchedules =
                 containerSchedulerRepository.findAllByWasUsedFalseAndWasSuspendedFalseAndSchedulerFillTimeBefore(now);
 
@@ -162,15 +124,12 @@ public class ContainerSchedulerService {
         }
 
         for (ContainerScheduler scheduler : overdueSchedules) {
-            //Guarda el contenedor como full
             Container container = scheduler.getContainer();
             container.setStatus(ContainerStatus.FULL);
             containerRepository.save(container);
 
-            //Crea el aviso para futuras predicciones
             containerFillCycleService.fillContainerNotice(container);
 
-            //Marca como usado el cronograma
             scheduler.setWasUsed(true);
             containerSchedulerRepository.save(scheduler);
         }

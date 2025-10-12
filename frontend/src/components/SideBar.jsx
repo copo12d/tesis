@@ -20,12 +20,13 @@ import { useContext } from "react";
 import AuthContext from "../context/Authcontext";
 import AdminSection from "./AdminSection";
 import { useNavigate } from "react-router-dom";
+import { LogoutDialog } from "./LogoutDialog";
 
 
 
 const Sidebar = () => {
-  const navigate = useNavigate()
-  const { logout, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext); // <-- aquí obtienes logout
 
   const navItems = [
     {
@@ -84,24 +85,28 @@ const Sidebar = () => {
           })}
           <AdminSection user={user} />
           <Box pt={2} mt={2} borderTop="1px solid rgba(255,255,255,0.12)">
-            <Button
-              variant="ghost"
-              justifyContent="flex-start"
-              color="white"
-              fontWeight="medium"
-              _hover={{ bg: "whiteAlpha.200", transform: "translateX(2px)" }}
-              _active={{ bg: "whiteAlpha.300" }}
-              transition="all 0.15s"
-              h="42px"
-              px={3}
-              borderRadius="md"
-              display="flex"
-              gap={3}
-              onClick={logout}
-            >
-              <Box as={FiLogOut} boxSize={5} opacity={0.9} />
-              Logout
-            </Button>
+            <LogoutDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  justifyContent="flex-start"
+                  color="white"
+                  fontWeight="medium"
+                  _hover={{ bg: "whiteAlpha.200", transform: "translateX(2px)" }}
+                  _active={{ bg: "whiteAlpha.300" }}
+                  transition="all 0.15s"
+                  h="42px"
+                  px={3}
+                  borderRadius="md"
+                  display="flex"
+                  gap={3}
+                >
+                  <Box as={FiLogOut} boxSize={5} opacity={0.9} />
+                  Logout
+                </Button>
+              }
+              onLogout={logout} // <-- aquí pasas la función de logout
+            />
           </Box>
         </VStack>
         <Text fontSize="xs" opacity={0.6} mt={4} mb={1}>

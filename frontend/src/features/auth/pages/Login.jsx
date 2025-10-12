@@ -34,6 +34,12 @@ export function Login() {
     if (result.success) {
       login(result.accessToken, result.refreshToken);
       navigate("/");
+    } else if (
+      result.error &&
+      result.error.toLowerCase().includes("bloqueada")
+    ) {
+      // Si el mensaje de error contiene "bloqueada", redirige
+      navigate("/account-locked");
     }
   };
 
@@ -64,6 +70,7 @@ export function Login() {
                   size="lg"
                   color={"blackAlpha.900"}
                   w="100%"
+                  pl = {2}
                   _placeholder={{ pl: 2 }}
                 />
               </InputGroup>
@@ -86,6 +93,7 @@ export function Login() {
                   color={"blackAlpha.900"}
                   w="100%"
                   _placeholder={{ pl: 2 }}
+                  pl = {2}
                   css={{ "--error-color": "red" }}
                   
                 />
@@ -126,7 +134,7 @@ export function Login() {
           <Button
             variant="link"
             color="#009688"
-            onClick={() => navigate("/olvidaste-contraseña")}
+            onClick={() => navigate("/forgot-password")}
           >
             Olvidaste tu contraseña?
           </Button>

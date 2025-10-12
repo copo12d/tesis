@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.usersManagement.services;
 
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
+import com.tesisUrbe.backend.common.exception.ApiMeta;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PasswordUtils;
 import com.tesisUrbe.backend.common.util.ValidationUtils;
@@ -415,6 +416,23 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public Optional<User> findByUserName(String username) {
         return userRepository.findByUserName(username);
+    }
+
+    public ApiResponse<Long> getIdByUserName(String username) {
+        Optional<User> optionalUser = userRepository.findByUserName(username);
+        if (optionalUser.isPresent()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.OK, "Id obtenido exitosamente"),
+                    optionalUser.get().getId(),
+                    null
+            );
+        } else {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Usuario no encontrado"),
+                    null,
+                    List.of(new ApiError("USER_NOT_FOUND", "username", "No se encontró el usuario con username: " + username))
+            );
+        }
     }
 
     @Transactional(readOnly = true)

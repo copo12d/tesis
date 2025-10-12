@@ -1,16 +1,22 @@
 import { IconButton, Stack, Spinner, Text, Heading } from "@chakra-ui/react";
 import { LiaEditSolid, LiaTrashAltSolid } from "react-icons/lia";
-import { useUsersList } from "../hooks/useUsersList";
 import { useDeleteUser } from "../hooks/useDeleteUser";
 import { GenericTable } from "@/components/GenericTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
+import { useUserAdvancedSearch } from "../hooks/useUserAdvancedSearch";
+import { useEffect, useState } from "react";
 
 const headers = [
   { key: "fullName", label: "Nombre" },
   { key: "userName", label: "Usuario" },
   { key: "email", label: "Email" },
   { key: "role", label: "Rol" },
+];
+
+const searchMenuItems = [
+  { value: "username", label: "Usuario" },
+  { value: "name", label: "Nombre" },
 ];
 
 export function UsersList() {
@@ -22,12 +28,18 @@ export function UsersList() {
     page,
     setPage,
     totalPages,
+    searchTerm,
+    setSearchTerm,
+    searchType,
+    setSearchType,
     refetch,
-  } = useUsersList({
+  } = useUserAdvancedSearch({
     initialPage: 1,
     pageSize: 10,
     sortBy: "id",
     sortDir: "DESC",
+    autoFetch: true, // activa el debounce
+    debounceMs: 400,
   });
 
   const { remove, deletingId } = useDeleteUser();
@@ -38,11 +50,18 @@ export function UsersList() {
 
   const handleDelete = async (row) => {
     const ok = await remove(row.id);
-    if (ok) refetch();
+    if (ok) {
+      refetch();
+    }
   };
-  
 
-  if (loading && items.length === 0) {
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!loading) setHasLoaded(true);
+  }, [loading]);
+
+  if (loading && !hasLoaded) {
     return (
       <Stack p={6} align="center">
         <Spinner />
@@ -54,7 +73,7 @@ export function UsersList() {
   }
 
   return (
-    <Stack bg={"whiteAlpha.900"} h={"100vh"} >
+    <Stack bg={"whiteAlpha.900"} h={"100vh"}>
       <GenericTable
         headers={headers}
         items={items}
@@ -68,6 +87,14 @@ export function UsersList() {
         onPageChange={(newPage) => {
           setPage(newPage.page);
         }}
+        // --- Props para barra de búsqueda ---
+        menuItems={searchMenuItems}
+        menuButtonText={searchMenuItems.find((i) => i.value === searchType)?.label}
+        searchTerm={searchTerm}
+        onSearchTermChange={(e) => setSearchTerm(e.target.value)}
+        searchType={searchType}
+        onSearchTypeChange={setSearchType}
+        // --- Fin props búsqueda ---
         renderActions={(row) => {
           const isDeleting = deletingId === row.id;
           return (

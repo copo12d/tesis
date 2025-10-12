@@ -22,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -124,6 +126,41 @@ public class ContainerTypeService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Tipos de contenedor obtenidos correctamente"),
                 dtoPage,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<ContainerTypeResponseDto>> getAllContainerTypes() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        List<ContainerType> containerTypes = containerTypeRepository.findAllActive();
+
+        if (containerTypes.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No se encontraron tipos de contenedor"),
+                    List.of(),
+                    List.of(new ApiError("CONTAINER_TYPES_NOT_FOUND", null, "No hay tipos de contenedor disponibles"))
+            );
+        }
+
+        List<ContainerTypeResponseDto> dtos = containerTypes.stream()
+                .map(type -> new ContainerTypeResponseDto(
+                        type.getId(),
+                        type.getName(),
+                        type.getDescription()
+                ))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Tipos de contenedor obtenidos correctamente"),
+                dtos,
                 null
         );
     }

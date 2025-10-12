@@ -1,53 +1,67 @@
 import { useState } from "react";
+import { Box, Button, VStack, Portal, Popover } from "@chakra-ui/react";
 import {
-  Box,
-  Button,
-  VStack,
-  Portal,
-  Popover,
-} from "@chakra-ui/react";
-import { FiShield, FiUsers, FiBox, FiDownload, FiUpload, FiList, FiFileText } from "react-icons/fi";
-import { useNavigate } from "react-router-dom"; // <-- agregado
+  FiShield,
+  FiUsers,
+  FiBox,
+  FiDownload,
+  FiUpload,
+  FiList,
+  FiFileText,
+  FiPackage, // <-- nuevo icono para lotes
+} from "react-icons/fi";
+import { TbRecycle, TbListDetails } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminSection({ user }) {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate(); // <-- agregado
+  const navigate = useNavigate();
 
   const isAdmin =
     user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPERUSER";
   if (!isAdmin) return null;
 
-  const userSubItems = [
-    { label: "Listado", icon: FiList, action: () => navigate("/users/all") },
-    { label: "Crear", icon: FiUsers, action: () => navigate("/users/new") },
-    { label: "Reportes", icon: FiDownload },
-  ];
-
   const containerSubItems = [
-    { label: "Contenedor 1", icon: FiBox },
-    { label: "Contenedor 2", icon: FiBox },
-    { label: "Reportes", icon: FiUpload },
+    {
+      label: "Tipos de contenedores",
+      icon: TbListDetails,
+      action: () => navigate("/container-type/list"),
+    },
+    {
+      label: "Contenedores",
+      icon: TbRecycle, 
+      action: () => navigate("/container/list"),
+    },
   ];
 
   const adminItems = [
     {
-      type: "popover",
-      label: "Usuarios ▸",
+      label: "Usuarios",
       icon: FiUsers,
-      subItems: userSubItems,
+      action: () => navigate("/users/all"),
     },
     {
       type: "popover",
       label: "Contenedores",
-      icon: FiBox,
+      icon: TbRecycle, // Aquí también usa TbRecycle para el grupo
       subItems: containerSubItems,
     },
-    { label: "Logs", icon: FiFileText },
+    {
+      label: "Lotes",
+      icon: FiPackage, // <-- icono de paquete/lote
+      action: () => navigate("/batch/list"),
+    },
+    {
+      label: "Reportes",
+      icon: FiUpload,
+      action: () => navigate("/reports"),
+    },
   ];
 
   const baseBtnProps = {
     variant: "ghost",
     justifyContent: "flex-start",
+    px: 4,
     color: "white",
     fontSize: "sm",
     _hover: { bg: "whiteAlpha.200" },
@@ -63,7 +77,7 @@ export default function AdminSection({ user }) {
         justifyContent="flex-start"
         color="white"
         fontWeight="medium"
-        onClick={() => setOpen(o => !o)}
+        onClick={() => setOpen((o) => !o)}
         _hover={{ bg: "whiteAlpha.200", transform: "translateX(2px)" }}
         _active={{ bg: "whiteAlpha.300" }}
         transition="all 0.15s"
@@ -82,7 +96,7 @@ export default function AdminSection({ user }) {
 
       {open && (
         <VStack mt={1} pl={6} align="stretch" spacing={1}>
-          {adminItems.map(item => {
+          {adminItems.map((item) => {
             if (item.type === "popover") {
               const ItemIcon = item.icon;
               return (
@@ -95,7 +109,9 @@ export default function AdminSection({ user }) {
                 >
                   <Popover.Trigger asChild>
                     <Button {...baseBtnProps}>
-                      {ItemIcon && <Box as={ItemIcon} boxSize={4} opacity={0.9} />}
+                      {ItemIcon && (
+                        <Box as={ItemIcon} boxSize={4} opacity={0.9} />
+                      )}
                       {item.label}
                     </Button>
                   </Popover.Trigger>
@@ -109,7 +125,7 @@ export default function AdminSection({ user }) {
                         borderRadius="md"
                       >
                         <VStack align="stretch" spacing={1}>
-                          {item.subItems.map(sub => {
+                          {item.subItems.map((sub) => {
                             const SubIcon = sub.icon;
                             return (
                               <Button
@@ -122,7 +138,9 @@ export default function AdminSection({ user }) {
                                   }
                                 }}
                               >
-                                {SubIcon && <Box as={SubIcon} boxSize={4} opacity={0.9} />}
+                                {SubIcon && (
+                                  <Box as={SubIcon} boxSize={4} opacity={0.9} />
+                                )}
                                 {sub.label}
                               </Button>
                             );
@@ -136,7 +154,16 @@ export default function AdminSection({ user }) {
             }
             const ItemIcon = item.icon;
             return (
-              <Button key={item.label} {...baseBtnProps}>
+              <Button
+                key={item.label}
+                {...baseBtnProps}
+                onClick={() => {
+                  if (item.action) {
+                    item.action();
+                    setOpen(false);
+                  }
+                }}
+              >
                 {ItemIcon && <Box as={ItemIcon} boxSize={4} opacity={0.9} />}
                 {item.label}
               </Button>
