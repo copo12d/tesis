@@ -47,7 +47,7 @@ export async function availableRolesFor(currentRole) {
     if (!Array.isArray(data?.data)) return [];
 
     return data.data.map((r) => ({
-      value: r.name,
+      value: r.value, // se usa el value para el select
       label: r.name, // se conserva tal cual viene de la BDD
     }));
   } catch (error) {

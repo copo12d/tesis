@@ -49,6 +49,13 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
+    @GetMapping("/public/full/count")
+    @PermitAll
+    public ResponseEntity<ApiResponse<Long>> getPublicFullContainerCount() {
+        ApiResponse<Long> response = containerService.getFullContainerCount();
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
     @GetMapping("/admin/all")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<Page<ContainerResponseDto>>> getAllContainers(
