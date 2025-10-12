@@ -8,6 +8,7 @@ import {
   FiUpload,
   FiList,
   FiFileText,
+  FiPackage, // <-- nuevo icono para lotes
 } from "react-icons/fi";
 import { TbRecycle, TbListDetails } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +45,11 @@ export default function AdminSection({ user }) {
       label: "Contenedores",
       icon: TbRecycle, // Aquí también usa TbRecycle para el grupo
       subItems: containerSubItems,
+    },
+    {
+      label: "Lotes",
+      icon: FiPackage, // <-- icono de paquete/lote
+      action: () => navigate("/batch"),
     },
     {
       label: "Reportes",
