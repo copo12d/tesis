@@ -2,94 +2,128 @@ import React from "react";
 import {
   Stack,
   Button,
-  Input,
-  InputGroup,
-  Field,
   Text,
+  Box,
 } from "@chakra-ui/react";
 import { LiaTagSolid, LiaInfoCircleSolid } from "react-icons/lia";
 import { useContainerTypeForm } from "../hooks/useContainerTypeForm";
+import { IconInputField } from "@/components/ui/IconInputField";
+import { toast } from "react-hot-toast";
 
 export function ContainerTypeForm({
   initialValues = { name: "", description: "" },
   loading = false,
   onSubmit,
   submitText = "Guardar",
-  title = "Registrar tipo de contenedor",
+  title,
 }) {
-  const { form, errors, setField, handleSubmit } = useContainerTypeForm({
-    initialValues,
-    onSubmit,
-  });
+  const { form, errors, setField, handleSubmit, validate } =
+    useContainerTypeForm({ initialValues, onSubmit });
 
   const iconAddonProps = { bg: "teal.700", px: 3 };
 
+  const isEdit = !!initialValues?.id;
+
+  const handleFieldChange = (name, value) => {
+    setField(name, value);
+  };
+
+  const handleValidatedSubmit = (e) => {
+    e.preventDefault();
+    const validationErrors = validate(form);
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error("Debes llenar todos los campos");
+      return;
+    }
+    onSubmit(form);
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack
-        spacing={6}
-        p={4}
-        bg="whiteAlpha.900"
-        boxShadow="md"
-        w="100%"
-        h={"100vh"}
+    <Stack
+      spacing={0}
+      borderRadius="md"
+      boxShadow="md"
+      borderWidth={1}
+      borderColor="green.600"
+      bg="whiteAlpha.900"
+      maxW="6xl"
+      mx="auto"
+      mt={6}
+    >
+      {/* Encabezado verde */}
+      <Box
+        bg="green.600"
+        color="white"
+        px={6}
+        py={4}
+        borderTopRadius="md"
+        borderBottom="1px solid"
+        borderColor="green.700"
       >
-        <Text fontSize="2xl" fontWeight="bold" mb={2} color="black">
-          {title}
+        <Text fontSize="xl" fontWeight="bold">
+          {title || (isEdit ? "Editar tipo de contenedor" : "Registrar tipo de contenedor")}
         </Text>
+      </Box>
 
-        <Field.Root required invalid={!!errors.name}>
-          <Field.Label color="black">Nombre</Field.Label>
-          <InputGroup startAddon={<LiaTagSolid />} startAddonProps={iconAddonProps}>
-            <Input
-              type="text"
-              placeholder="Ej: Papel, Plástico, Orgánicos..."
+      {/* Contenido del formulario */}
+      <Box px={6} py={6}>
+        <form onSubmit={handleValidatedSubmit}>
+          <Stack spacing={6}>
+            <IconInputField
+              label="Nombre"
+              name="name"
               value={form.name}
-              onChange={(e) => setField("name", e.target.value)}
-              size="lg"
-              color="blackAlpha.900"
-              disabled={loading}
-            />
-          </InputGroup>
-          {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
-        </Field.Root>
-
-        <Field.Root required invalid={!!errors.description}>
-          <Field.Label color="black">Descripción</Field.Label>
-          <InputGroup startAddon={<LiaInfoCircleSolid />} startAddonProps={iconAddonProps}>
-            <Input
+              onChange={(e) => handleFieldChange("name", e.target.value)}
+              placeholder="Ej: Papel, Plástico, Orgánicos..."
+              icon={<LiaTagSolid />}
+              iconProps={iconAddonProps}
               type="text"
-              placeholder="Describe el tipo de desecho"
-              value={form.description}
-              onChange={(e) => setField("description", e.target.value)}
-              size="lg"
-              color="blackAlpha.900"
+              required
               disabled={loading}
+              error={errors.name}
+              inputProps={{
+                autoComplete: "name",
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
             />
-          </InputGroup>
-          {errors.description && <Field.ErrorText>{errors.description}</Field.ErrorText>}
-        </Field.Root>
 
-        <Button
-          type="submit"
-          colorPalette="green"
-          size="lg"
-          loading={loading}
-          loadingText="Guardando..."
-          spinnerPlacement="end"
-          alignSelf="flex-end"
-          disabled={loading}
-          px={2}
-        >
-          {submitText}
-        </Button>
+            <IconInputField
+              label="Descripción"
+              name="description"
+              value={form.description}
+              onChange={(e) => handleFieldChange("description", e.target.value)}
+              placeholder="Describe el tipo de desecho"
+              icon={<LiaInfoCircleSolid />}
+              iconProps={iconAddonProps}
+              type="text"
+              required
+              disabled={loading}
+              error={errors.description}
+              inputProps={{
+                autoComplete: "off",
+                w: "100%",
+                pl: 2,
+                _placeholder: { pl: 2 },
+              }}
+            />
 
-        {Object.keys(errors).length > 0 && (
-          <Text fontSize="sm" color="red.500">
-            Corrige los campos marcados.
-          </Text>
-        )}
-      </Stack>
-    </form>
+            <Button
+              type="submit"
+              colorPalette="green"
+              size="lg"
+              isLoading={loading}
+              loadingText="Guardando..."
+              spinnerPlacement="end"
+              alignSelf="flex-end"
+              px={2}
+            >
+              {submitText}
+            </Button>
+          </Stack>
+        </form>
+      </Box>
+    </Stack>
   );
 }
