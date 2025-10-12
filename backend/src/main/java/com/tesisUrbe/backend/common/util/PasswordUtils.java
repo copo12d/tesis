@@ -23,7 +23,7 @@ public final class PasswordUtils {
         if (!password.matches(".*\\d.*")) {
             throw new IllegalArgumentException("La contraseña debe contener al menos un número");
         }
-        if (!password.matches(".*[!@#$%^&*()].*")) {
+        if (!password.matches(".*[!@#$%^&*()_-].*")) {
             throw new IllegalArgumentException("La contraseña debe contener al menos un carácter especial");
         }
     }
