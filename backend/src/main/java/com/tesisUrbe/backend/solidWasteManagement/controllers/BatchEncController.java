@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.solidWasteManagement.controllers;
 
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PageValidator;
+import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.services.BatchEncService;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,6 +53,13 @@ public class BatchEncController {
             @RequestParam(defaultValue = "desc") String sortDir) {
         PageValidator.validate(page, size);
         ApiResponse<Page<BatchEncResponseDto>> response = batchEncService.getAllBatches(page, size, sortBy, sortDir);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/admin/dropdown/in-progress")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getInProgressBatchDropdown() {
+        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getInProgressBatchDropdown();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
