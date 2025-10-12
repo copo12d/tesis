@@ -384,7 +384,7 @@ public class UserService implements UserDetailsService {
                                 user.getFullName(),
                                 user.getUserName(),
                                 user.getEmail(),
-                                user.getRole().getName().name(),
+                                user.getRole().getName().getDescription(),
                                 user.isVerified(),
                                 user.isAccountLocked(),
                                 user.isUserLocked()
