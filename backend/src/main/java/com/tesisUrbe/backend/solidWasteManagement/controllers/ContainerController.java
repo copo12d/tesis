@@ -6,6 +6,7 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerUpdateDto;
 import com.tesisUrbe.backend.solidWasteManagement.services.ContainerService;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,13 @@ public class ContainerController {
     @GetMapping("/admin/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<ContainerResponseDto>> getContainerById(@PathVariable Long id) {
+        ApiResponse<ContainerResponseDto> response = containerService.getContainerById(id);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/public/{id}")
+    @PermitAll
+    public ResponseEntity<ApiResponse<ContainerResponseDto>> getPublicContainerById(@PathVariable Long id) {
         ApiResponse<ContainerResponseDto> response = containerService.getContainerById(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
