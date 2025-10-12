@@ -46,18 +46,10 @@ export async function availableRolesFor(currentRole) {
 
     if (!Array.isArray(data?.data)) return [];
 
-    const allRoles = data.data.map((r) => ({
+    return data.data.map((r) => ({
       value: r.name,
-      label: r.name.replace("ROLE_", "").toLowerCase().replace(/^\w/, c => c.toUpperCase()),
+      label: r.name, // se conserva tal cual viene de la BDD
     }));
-
-    if (currentRole === "ROLE_SUPERUSER") return allRoles;
-
-    if (currentRole === "ROLE_ADMIN") {
-      return allRoles.filter((r) => r.value !== "ROLE_SUPERUSER");
-    }
-
-    return [];
   } catch (error) {
     console.error("Error al obtener roles:", error);
     return [];
