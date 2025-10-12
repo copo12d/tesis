@@ -20,7 +20,7 @@ public class WasteController {
     private final WasteService wasteService;
 
     @PostMapping("/admin/register")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    @PreAuthorize("hasAnyRole('ROLE_EMPLOYEE','ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<Void>> registerWaste(@Valid @RequestBody WasteRequestDto dto) {
         ApiResponse<Void> response = wasteService.registerWaste(dto);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
