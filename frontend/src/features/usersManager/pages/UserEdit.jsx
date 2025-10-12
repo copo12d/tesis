@@ -8,41 +8,39 @@ export function UserEdit() {
   const navigate = useNavigate();
   const { user, loading, updating, error, updateUser } = useUpdateUser(id);
 
-  if (loading) {
-    return (
-      <Stack align="center" p={8}>
-        <Spinner />
-        <Text>Cargando usuario...</Text>
-      </Stack>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box color="red.500" p={4}>
-        Error al cargar usuario.
-      </Box>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Box p={4}>
-        Usuario no encontrado.
-      </Box>
-    );
-  }
-
   return (
-    <UserForm
-      initialValues={user}
-      isLoading={updating}
-      onSubmit={async (values) => {
-        const ok = await updateUser(values);
-        if (ok) navigate("/users/all");
-      }}
-      submitText="Actualizar usuario"
-      title="Editar usuario"
-    />
+    <Box
+      h="100vh"
+      overflowY="auto"
+      bg="gray.50"
+      px={4}
+      py={14}
+    >
+      {loading ? (
+        <Stack align="center" p={8}>
+          <Spinner />
+          <Text>Cargando usuario...</Text>
+        </Stack>
+      ) : error ? (
+        <Box color="red.500" p={4}>
+          Error al cargar usuario.
+        </Box>
+      ) : !user ? (
+        <Box p={4}>
+          Usuario no encontrado.
+        </Box>
+      ) : (
+        <UserForm
+          initialValues={user}
+          loading={updating}
+          onSubmit={async (values) => {
+            const ok = await updateUser(values);
+            if (ok) navigate("/users/all");
+          }}
+          submitText="Actualizar usuario"
+          title="Editar usuario"
+        />
+      )}
+    </Box>
   );
 }
