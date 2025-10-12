@@ -33,6 +33,9 @@ export function QrPreviewDialog({ trigger, containerId, serial }) {
     link.click();
   };
 
+  // Nuevo: texto con serial o containerId
+  const serialText = serial || containerId;
+
   return (
     <Dialog.Root
       open={isOpen}
@@ -67,7 +70,8 @@ export function QrPreviewDialog({ trigger, containerId, serial }) {
                   </Dialog.Title>
                 </Stack>
                 <Dialog.Description mb={2} color="gray.600">
-                  Escanea este código QR para identificar el contenedor.
+                  Escanea este código QR para identificar el contenedor <br />
+                  <b> {serialText && `(Serial: ${serialText})`}</b>.
                 </Dialog.Description>
                 {loading ? (
                   <Spinner size="lg" color="teal.500" />

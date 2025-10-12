@@ -9,7 +9,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { LiaExclamationTriangleSolid } from "react-icons/lia";
-import AuthContext  from "../context/AuthContext"; // Asegúrate de que la ruta sea correcta
+import AuthContext from "../context/AuthContext";
 
 export function SessionExpiredDialog({ isOpen }) {
   const { logout } = useContext(AuthContext);
@@ -22,15 +22,20 @@ export function SessionExpiredDialog({ isOpen }) {
   useEffect(() => {
     if (open) {
       const timeout = setTimeout(() => {
-        logout
+        logout();
       }, 5000);
       return () => clearTimeout(timeout);
     }
   }, [open, logout]);
 
-
   return (
-    <Dialog.Root open={open} onOpenChange={(d) => setOpen(d.open)}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(d) => setOpen(d.open)}
+      closeOnEscape={false}
+      closeOnOverlayClick={false}
+      role="alertdialog"
+    >
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.400" />
         <Dialog.Positioner>

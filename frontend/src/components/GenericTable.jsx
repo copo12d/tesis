@@ -96,13 +96,14 @@ export function GenericTable({
   const TableContent = (
     <For each={sizes}>
       {(size) => (
-        <Table.ScrollArea rounded="md" key={size}>
+        <Table.ScrollArea rounded="lg" key={size} height="340px">
           <Table.Root
             key={size}
             size={size}
             showColumnBorder
             borderColor={borderColor}
             bg={bodyBg}
+            stickyHeader
           >
             <Table.Caption color={cellColor} mt={2}>{caption}</Table.Caption>
             <Table.Header>
@@ -183,10 +184,11 @@ export function GenericTable({
   );
 
   return (
-    <Box mt={14} p={4} w="100%" h="100%">
+    <Box mt={14} p={4} w="100%" h="100%" overflow="hidden">
       <Card.Root
         w="100%"
         maxW="100%"
+        maxH="600px" // <-- Ajusta este valor según tu diseño
         bg={cardBg}
         borderColor={cardBorderColor}
         borderWidth="1px"

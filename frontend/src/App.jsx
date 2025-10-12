@@ -18,6 +18,9 @@ import { UserProfileEdit } from './features/usersManager/pages/UserProfileEdit';
 import { ReportsPage } from './features/Reports/pages/ReportsPage';
 import { ContainerList } from "./features/container/pages/ContainerList";
 import { ContainerCreate } from "./features/container/pages/ContainerCreate";
+import { BatchListPage } from './features/batch/pages/BatchListPage';
+import { BatchCreate } from "./features/batch/pages/BatchCreate";
+
 
 import MainLayout from './layouts/MainLayout';
 
@@ -53,6 +56,8 @@ function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/container/list" element={<ContainerList />} />
             <Route path="container/new" element={<ContainerCreate />} />
+            <Route path="/batch/list" element={<BatchListPage />} />
+            <Route path="/batch/create" element={<BatchCreate />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route
