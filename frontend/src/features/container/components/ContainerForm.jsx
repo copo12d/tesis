@@ -1,9 +1,16 @@
-import {  Stack,  Button,  Text,  Field,  Box,} from "@chakra-ui/react";
-import {  LiaBarcodeSolid,  LiaRulerCombinedSolid,} from "react-icons/lia";
+import { Stack, Button, Text, Field, Box } from "@chakra-ui/react";
+import { LiaBarcodeSolid, LiaRulerCombinedSolid } from "react-icons/lia";
 import { useContainerForm } from "../hooks/useContainerForm";
 import { useContainerTypes } from "../hooks/useContainerTypes";
 import { useState, useCallback, useRef } from "react";
-import {  MapContainer,  TileLayer,  Marker,  useMapEvents,  useMap,  Popup,} from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+  Popup,
+} from "react-leaflet";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -144,6 +151,7 @@ export function ContainerForm({
                 w: "100%",
                 pl: 2,
                 _placeholder: { pl: 2 },
+                type: "number",
               }}
             />
 
@@ -168,7 +176,10 @@ export function ContainerForm({
             />
 
             {/* Ubicación - MAPA */}
-            <Field.Root required invalid={!!(errors.latitude || errors.longitude)}>
+            <Field.Root
+              required
+              invalid={!!(errors.latitude || errors.longitude)}
+            >
               <Field.Label color="black" mx="auto">
                 Ubicación (haz clic en el mapa para seleccionar)
               </Field.Label>
@@ -225,7 +236,8 @@ export function ContainerForm({
                           keepInView={true}
                         >
                           <Text fontSize="sm">
-                            Latitud: {markerPosition[0].toFixed(6)}<br />
+                            Latitud: {markerPosition[0].toFixed(6)}
+                            <br />
                             Longitud: {markerPosition[1].toFixed(6)}
                           </Text>
                         </Popup>
@@ -241,7 +253,8 @@ export function ContainerForm({
                 </Field.ErrorText>
               )}
               <Text fontSize="sm" color="gray.600" mx="auto">
-                Haz clic en el mapa para colocar el contenedor. Puedes ajustar el centro inicial en la constante MAP_CENTER.
+                Haz clic en el mapa para colocar el contenedor. Puedes ajustar
+                el centro inicial en la constante MAP_CENTER.
               </Text>
             </Field.Root>
 
@@ -249,7 +262,7 @@ export function ContainerForm({
               type="submit"
               colorPalette="green"
               size="lg"
-              isLoading={busy}
+              loading={busy}
               loadingText="Guardando..."
               spinnerPlacement="end"
               alignSelf="flex-end"
