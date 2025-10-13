@@ -6,18 +6,15 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.prediction.dto.AverageTimeResponseDto;
 import com.tesisUrbe.backend.prediction.dto.ContainerAverageTime;
-import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeData;
+import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeProyection;
 import com.tesisUrbe.backend.prediction.dto.NewContainerSchedulerDto;
 import com.tesisUrbe.backend.prediction.model.ContainerFillCycleData;
-import com.tesisUrbe.backend.prediction.model.ContainerScheduler;
 import com.tesisUrbe.backend.prediction.repository.ContainerFillCycleDataRepository;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -218,41 +215,41 @@ public class ContainerFillCycleService {
     @Transactional(readOnly = true)
     public ApiResponse<AverageTimeResponseDto> completeAverageTime(){
 
-        List<ContainerRecollectTimeData> granularData = containerFillCycleDataRepository.getAllRecollectTimeDatas();
+        List<ContainerRecollectTimeProyection> granularData = containerFillCycleDataRepository.getAllRecollectTimeDatas();
 
         Double globalAverage = granularData.stream()
-            .collect(Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime));
+            .collect(Collectors.averagingDouble(ContainerRecollectTimeProyection::getAverageTime));
 
          List<ContainerAverageTime> containerAverageList = granularData.stream()
-            .collect(Collectors.groupingBy(ContainerRecollectTimeData::getContainer))
+            .collect(Collectors.groupingBy(ContainerRecollectTimeProyection::getContainer))
             .entrySet().stream()
             .map(entry -> {
                 Container container = entry.getKey();
-                List<ContainerRecollectTimeData> containerData = entry.getValue();
+                List<ContainerRecollectTimeProyection> containerData = entry.getValue();
 
                 // a. Promedio Total del Contenedor
                 Double totalAverage = containerData.stream()
-                    .collect(Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime));
+                    .collect(Collectors.averagingDouble(ContainerRecollectTimeProyection::getAverageTime));
 
                 // b. Promedios por Día de la Semana
                 Map<DayOfWeek, Double> dayAverage = containerData.stream()
                     .collect(Collectors.groupingBy(
-                        ContainerRecollectTimeData::getDayOfWeek,
-                        Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime)
+                        ContainerRecollectTimeProyection::getDayOfWeek,
+                        Collectors.averagingDouble(ContainerRecollectTimeProyection::getAverageTime)
                     ));
 
                 // c. Promedios por Mes
                 Map<Month, Double> monthAverage = containerData.stream()
                     .collect(Collectors.groupingBy(
-                        ContainerRecollectTimeData::getMonth,
-                        Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime)
+                        ContainerRecollectTimeProyection::getMonth,
+                        Collectors.averagingDouble(ContainerRecollectTimeProyection::getAverageTime)
                     ));
 
                 // d. Promedios por Mes y Día (Mapeo directo)
                 Map<Map<Month, DayOfWeek>, Double> monthDayAverage = containerData.stream()
                     .collect(Collectors.toMap(
                         data -> Map.of(data.getMonth(), data.getDayOfWeek()),
-                       ContainerRecollectTimeData::getAverageTime
+                       ContainerRecollectTimeProyection::getAverageTime
                     ));
 
                 return ContainerAverageTime.builder()

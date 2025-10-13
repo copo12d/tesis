@@ -3,9 +3,13 @@ package com.tesisUrbe.backend.solidWasteManagement.controllers;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.WasteResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.WasteWeightResponse;
 import com.tesisUrbe.backend.solidWasteManagement.services.WasteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +46,13 @@ public class WasteController {
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(defaultValue = "") String search) {
         ApiResponse<Page<WasteResponseDto>> response = wasteService.getAllWaste(page, size, sortBy, sortDir, search);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/admin/total-weight/all")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<List<WasteWeightResponse>>> getAllWasteWeight(){
+        ApiResponse<List<WasteWeightResponse>> response = wasteService.getAllWasteWeight();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 }

@@ -1,6 +1,5 @@
 package com.tesisUrbe.backend.solidWasteManagement.dto;
 
-import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
