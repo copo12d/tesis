@@ -2,7 +2,6 @@ package com.tesisUrbe.backend.usersManagement.services;
 
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
-import com.tesisUrbe.backend.common.exception.ApiMeta;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PasswordUtils;
 import com.tesisUrbe.backend.common.util.ValidationUtils;
@@ -258,16 +257,17 @@ public class UserService implements UserDetailsService {
             );
         }
 
-        AdminUserDto dto = new AdminUserDto(
-                targetUser.getId(),
-                targetUser.getFullName(),
-                targetUser.getUserName(),
-                targetUser.getEmail(),
-                targetUser.getRole().getName().getDescription(),
-                targetUser.isVerified(),
-                targetUser.isAccountLocked(),
-                targetUser.isUserLocked()
-        );
+        AdminUserDto dto = AdminUserDto.builder()
+            .id(targetUser.getId())
+            .fullName(targetUser.getFullName())
+            .userName(targetUser.getUserName())
+            .email(targetUser.getEmail())
+            .role(targetUser.getRole().getName().name())
+            .roleDescription(targetUser.getRole().getName().getDescription())
+            .verified(targetUser.isVerified())
+            .accountLocked(targetUser.isAccountLocked())
+            .userLocked(targetUser.isUserLocked())
+            .build();
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Usuario obtenido correctamente"),
@@ -320,16 +320,17 @@ public class UserService implements UserDetailsService {
         Page<AdminUserDto> filteredPage = new PageImpl<>(
                 usersPage.getContent().stream()
                         .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
-                        .map(user -> new AdminUserDto(
-                                user.getId(),
-                                user.getFullName(),
-                                user.getUserName(),
-                                user.getEmail(),
-                                user.getRole().getName().getDescription(),
-                                user.isVerified(),
-                                user.isAccountLocked(),
-                                user.isUserLocked()
-                        ))
+                        .map(user -> AdminUserDto.builder()
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .userName(user.getUserName())
+                            .email(user.getEmail())
+                            .role(user.getRole().getName().name())
+                            .roleDescription(user.getRole().getName().getDescription()) 
+                            .verified(user.isVerified())
+                            .accountLocked(user.isAccountLocked())
+                            .userLocked(user.isUserLocked())
+                        .build())
                         .toList(),
                 usersPage.getPageable(),
                 usersPage.getTotalElements()
@@ -379,16 +380,17 @@ public class UserService implements UserDetailsService {
         Page<AdminUserDto> filteredPage = new PageImpl<>(
                 usersPage.getContent().stream()
                         .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
-                        .map(user -> new AdminUserDto(
-                                user.getId(),
-                                user.getFullName(),
-                                user.getUserName(),
-                                user.getEmail(),
-                                user.getRole().getName().getDescription(),
-                                user.isVerified(),
-                                user.isAccountLocked(),
-                                user.isUserLocked()
-                        ))
+                        .map(user -> AdminUserDto.builder()
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .userName(user.getUserName())
+                            .email(user.getEmail())
+                            .role(user.getRole().getName().name())
+                            .roleDescription(user.getRole().getName().getDescription()) 
+                            .verified(user.isVerified())
+                            .accountLocked(user.isAccountLocked())
+                            .userLocked(user.isUserLocked())
+                        .build())
                         .toList(),
                 usersPage.getPageable(),
                 usersPage.getTotalElements()

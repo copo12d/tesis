@@ -17,11 +17,10 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
-import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
+import com.tesisUrbe.backend.usersManagement.dto.UserReportDto;
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -228,9 +227,9 @@ public class ReportService {
                 roleEnum, verifiedBool, accountLockedBool, userLockedBool
         );
 
-        List<AdminUserDto> dtos = users.stream()
+        List<UserReportDto> dtos = users.stream()
                 .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
-                .map(user -> new AdminUserDto(
+                .map(user -> new UserReportDto(
                         user.getId(),
                         user.getFullName(),
                         user.getUserName(),
@@ -254,24 +253,24 @@ public class ReportService {
         String sortField = StringUtils.hasText(sortBy) ? sortBy : "id";
         String direction = StringUtils.hasText(sortDir) ? sortDir.toUpperCase() : "ASC";
 
-        Comparator<AdminUserDto> comparator = switch (sortField) {
+        Comparator<UserReportDto> comparator = switch (sortField) {
             case "fullName" -> Comparator.comparing(
-                    AdminUserDto::getFullName,
+                    UserReportDto::getFullName,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "userName" -> Comparator.comparing(
-                    AdminUserDto::getUserName,
+                    UserReportDto::getUserName,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "email" -> Comparator.comparing(
-                    AdminUserDto::getEmail,
+                    UserReportDto::getEmail,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "role" -> Comparator.comparing(
-                    AdminUserDto::getRole,
+                    UserReportDto::getRole,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
-            default -> Comparator.comparing(AdminUserDto::getId);
+            default -> Comparator.comparing(UserReportDto::getId);
         };
 
         if ("DESC".equals(direction)) {
@@ -286,7 +285,7 @@ public class ReportService {
                     "Verificado", "Bloqueo de cuenta", "Bloqueo de usuario"
             );
 
-            ReportBuilder<AdminUserDto> builder = reportRegistry.getBuilder(AdminUserDto.class);
+            ReportBuilder<UserReportDto> builder = reportRegistry.getBuilder(UserReportDto.class);
             byte[] pdf = builder.build("Reporte de Usuarios Administradores", columnTitles, dtos, auth.getName());
 
             return new ApiResponse<>(

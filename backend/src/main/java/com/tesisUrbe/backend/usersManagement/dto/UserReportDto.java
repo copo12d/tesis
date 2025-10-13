@@ -1,23 +1,19 @@
 package com.tesisUrbe.backend.usersManagement.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class AdminUserDto {
+public class UserReportDto {
     private Long id;
     private String fullName;
     private String userName;
     private String email;
     private String role;
-    private String roleDescription;
     private boolean verified;
     private boolean accountLocked;
     private boolean userLocked;
 }
-
