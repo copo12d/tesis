@@ -4,6 +4,9 @@ import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
+import com.tesisUrbe.backend.prediction.dto.AverageTimeResponseDto;
+import com.tesisUrbe.backend.prediction.dto.ContainerAverageTime;
+import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeData;
 import com.tesisUrbe.backend.prediction.dto.NewContainerSchedulerDto;
 import com.tesisUrbe.backend.prediction.model.ContainerFillCycleData;
 import com.tesisUrbe.backend.prediction.model.ContainerScheduler;
@@ -211,4 +214,65 @@ public class ContainerFillCycleService {
                 .sorted(Comparator.comparingInt(NewContainerSchedulerDto::getFillingNumber))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<AverageTimeResponseDto> completeAverageTime(){
+
+        List<ContainerRecollectTimeData> granularData = containerFillCycleDataRepository.getAllRecollectTimeDatas();
+
+        Double globalAverage = granularData.stream()
+            .collect(Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime));
+
+         List<ContainerAverageTime> containerAverageList = granularData.stream()
+            .collect(Collectors.groupingBy(ContainerRecollectTimeData::getContainer))
+            .entrySet().stream()
+            .map(entry -> {
+                Container container = entry.getKey();
+                List<ContainerRecollectTimeData> containerData = entry.getValue();
+
+                // a. Promedio Total del Contenedor
+                Double totalAverage = containerData.stream()
+                    .collect(Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime));
+
+                // b. Promedios por Día de la Semana
+                Map<DayOfWeek, Double> dayAverage = containerData.stream()
+                    .collect(Collectors.groupingBy(
+                        ContainerRecollectTimeData::getDayOfWeek,
+                        Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime)
+                    ));
+
+                // c. Promedios por Mes
+                Map<Month, Double> monthAverage = containerData.stream()
+                    .collect(Collectors.groupingBy(
+                        ContainerRecollectTimeData::getMonth,
+                        Collectors.averagingDouble(ContainerRecollectTimeData::getAverageTime)
+                    ));
+
+                // d. Promedios por Mes y Día (Mapeo directo)
+                Map<Map<Month, DayOfWeek>, Double> monthDayAverage = containerData.stream()
+                    .collect(Collectors.toMap(
+                        data -> Map.of(data.getMonth(), data.getDayOfWeek()),
+                       ContainerRecollectTimeData::getAverageTime
+                    ));
+
+                return ContainerAverageTime.builder()
+                    .container(container)
+                    .totalAverage(totalAverage)
+                    .dayAverage(dayAverage)
+                    .monthAverage(monthAverage)
+                    .monthDayAverage(monthDayAverage)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        return new ApiResponse<>(
+            errorFactory.buildMeta(HttpStatus.OK, "Promedio de tiempo de recogida completo obtenido"),
+            AverageTimeResponseDto.builder()
+            .globalAverage(globalAverage)
+            .containerAverage(containerAverageList)
+            .build(), 
+            null);
+
+    }
+
 }
