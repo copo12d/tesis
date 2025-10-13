@@ -181,6 +181,26 @@ public class ContainerService {
     }
 
     @Transactional(readOnly = true)
+    public ApiResponse<Long> getFullContainerCount() {
+        Long count = containerRepository.countByStatusAndDeletedFalse(ContainerStatus.FULL);
+
+        if (count == 0) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No hay contenedores llenos"),
+                    0L,
+                    List.of(new ApiError("NO_FULL_CONTAINERS", null, "No se encontraron contenedores con estado FULL"))
+            );
+        }
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Cantidad de contenedores llenos obtenida correctamente"),
+                count,
+                null
+        );
+    }
+
+
+    @Transactional(readOnly = true)
     public ApiResponse<ContainerResponseDto> getContainerById(Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

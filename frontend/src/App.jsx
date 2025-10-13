@@ -11,6 +11,8 @@ import ForgotPassword from './features/auth/pages/ForgotPassword';
 import AccountLocked from './features/auth/pages/AccountLocked';
 import MobileReportPage from './features/mobile/pages/MobileReportPage';
 import MobileCollectorLogin from './features/mobile/pages/MobileCollectorLogin';
+import MobileCollectorPage from './features/mobile/pages/MobileCollectorPage';
+import ThanksPage from './features/mobile/pages/ThanksPage';
 import { ContainerTypeList } from "./features/containerType/pages/ContainerTypeList";
 import { ContainerTypeCreate } from './features/containerType/pages/ContainerTypeCreate';
 import { ContainerTypeEdit } from './features/containerType/pages/ContainerTypeEdit';
@@ -20,6 +22,7 @@ import { ContainerList } from "./features/container/pages/ContainerList";
 import { ContainerCreate } from "./features/container/pages/ContainerCreate";
 import { BatchListPage } from './features/batch/pages/BatchListPage';
 import { BatchCreate } from "./features/batch/pages/BatchCreate";
+import { BatchDetailPage } from "./features/batch/pages/BatchDetailPage";
 
 
 import MainLayout from './layouts/MainLayout';
@@ -58,24 +61,37 @@ function App() {
             <Route path="container/new" element={<ContainerCreate />} />
             <Route path="/batch/list" element={<BatchListPage />} />
             <Route path="/batch/create" element={<BatchCreate />} />
+            <Route path="/batch/details/:id" element={<BatchDetailPage />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
-          <Route
-            path="/mobile"
-            element={
+          <Route path="mobile/containers/collect/" element={
+            <PrivateRoute>
               <MobileRoute>
-                <MobileReportPage />
+                <MobileCollectorPage />
               </MobileRoute>
+            </PrivateRoute>
+          } />
+          <Route
+            path="/mobile/containers/:id"
+            element={
+              <PublicRoute>
+                <MobileRoute>
+                  <MobileReportPage />
+                </MobileRoute>
+              </PublicRoute>
             }
           />
           <Route
             path="/mobile/login"
             element={
-              <MobileRoute>
-                <MobileCollectorLogin />
-              </MobileRoute>
+              <PublicRoute>
+                <MobileRoute>
+                  <MobileCollectorLogin />
+                </MobileRoute>
+              </PublicRoute>
             }
           />
+          <Route path="/mobile/thanks" element={<ThanksPage />} />
 
             <Route
               path="/login"

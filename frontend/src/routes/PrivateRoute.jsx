@@ -1,12 +1,19 @@
 import { useContext } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import AuthContext from "../context/Authcontext";
 
 const PrivateRoute = ({ children }) => {
     const { user } = useContext(AuthContext);
+    const location = useLocation();
+    const token = localStorage.getItem("accessToken");
 
-    if (!user) {
-        return <Navigate to="/login" />;
+    if (!user || !token) {
+        // Si la ruta es móvil, redirige al login móvil
+        if (location.pathname.startsWith("/mobile")) {
+            return <Navigate to="/mobile/login" replace />;
+        }
+        // Si no, redirige al login normal
+        return <Navigate to="/login" replace />;
     }
 
     return children;

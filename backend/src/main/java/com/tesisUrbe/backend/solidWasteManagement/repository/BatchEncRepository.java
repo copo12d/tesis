@@ -47,5 +47,5 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
     List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDate start);
     List<BatchEnc> findByCreationDateLessThanEqualAndDeletedFalse(LocalDate end);
     List<BatchEnc> findByDeletedFalse();
-
+    List<BatchEnc> findByStatusAndDeletedFalse(BatchStatus status);
 }

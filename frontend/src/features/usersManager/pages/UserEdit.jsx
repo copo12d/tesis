@@ -21,14 +21,6 @@ export function UserEdit() {
           <Spinner />
           <Text>Cargando usuario...</Text>
         </Stack>
-      ) : error ? (
-        <Box color="red.500" p={4}>
-          Error al cargar usuario.
-        </Box>
-      ) : !user ? (
-        <Box p={4}>
-          Usuario no encontrado.
-        </Box>
       ) : (
         <UserForm
           initialValues={user}
@@ -39,6 +31,8 @@ export function UserEdit() {
           }}
           submitText="Actualizar usuario"
           title="Editar usuario"
+          // Solo muestra los campos principales, sin password ni repeatPassword
+          fields={["fullName", "userName", "email", "role"]}
         />
       )}
     </Box>

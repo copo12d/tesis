@@ -20,6 +20,8 @@ export function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
+
+
   const handleInputChange = (setter) => (e) => {
     setter(e.target.value);
     if (error) setError("");
@@ -88,7 +90,7 @@ export function Login() {
               bg="#009688"
               color="white"
               size="lg"
-              isLoading={loading}
+              loading={loading}
               loadingText="Iniciando..."
               spinnerPlacement="end"
               _hover={{ bg: "#00695c" }}
