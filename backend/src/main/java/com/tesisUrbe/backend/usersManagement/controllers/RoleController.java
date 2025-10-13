@@ -2,7 +2,6 @@ package com.tesisUrbe.backend.usersManagement.controllers;
 
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
-import com.tesisUrbe.backend.entities.account.Role;
 import com.tesisUrbe.backend.usersManagement.dto.RoleRespondDto;
 import com.tesisUrbe.backend.usersManagement.services.RoleService;
 import lombok.RequiredArgsConstructor;
