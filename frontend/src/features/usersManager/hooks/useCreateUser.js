@@ -34,10 +34,18 @@ export function useCreateUser({
 
       return { success: true, data: res.data };
     } catch (err) {
-      const msg =
-        err?.response?.data?.message ||
-        err.message ||
-        "Error al crear usuario";
+      // Extrae el mensaje de error de validación si existe
+      const apiErrors = err?.response?.data?.errors;
+      let msg = "Error al crear usuario";
+      if (Array.isArray(apiErrors) && apiErrors.length > 0 && apiErrors[0].message) {
+        msg = apiErrors[0].message;
+      } else if (err?.response?.data?.meta?.message) {
+        msg = err.response.data.meta.message;
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (err.message) {
+        msg = err.message;
+      }
 
       setError(msg);
 
