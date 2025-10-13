@@ -5,8 +5,9 @@ import AuthContext from "../context/Authcontext";
 const PrivateRoute = ({ children }) => {
     const { user } = useContext(AuthContext);
     const location = useLocation();
+    const token = localStorage.getItem("accessToken");
 
-    if (!user) {
+    if (!user || !token) {
         // Si la ruta es móvil, redirige al login móvil
         if (location.pathname.startsWith("/mobile")) {
             return <Navigate to="/mobile/login" replace />;
