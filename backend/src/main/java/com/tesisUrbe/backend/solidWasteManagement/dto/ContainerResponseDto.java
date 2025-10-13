@@ -1,6 +1,5 @@
 package com.tesisUrbe.backend.solidWasteManagement.dto;
 
-import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

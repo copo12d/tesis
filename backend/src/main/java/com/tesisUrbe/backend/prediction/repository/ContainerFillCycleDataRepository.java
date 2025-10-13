@@ -1,7 +1,7 @@
 package com.tesisUrbe.backend.prediction.repository;
 
 import com.tesisUrbe.backend.entities.solidWaste.Container;
-import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeData;
+import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeProyection;
 import com.tesisUrbe.backend.prediction.model.ContainerFillCycleData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,7 +42,7 @@ public interface ContainerFillCycleDataRepository extends JpaRepository<Containe
         FROM ContainerFillCycleData fd
         WHERE fd.deleted = false
             """)
-    List<ContainerRecollectTimeData> getAllRecollectTimeDatas();
+    List<ContainerRecollectTimeProyection> getAllRecollectTimeDatas();
     
 
 }
