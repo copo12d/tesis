@@ -64,7 +64,7 @@ export function ReportsPage() {
 
   const reports = [
     {
-      label: "Reporte Batch 1",
+      label: "Reporte de lotes",
       icon: MdBatchPrediction,
       iconColor: "teal.500",
       dialog: false,

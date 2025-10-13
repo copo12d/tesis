@@ -55,7 +55,7 @@ export default function ForgotPassword() {
               bg="#009688"
               color="white"
               size="lg"
-              isLoading={loading}
+              loading={loading}
               loadingText="Enviando..."
               spinnerPlacement="end"
               _hover={{ bg: "#00695c" }}

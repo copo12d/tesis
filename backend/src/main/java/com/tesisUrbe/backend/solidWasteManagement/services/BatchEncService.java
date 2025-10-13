@@ -2,10 +2,12 @@ package com.tesisUrbe.backend.solidWasteManagement.services;
 
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
+import com.tesisUrbe.backend.common.exception.ApiMeta;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
+import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
@@ -119,6 +121,25 @@ public class BatchEncService {
     public Optional<BatchEnc> findById(Long id) {
         return batchRepository.findByIdAndDeletedFalse(id);
     }
+
+    public ApiResponse<List<BatchDropdownDto>> getInProgressBatchDropdown() {
+        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(BatchStatus.IN_PROGRESS);
+
+        if (batches.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("BATCH_NOT_FOUND", null, "Lote no encontrado"))
+            );
+        }
+
+        List<BatchDropdownDto> dtos = batches.stream()
+                .map(batch -> new BatchDropdownDto(batch.getId(), batch.getDescription()))
+                .toList();
+
+        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, "Lotes en progreso obtenidos exitosamente");
+        return new ApiResponse<>(meta, dtos, null);
+    }
+
 
     @Transactional(readOnly = true)
     public boolean batchExists(Long batchEncId) {

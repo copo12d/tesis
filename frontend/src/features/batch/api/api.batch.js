@@ -18,8 +18,7 @@ export const BatchAPI = {
     api.post("/batch/admin/register", data),
 
   // Procesar un lote por ID
-  process: (id) =>
-    api.post(`/batch/admin/process/${id}`),
+  process: (id) => api.patch(`/batch/admin/process/${id}`),
 
   // Obtener un lote específico por ID
   getOne: (id) =>
@@ -28,4 +27,14 @@ export const BatchAPI = {
   // Soft delete de un lote por ID
   softDelete: (id) =>
     api.delete(`/batch/admin/delete/${id}`),
+
+  // Obtener los datos generales (headers) de todos los lotes
+  getBatchHeaders: (params = {}) =>
+    api.get("/batch-reg/admin/all", { params }),
+
+  // Obtener los detalles (contenedores) de un lote específico con filtros avanzados
+  getBatchDetails: (batchId, { serial = "", start = "", end = "" } = {}) =>
+    api.get(`/batch-reg/admin/by-batch/${batchId}/advanced-filter`, {
+      params: { serial, start, end },
+    }),
 };
