@@ -83,7 +83,7 @@ export function BatchDetailPage() {
             </Text>
             <Badge
               ml={3}
-              colorPalette={header?.status === "PROCESADO" ? "green" : "teal"}
+              colorPalette={header?.status === "Lote Procesado" ? "green" : "teal"}
               fontSize="md"
               px={3}
               py={1}
@@ -92,7 +92,7 @@ export function BatchDetailPage() {
               bg={header?.status === "PROCESADO" ? "#43a047" : "#009688"}
               color="white"
             >
-              {header?.status === "PROCESADO" ? "PROCESADO" : "EN PROGRESO"}
+              {header?.status }
             </Badge>
           </Flex>
           <Flex gap={8} flexWrap="wrap">
