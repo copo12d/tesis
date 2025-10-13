@@ -56,7 +56,7 @@ public class ReportBuilderConfig {
         RowMapper<BatchEncResponseDto> mapper = dto -> List.of(
                 String.valueOf(dto.getId()),
                 dto.getCreationDate() != null
-                        ? NormalizationUtils.formatDateTime(dto.getCreationDate())
+                        ? dto.getCreationDate()
                         : "",
                 dto.getDescription() != null ? dto.getDescription().replaceAll("[\\r\\n]+", " ") : "",
                 dto.getTotalWeight() != null ? dto.getTotalWeight().toPlainString() : "0",
@@ -64,7 +64,7 @@ public class ReportBuilderConfig {
                         ? dto.getStatus()
                         : "",
                 dto.getProcessedAt() != null
-                        ? NormalizationUtils.formatDateTime(dto.getProcessedAt())
+                        ? dto.getProcessedAt()
                         : "-",
                 dto.getCreatedByUsername() != null ? dto.getCreatedByUsername() : "",
                 dto.getProcessedByUsername() != null ? dto.getProcessedByUsername() : "-"

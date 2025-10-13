@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,11 +15,11 @@ import java.time.LocalDateTime;
 @Builder
 public class BatchEncResponseDto {
     private Long id;
-    private LocalDateTime creationDate;
+    private String creationDate;
     private String description;
     private BigDecimal totalWeight;
     private String status;
-    private LocalDateTime processedAt;
+    private String processedAt;
     private String createdByUsername;
     private String processedByUsername;
 }

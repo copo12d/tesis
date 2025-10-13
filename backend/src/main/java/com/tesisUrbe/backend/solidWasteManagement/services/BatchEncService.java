@@ -4,6 +4,7 @@ import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiMeta;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
+import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -166,14 +168,14 @@ public class BatchEncService {
 
         BatchEncResponseDto dto = BatchEncResponseDto.builder()
                 .id(batch.getId())
-                .creationDate(batch.getCreationDate())
+                .creationDate(NormalizationUtils.formatDateTime(batch.getCreationDate()))
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus().getDescription())
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .build();
 
         return new ApiResponse<>(
@@ -228,14 +230,14 @@ public class BatchEncService {
 
         Page<BatchEncResponseDto> dtoPage = batchPage.map(batch -> BatchEncResponseDto.builder()
                 .id(batch.getId())
-                .creationDate(batch.getCreationDate())
+                .creationDate(NormalizationUtils.formatDateTime(batch.getCreationDate()))
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus().getDescription())
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .build());
 
         return new ApiResponse<>(
@@ -261,14 +263,14 @@ public class BatchEncService {
 
         Page<BatchEncResponseDto> dtoPage = batchPage.map(batch -> BatchEncResponseDto.builder()
                 .id(batch.getId())
-                .creationDate(batch.getCreationDate())
+                .creationDate(NormalizationUtils.formatDateTime(batch.getCreationDate()))
                 .description(batch.getDescription())
                 .totalWeight(batch.getTotalWeight())
                 .status(batch.getStatus().getDescription())
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .createdByUsername(batch.getCreatedBy().getUserName())
                 .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
-                .processedAt(batch.getProcessedAt())
+                .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                 .build());
 
         return new ApiResponse<>(
