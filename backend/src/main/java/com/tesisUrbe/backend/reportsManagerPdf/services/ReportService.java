@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.reportsManagerPdf.services;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
+import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.enums.RoleList;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
@@ -152,11 +153,11 @@ public class ReportService {
         List<BatchEncResponseDto> dtos = batches.stream()
                 .map(batch -> BatchEncResponseDto.builder()
                         .id(batch.getId())
-                        .creationDate(batch.getCreationDate())
+                        .creationDate(NormalizationUtils.formatDateTime(batch.getCreationDate()))
                         .description(batch.getDescription())
                         .totalWeight(batch.getTotalWeight())
                         .status(batch.getStatus().getDescription())
-                        .processedAt(batch.getProcessedAt())
+                        .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
                         .createdByUsername(batch.getCreatedBy() != null ? batch.getCreatedBy().getUserName() : "")
                         .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
                         .build())
