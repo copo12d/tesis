@@ -22,6 +22,7 @@ import { ContainerList } from "./features/container/pages/ContainerList";
 import { ContainerCreate } from "./features/container/pages/ContainerCreate";
 import { BatchListPage } from './features/batch/pages/BatchListPage';
 import { BatchCreate } from "./features/batch/pages/BatchCreate";
+import { BatchDetailPage } from "./features/batch/pages/BatchDetailPage";
 
 
 import MainLayout from './layouts/MainLayout';
@@ -60,6 +61,7 @@ function App() {
             <Route path="container/new" element={<ContainerCreate />} />
             <Route path="/batch/list" element={<BatchListPage />} />
             <Route path="/batch/create" element={<BatchCreate />} />
+            <Route path="/batch/details/:id" element={<BatchDetailPage />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route path="mobile/containers/collect/" element={

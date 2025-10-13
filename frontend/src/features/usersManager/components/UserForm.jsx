@@ -122,6 +122,7 @@ export function UserForm({
   useEffect(() => {
     async function fetchRoles() {
       const result = await availableRolesFor(user?.role);
+      console.log(result);
       setRoles(result);
     }
     fetchRoles();
@@ -246,8 +247,8 @@ export function UserForm({
                 value={form.role ?? ""}
                 onChange={(e) => handleFieldChange("role", e.target.value)}
                 options={roles.map((r) => ({
-                  value: r.value,
-                  label: r.label,
+                  value: r.label,
+                  label: r.value,
                 }))}
                 error={errors.role}
                 disabled={loading}

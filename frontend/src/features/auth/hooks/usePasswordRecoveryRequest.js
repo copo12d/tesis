@@ -8,7 +8,12 @@ export function usePasswordRecoveryRequest() {
   const requestRecovery = async ({ userName, email }) => {
     setLoading(true);
     try {
-      await AuthAPI.passwordRecoveryRequest({ userName, email });
+      // Solo envía el campo que tenga valor
+      let payload = {};
+      if (userName) payload.userName = userName;
+      if (email) payload.email = email;
+
+      await AuthAPI.passwordRecoveryRequest(payload);
       toast.success("Si el usuario existe, recibirás instrucciones para recuperar tu contraseña.");
       return true;
     } catch (err) {

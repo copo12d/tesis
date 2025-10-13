@@ -96,7 +96,7 @@ export function GenericTable({
   const TableContent = (
     <For each={sizes}>
       {(size) => (
-        <Table.ScrollArea rounded="lg" key={size} height="340px">
+        <Table.ScrollArea rounded="lg" key={size} maxHeight="340px">
           <Table.Root
             key={size}
             size={size}

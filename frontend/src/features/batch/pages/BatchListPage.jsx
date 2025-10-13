@@ -54,7 +54,7 @@ export function BatchListPage() {
         size="xs"
         variant="subtle"
         colorPalette="blue"
-        onClick={() => navigate(`/batch/${batch.id}`)}
+        onClick={() => navigate(`/batch/details/${batch.id}`)}
       >
         <LiaEyeSolid />
       </IconButton>
