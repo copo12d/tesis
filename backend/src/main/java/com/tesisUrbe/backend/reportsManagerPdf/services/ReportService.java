@@ -155,7 +155,7 @@ public class ReportService {
                         .creationDate(batch.getCreationDate())
                         .description(batch.getDescription())
                         .totalWeight(batch.getTotalWeight())
-                        .status(batch.getStatus())
+                        .status(batch.getStatus().getDescription())
                         .processedAt(batch.getProcessedAt())
                         .createdByUsername(batch.getCreatedBy() != null ? batch.getCreatedBy().getUserName() : "")
                         .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
@@ -373,7 +373,7 @@ public class ReportService {
                         container.getLatitude(),
                         container.getLongitude(),
                         container.getCapacity(),
-                        container.getStatus(),
+                        container.getStatus().getDescription(),
                         container.getContainerType().getName(),
                         container.getCreatedAt()
                 ))

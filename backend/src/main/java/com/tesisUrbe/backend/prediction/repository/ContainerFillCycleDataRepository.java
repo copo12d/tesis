@@ -1,6 +1,7 @@
 package com.tesisUrbe.backend.prediction.repository;
 
 import com.tesisUrbe.backend.entities.solidWaste.Container;
+import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeData;
 import com.tesisUrbe.backend.prediction.model.ContainerFillCycleData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,5 +32,17 @@ public interface ContainerFillCycleDataRepository extends JpaRepository<Containe
     boolean existsByContainerAndReporterIpAndTimeFillingNoticeAfter(Container container, String ip, LocalDateTime after);
 
     long countDistinctReporterIpByContainerAndTimeFillingNoticeAfter(Container container, LocalDateTime after);
+
+    @Query("""
+        SELECT 
+            fd.container as container,
+            fd.dayOfWeek as dayOfWeek,
+            fd.monthOfYear as month, 
+            AVG(fd.minutesToEmpty) as averageTime
+        FROM ContainerFillCycleData fd
+        WHERE fd.deleted = false
+            """)
+    List<ContainerRecollectTimeData> getAllRecollectTimeDatas();
+    
 
 }

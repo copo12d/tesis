@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.usersManagement.controllers;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.account.Role;
+import com.tesisUrbe.backend.usersManagement.dto.RoleRespondDto;
 import com.tesisUrbe.backend.usersManagement.services.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class RoleController {
 
     @GetMapping("/admin/all")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
-    public ResponseEntity<ApiResponse<List<Role>>> getVisibleRoles() {
-        List<Role> roles = roleService.getVisibleRolesForCurrentUser();
+    public ResponseEntity<ApiResponse<List<RoleRespondDto>>> getVisibleRoles() {
+        List<RoleRespondDto> roles = roleService.getVisibleRolesForCurrentUser();
         return ResponseEntity.ok(new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Roles visibles obtenidos correctamente"),
                 roles,

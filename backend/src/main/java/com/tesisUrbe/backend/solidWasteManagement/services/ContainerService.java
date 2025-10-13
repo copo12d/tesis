@@ -228,7 +228,7 @@ public class ContainerService {
                 container.getLatitude(),
                 container.getLongitude(),
                 container.getCapacity(),
-                container.getStatus(),
+                container.getStatus().getDescription(),
                 container.getContainerType().getName(),
                 container.getCreatedAt()
         );
@@ -282,7 +282,7 @@ public class ContainerService {
                         container.getLatitude(),
                         container.getLongitude(),
                         container.getCapacity(),
-                        container.getStatus(),
+                        container.getStatus().getDescription(),
                         container.getContainerType().getName(),
                         container.getCreatedAt()
                 )

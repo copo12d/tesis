@@ -1,0 +1,15 @@
+package com.tesisUrbe.backend.prediction.dto;
+
+import java.util.List;
+
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder
+public class AverageTimeResponseDto {
+    Double globalAverage;
+    List<ContainerAverageTime> containerAverage;
+
+    
+}
