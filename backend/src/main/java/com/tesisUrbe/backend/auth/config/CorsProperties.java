@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Configuration
-@ConfigurationProperties(prefix = "api.web.cors")
+@ConfigurationProperties(prefix = "cors")
 @Getter
 @Setter
 public class CorsProperties {
-    private List<String> allowedOrigins;
+    private List<String> allowedOriginPatterns;
     private List<String> allowedMethods;
     private List<String> allowedHeaders;
     private Boolean allowCredentials;

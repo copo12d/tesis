@@ -7,8 +7,11 @@ import com.tesisUrbe.backend.auth.jwt.JwtTokenProvider;
 import com.tesisUrbe.backend.auth.repository.BlackListedTokenRepository;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -45,7 +49,10 @@ public class SecurityConfig {
                                         "/api/v1/auth/**",
                                         "/api/v1/users/public/register",
                                         "/api/v1/email/public/**",
-                                        "/api/v1/container/public/**"
+                                        "/api/v1/container/public/**",
+                                        "/api/v1/container/report/public",
+                                        "/api/v1/waste/admin/register",
+                                        "/api/v1/container/public/report"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
@@ -72,23 +79,28 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Primary
     public CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        config.setAllowedOriginPatterns(corsProperties.getAllowedOriginPatterns());
         config.setAllowedMethods(corsProperties.getAllowedMethods());
         config.setAllowedHeaders(corsProperties.getAllowedHeaders());
-        config.setAllowCredentials(corsProperties.getAllowCredentials());
-        config.setMaxAge(corsProperties.getMaxAge());
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
-
 }
