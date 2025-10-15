@@ -58,8 +58,8 @@ export default function MobileReportPage() {
             </Text>
             <Text fontWeight="bold" color="gray.700" mt={2}>
               Estado:{" "}
-              <Badge fontWeight={'bold'} bg={"transparent"} color={container.status === "AVAILABLE" ? "green.700" : "red.700"}>
-                {container.status}
+              <Badge fontWeight={'bold'} bg={"transparent"} color={container.status === "Contenedor Vacio" ? "green.700" : "red.700"}>
+                {container.status.toUpperCase()}
               </Badge>
             </Text>
             <Text fontWeight="bold" color="gray.700" mt={2}>

@@ -38,16 +38,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final BlackListedTokenRepository blackListedTokenRepository;
 
-    /**
-     * Excluye rutas públicas del filtro JWT.
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/api/v1/auth")
                 || path.equals("/api/v1/users/public/register")
                 || path.startsWith("/api/v1/email/public")
-                || path.startsWith("/api/v1/container/public");
+                || path.startsWith("/api/v1/container/public")
+                || path.startsWith("/api/v1/container/report/public");
     }
 
     @Override
@@ -58,14 +56,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
-            sendUnauthorized(response, "Token ausente o mal formado");
+            sendUnauthorized(request, response, "Token ausente o mal formado");
             return;
         }
 
         String token = header.substring(7);
 
         if (blackListedTokenRepository.existsByToken(token)) {
-            sendUnauthorized(response, "El token ha sido revocado");
+            sendUnauthorized(request, response, "El token ha sido revocado");
             return;
         }
 
@@ -78,15 +76,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .orElse(null);
 
             if (authUser == null || Boolean.TRUE.equals(authUser.isDeleted())) {
-                sendUnauthorized(response, "La cuenta ha sido eliminada");
+                sendUnauthorized(request, response, "La cuenta ha sido eliminada");
                 return;
             }
             if (Boolean.TRUE.equals(authUser.isUserLocked())) {
-                sendUnauthorized(response, "El acceso fue bloqueado por un administrador");
+                sendUnauthorized(request, response, "El acceso fue bloqueado por un administrador");
                 return;
             }
             if (Boolean.TRUE.equals(authUser.isAccountLocked())) {
-                sendUnauthorized(response, "La cuenta está bloqueada por intentos fallidos");
+                sendUnauthorized(request, response, "La cuenta está bloqueada por intentos fallidos");
                 return;
             }
 
@@ -103,22 +101,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    sendUnauthorized(response, "Token inválido");
+                    sendUnauthorized(request, response, "Token inválido");
                     return;
                 }
             }
         } catch (ExpiredJwtException e) {
-            sendUnauthorized(response, "Token expirado");
+            sendUnauthorized(request, response, "Token expirado");
             return;
         } catch (RuntimeException e) {
-            sendUnauthorized(response, "Token inválido o manipulado");
+            sendUnauthorized(request, response, "Token inválido o manipulado");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+    private void sendUnauthorized(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+        addCorsHeaders(request, response);
+
         ApiResponse<Void> body = errorFactory.build(
                 org.springframework.http.HttpStatus.UNAUTHORIZED,
                 List.of(new ApiError("UNAUTHORIZED", null, message))
@@ -127,4 +127,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json");
         objectMapper.writeValue(response.getOutputStream(), body);
     }
+
+    private void addCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        response.setHeader("Access-Control-Allow-Origin", origin != null ? origin : "*");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,X-Requested-With");
+    }
+
 }
