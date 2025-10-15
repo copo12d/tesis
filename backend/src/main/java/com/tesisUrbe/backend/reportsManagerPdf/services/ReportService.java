@@ -17,6 +17,7 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
+import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
 import com.tesisUrbe.backend.usersManagement.dto.UserReportDto;
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -227,18 +228,18 @@ public class ReportService {
                 roleEnum, verifiedBool, accountLockedBool, userLockedBool
         );
 
-        List<UserReportDto> dtos = users.stream()
+        List<AdminUserDto> dtos = users.stream()
                 .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
-                .map(user -> new UserReportDto(
-                        user.getId(),
-                        user.getFullName(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        user.getRole().getName().getDescription(),
-                        user.isVerified(),
-                        user.isAccountLocked(),
-                        user.isUserLocked()
-                ))
+                .map(user -> AdminUserDto.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .userName(user.getUserName())
+                        .email(user.getUserName())
+                        .role(user.getRole().getName().getDescription())
+                        .verified(user.isVerified())
+                        .accountLocked(user.isAccountLocked())
+                        .userLocked(user.isUserLocked())
+                        .build())
                 .collect(Collectors.toCollection(ArrayList::new));
 
         if (dtos.isEmpty()) {
@@ -253,24 +254,24 @@ public class ReportService {
         String sortField = StringUtils.hasText(sortBy) ? sortBy : "id";
         String direction = StringUtils.hasText(sortDir) ? sortDir.toUpperCase() : "ASC";
 
-        Comparator<UserReportDto> comparator = switch (sortField) {
+        Comparator<AdminUserDto> comparator = switch (sortField) {
             case "fullName" -> Comparator.comparing(
-                    UserReportDto::getFullName,
+                    AdminUserDto::getFullName,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "userName" -> Comparator.comparing(
-                    UserReportDto::getUserName,
+                    AdminUserDto::getUserName,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "email" -> Comparator.comparing(
-                    UserReportDto::getEmail,
+                    AdminUserDto::getEmail,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
             case "role" -> Comparator.comparing(
-                    UserReportDto::getRole,
+                    AdminUserDto::getRole,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
             );
-            default -> Comparator.comparing(UserReportDto::getId);
+            default -> Comparator.comparing(AdminUserDto::getId);
         };
 
         if ("DESC".equals(direction)) {
@@ -284,8 +285,9 @@ public class ReportService {
                     "ID", "Nombre completo", "Usuario", "Correo", "Rol",
                     "Verificado", "Bloqueo de cuenta", "Bloqueo de usuario"
             );
+            
 
-            ReportBuilder<UserReportDto> builder = reportRegistry.getBuilder(UserReportDto.class);
+            ReportBuilder<AdminUserDto> builder = reportRegistry.getBuilder(AdminUserDto.class);
             byte[] pdf = builder.build("Reporte de Usuarios Administradores", columnTitles, dtos, auth.getName());
 
             return new ApiResponse<>(
