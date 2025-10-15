@@ -71,7 +71,7 @@ export default function AdminSection({ user }) {
   };
 
   return (
-    <Box mt={3}>
+    <Box>
       <Button
         variant="ghost"
         justifyContent="flex-start"
@@ -88,7 +88,7 @@ export default function AdminSection({ user }) {
         gap={3}
       >
         <Box as={FiShield} boxSize={5} opacity={0.9} />
-        Administración
+        Centro de control
         <Box ml="auto" fontSize="xs" opacity={0.7}>
           {open ? "−" : "+"}
         </Box>
