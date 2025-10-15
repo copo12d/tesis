@@ -8,8 +8,8 @@ import {
   Popover,
 } from "@chakra-ui/react";
 import {
-  FiHome,
-  FiInfo,
+  FiBarChart2,
+  FiSettings,
   FiBriefcase,
   FiMail,
   FiLogOut,
@@ -29,14 +29,8 @@ const Sidebar = () => {
   const { user, logout } = useContext(AuthContext); // <-- aquí obtienes logout
 
   const navItems = [
-    {
-      label: "Dashboard",
-      icon: FiGrid,
-      onClick: () => {
-        navigate("/")
-      },
-    },
-    { label: "Contact", icon: FiMail },
+    { label: "Ayuda", icon: FiMail },
+    { label: "Configuración", icon: FiSettings },
   ];
 
   return (
@@ -56,9 +50,30 @@ const Sidebar = () => {
         overflow="hidden"
       >
         <Text fontSize="2xl" fontWeight="bold" mb={6}>
-          Menu
+          Menú Principal
         </Text>
+
         <VStack spacing={1} align="stretch" flex={1}>
+          <Button
+            key={"Centro de Análisis"}
+            variant="ghost"
+            justifyContent="flex-start"
+            color="white"
+            fontWeight="medium"
+            _hover={{ bg: "whiteAlpha.200", transform: "translateX(2px)" }}
+            _active={{ bg: "whiteAlpha.300" }}
+            transition="all 0.15s"
+            h="42px"
+            px={3}
+            borderRadius="md"
+            display="flex"
+            gap={3}
+            onClick={() => navigate("/")}
+          >
+            <Box as={FiBarChart2} boxSize={5} opacity={0.9} />
+            {"Centro de Análisis"}
+          </Button>
+          <AdminSection user={user} />
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -83,7 +98,6 @@ const Sidebar = () => {
               </Button>
             );
           })}
-          <AdminSection user={user} />
           <Box pt={2} mt={2} borderTop="1px solid rgba(255,255,255,0.12)">
             <LogoutDialog
               trigger={
@@ -102,7 +116,7 @@ const Sidebar = () => {
                   gap={3}
                 >
                   <Box as={FiLogOut} boxSize={5} opacity={0.9} />
-                  Logout
+                  Cerrar Sesión
                 </Button>
               }
               onLogout={logout} // <-- aquí pasas la función de logout
