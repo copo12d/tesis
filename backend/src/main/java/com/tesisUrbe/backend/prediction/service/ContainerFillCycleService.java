@@ -9,6 +9,8 @@ import com.tesisUrbe.backend.prediction.dto.AverageTimeResponseDto;
 import com.tesisUrbe.backend.prediction.dto.ContainerAverageTime;
 import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeProyection;
 import com.tesisUrbe.backend.prediction.dto.NewContainerSchedulerDto;
+import com.tesisUrbe.backend.prediction.dto.QrReportProyection;
+import com.tesisUrbe.backend.prediction.dto.QrReportResponseDto;
 import com.tesisUrbe.backend.prediction.model.CollectionCanceled;
 import com.tesisUrbe.backend.prediction.model.ContainerFillCycle;
 import com.tesisUrbe.backend.prediction.model.QrContainerFillNotice;
@@ -23,6 +25,9 @@ import com.tesisUrbe.backend.usersManagement.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +39,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -171,7 +177,7 @@ public class ContainerFillCycleService {
         return errorFactory.buildSuccess(HttpStatus.OK, "Proceso de recogida de contenedor lleno iniciado exitosamente");
     }
 
-
+    //funcional
     @Transactional
     public ApiResponse<Void> cancelContainerNotice(String serial, String reason){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -185,9 +191,6 @@ public class ContainerFillCycleService {
 
         User user = userService.findByUserName(auth.getName())
             .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
-
-
-        System.out.println(auth.getName());
 
         Optional<Container> containerOpt = containerRepository.findBySerialAndDeletedFalse(serial);
 
@@ -209,9 +212,7 @@ public class ContainerFillCycleService {
                 List.of(new ApiError("FILL_NOTICE_NOT_FOUND", 
                 null, "No se ha encontrado ninguna notificacion para cancelar"))
                 );
-        
-        if(StringUtils.hasText(reason))
-            reason = "No se especifico el motivo de cancelación";
+
         
         ContainerFillCycle lastCycle = lastNotice.get();
         lastCycle.setDeleted(true);
@@ -222,12 +223,60 @@ public class ContainerFillCycleService {
             CollectionCanceled.builder()
             .containerFillCycle(lastCycle)
             .user(user)
-            .reason(reason)
+            .reason((StringUtils.hasText(reason)) ? reason : "No se especifico el motivo de cancelación")
             .build());
         containerFillCycleRepository.save(lastCycle);
         containerRepository.save(container);
 
         return errorFactory.buildSuccess(HttpStatus.OK, "Notificacion cancelada exitosamente");
+    }
+
+
+    @Transactional(readOnly = true)
+    public ApiResponse<Page<QrReportResponseDto>> searchQrReport(
+        Pageable pageable, 
+        String serial, String reporterIp, 
+        LocalDateTime startDate, LocalDateTime endDate,
+        DayOfWeek dayOfWeek, Month month,
+        Boolean deleted
+    ){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.UNAUTHORIZED, "No estás autenticado"),
+                    null,
+                    List.of(new ApiError("UNAUTHORIZED", null, "Debes iniciar sesión para generar el reporte"))
+            );
+        }
+
+        Page<QrReportProyection> reportPage = qrContainerFillNoticeRepository.searchQrReport(
+            (StringUtils.hasText(serial)) ? serial : null, 
+            (StringUtils.hasText(reporterIp)) ? reporterIp : null, 
+            startDate, endDate,  dayOfWeek, month, deleted, pageable);
+
+        Page<QrReportResponseDto> filteredPage = new PageImpl<>(
+                reportPage.getContent().stream()
+                        .map(qrReport -> QrReportResponseDto.builder()
+                        .containerSerial(qrReport.getContainerSerial())
+                        .reporterIp(qrReport.getReporterIp())
+                        .dayOfWeek(qrReport.getReportTime().getDayOfWeek())
+                        .month(qrReport.getReportTime().getMonth())
+                        .reportDate(qrReport.getReportTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                        .reportTime(qrReport.getReportTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                        .cycleStatus((qrReport.getDeleteCycle()) ? "Ciclo cancelado" :  "Ciclo completo" )
+                        .build())
+                        .toList(),
+                reportPage.getPageable(),
+                reportPage.getTotalElements()
+            );
+
+
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Búsqueda avanzada de usuarios completada"),
+                filteredPage,
+                null
+        );
     }
 
     @Transactional
