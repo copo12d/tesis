@@ -11,11 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,13 +23,24 @@ public class ContainerReportManagerController {
 
     private final ContainerFillCycleService containerFillCycleService;
 
+    //funcional
     @PostMapping("/public/report")
-    public ResponseEntity<?> reportContainerFull(@RequestParam String serial, HttpServletRequest request) {
-        Optional<ApiResponse<Void>> result = containerFillCycleService.reportContainerBySerial(serial, request);
+    public ResponseEntity<ApiResponse<Void>> reportContainerFull(@RequestParam String serial, HttpServletRequest request) {
+        ApiResponse<Void> response = containerFillCycleService.reportContainerBySerial(serial, request);
 
-        return result.map(response -> ResponseEntity.status(response.meta().status()
-                ).body(response))
-                .orElseGet(() -> ResponseEntity.ok().build());
+        return ResponseEntity.status(response.meta().status()).body(response);
+    }
+
+    @PostMapping("/employee/recollect-cancel")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER', 'ROLE_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<Void>> cancelContainerFillCycle(
+        @RequestParam String serial, 
+        //Si es mucho se borra
+        @RequestBody String reason){
+
+        ApiResponse<Void> response = containerFillCycleService.cancelContainerNotice(serial, reason);
+
+        return ResponseEntity.status(response.meta().status()).body(response);
     }
 
     @GetMapping("/admin/recollect-time/all")

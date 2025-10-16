@@ -3,20 +3,32 @@ package com.tesisUrbe.backend.prediction.service;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
+import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.prediction.dto.AverageTimeResponseDto;
 import com.tesisUrbe.backend.prediction.dto.ContainerAverageTime;
 import com.tesisUrbe.backend.prediction.dto.ContainerRecollectTimeProyection;
 import com.tesisUrbe.backend.prediction.dto.NewContainerSchedulerDto;
-import com.tesisUrbe.backend.prediction.model.ContainerFillCycleData;
-import com.tesisUrbe.backend.prediction.repository.ContainerFillCycleDataRepository;
+import com.tesisUrbe.backend.prediction.model.CollectionCanceled;
+import com.tesisUrbe.backend.prediction.model.ContainerFillCycle;
+import com.tesisUrbe.backend.prediction.model.QrContainerFillNotice;
+import com.tesisUrbe.backend.prediction.repository.CollectionCanceledRepository;
+import com.tesisUrbe.backend.prediction.repository.ContainerFillCycleRepository;
+import com.tesisUrbe.backend.prediction.repository.QrContainerFillNoticeRepository;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
+import com.tesisUrbe.backend.usersManagement.exceptions.UserNotFoundException;
+import com.tesisUrbe.backend.usersManagement.services.UserService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -29,135 +41,205 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ContainerFillCycleService {
-    private final ContainerFillCycleDataRepository containerFillCycleDataRepository;
+    private final ContainerFillCycleRepository containerFillCycleRepository;
+    private final QrContainerFillNoticeRepository qrContainerFillNoticeRepository;
     private final ApiErrorFactory errorFactory;
     private final ContainerRepository containerRepository;
+    private final CollectionCanceledRepository collectionCanceledRepository;
+    private final UserService userService;
 
+    //funcional
     @Transactional
-    public Optional<ApiResponse<Void>> reportContainerBySerial(String serial, HttpServletRequest request) {
+    public ApiResponse<Void> reportContainerBySerial(String serial, HttpServletRequest request) {
         Optional<Container> containerOpt = containerRepository.findBySerialAndDeletedFalse(serial);
 
         if (containerOpt.isEmpty()) {
-            return Optional.of(new ApiResponse<>(
+            return new ApiResponse<>(
                     errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Contenedor no encontrado"),
                     null,
                     List.of(new ApiError("CONTAINER_NOT_FOUND", "serial",
                             "Contenedor con el serial " + serial + " no fue encontrado"))
-            ));
+            );
         }
-        return fillContainerNotice(containerOpt.get(), request);
-    }
+        
+        Container container = containerOpt.get();
 
-    @Transactional
-    public Optional<ApiResponse<Void>> fillContainerNotice(Container container, HttpServletRequest request) {
+        if(ContainerStatus.UNDER_MAINTENANCE.equals(container.getStatus()))
+            return errorFactory.build(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    List.of(new ApiError("UNDER_MAINTENANCE", null,
+                            "El contanedor se encuentra en mantenimiento"))
+            );
+            
+
         String ip = request.getHeader("X-Forwarded-For");
+        
         if (ip == null || ip.isBlank()) {
             ip = request.getRemoteAddr();
         }
-        boolean alreadyReported = containerFillCycleDataRepository
+
+        boolean alreadyReported = qrContainerFillNoticeRepository
                 .existsByContainerAndReporterIpAndTimeFillingNoticeAfter(
                         container, ip, LocalDateTime.now().minusHours(1));
+
         if (alreadyReported) {
-            return Optional.of(errorFactory.build(
+            return errorFactory.build(
                     HttpStatus.TOO_MANY_REQUESTS,
                     List.of(new ApiError("DUPLICATE_REPORT", null,
                             "Ya has reportado este contenedor en la última hora"))
-            ));
+            );
         }
-        long distinctReporters = containerFillCycleDataRepository
-                .countDistinctReporterIpByContainerAndTimeFillingNoticeAfter(
-                        container, LocalDateTime.now().minusHours(1));
-        boolean shouldMarkAsFull = distinctReporters + 1 >= 3; // CANTIDAD DE REPORTES PARA VALIDAR ESTADO FULL
-        Optional<ContainerFillCycleData> lastNotice = containerFillCycleDataRepository
+
+        long distinctReporters = qrContainerFillNoticeRepository
+            .countDistinctReporterIpByContainerAndContainerFillCycleNull(container) + 1;
+
+        if(distinctReporters > 3 || ContainerStatus.FULL.equals(container.getStatus())){
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("FILLING_CYCLE_INCOMPLETE", null,
+                            "Contenedor en proceso de recoleccion"))
+            );
+        }
+
+        qrContainerFillNoticeRepository.save(
+            QrContainerFillNotice.builder()
+            .container(container)
+            .reporterIp(ip)
+            .build());
+
+        if(distinctReporters == 3){
+            fillContainerNotice(container);
+        }
+
+        return errorFactory.buildSuccess(HttpStatus.OK, "Contenedor lleno reportado exitosamente");
+
+    }
+
+    //funcional
+    @Transactional
+    public ApiResponse<Void> fillContainerNotice(Container container) {
+
+        if(ContainerStatus.FULL.equals(container.getStatus())){
+            return errorFactory.build(
+                    HttpStatus.CONFLICT,
+                    List.of(new ApiError("FILLING_CYCLE_INCOMPLETE", null,
+                            "Contenedor en proceso de recoleccion"))
+            );
+        }
+
+        Optional<ContainerFillCycle> lastNotice = containerFillCycleRepository
                 .findTop1ByContainerAndDeletedFalseOrderByTimeFillingNoticeDesc(container);
+
         int fillingNumber;
+
         double hoursBetweenFilling;
+        
         if (lastNotice.isEmpty()) {
             fillingNumber = 1;
             hoursBetweenFilling = 0;
         } else {
-            ContainerFillCycleData verifiedLastNotice = lastNotice.get();
+            ContainerFillCycle verifiedLastNotice = lastNotice.get();
+
             if (verifiedLastNotice.getMinutesToEmpty() == null) {
-                return Optional.of(errorFactory.build(
-                        HttpStatus.PROCESSING,
+                return errorFactory.build(
+                        HttpStatus.CONFLICT,
                         List.of(new ApiError("FILLING_CYCLE_INCOMPLETE", null,
-                                "Contenedor sin reporte de tiempo de vaciado"))
-                ));
+                                "Proceso de recogida sin completar"))
+                );
             }
-            if (LocalDate.now().equals(verifiedLastNotice.getTimeFillingNotice().toLocalDate())) {
-                fillingNumber = verifiedLastNotice.getDayFillingNumber() + 1;
-            } else {
-                fillingNumber = 1;
-            }
+
+            fillingNumber = (LocalDate.now().equals(verifiedLastNotice.getTimeFillingNotice().toLocalDate())) ?
+                verifiedLastNotice.getDayFillingNumber() + 1 : 1;
+
             long minutesDifference = ChronoUnit.MINUTES.between(
                     verifiedLastNotice.getTimeFillingNotice().plusMinutes(verifiedLastNotice.getMinutesToEmpty()),
                     LocalDateTime.now());
             hoursBetweenFilling = (double) minutesDifference / 60.0;
         }
-        ContainerFillCycleData newNotice = ContainerFillCycleData.builder()
+
+        ContainerFillCycle newNotice = ContainerFillCycle.builder()
                 .container(container)
                 .dayFillingNumber(fillingNumber)
                 .hoursBetweenFilling(hoursBetweenFilling)
-                .reporterIp(ip)
                 .build();
-        try {
-            containerFillCycleDataRepository.save(newNotice);
-            if (shouldMarkAsFull) {
-                container.setStatus(ContainerStatus.FULL);
-                containerRepository.save(container);
-            }
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.of(errorFactory.build(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    List.of(new ApiError("PERSISTENCE_ERROR", null,
-                            "Error interno al registrar el aviso de contenedor lleno"))
-            ));
+        
+        ContainerFillCycle fillCycle = containerFillCycleRepository.save(newNotice);
+        qrContainerFillNoticeRepository.linkNoticesToCycle(fillCycle, container);
+        container.setStatus(ContainerStatus.FULL);
+        containerRepository.save(container);
+
+        return errorFactory.buildSuccess(HttpStatus.OK, "Proceso de recogida de contenedor lleno iniciado exitosamente");
+    }
+
+
+    @Transactional
+    public ApiResponse<Void> cancelContainerNotice(String serial, String reason){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.UNAUTHORIZED, "No estás autenticado"),
+                    null,
+                    List.of(new ApiError("UNAUTHORIZED", null, "Debes iniciar sesión para generar el reporte"))
+            );
         }
-    }
 
-    @Transactional
-    public Optional<ApiResponse<Void>> fillContainerNotice(Container container) {
-        return fillContainerNotice(container, null);
-    }
+        User user = userService.findByUserName(auth.getName())
+            .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
-    @Transactional
-    public Optional<ApiResponse<Void>> cancelContainerNotice(Container container){
-        Optional<ContainerFillCycleData> lastNotice = containerFillCycleDataRepository
-                .findTop1ByContainerAndDeletedFalseOrderByTimeFillingNoticeDesc(container);
+
+        System.out.println(auth.getName());
+
+        Optional<Container> containerOpt = containerRepository.findBySerialAndDeletedFalse(serial);
+
+        if (containerOpt.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "Contenedor no encontrado"),
+                    null,
+                    List.of(new ApiError("CONTAINER_NOT_FOUND", "serial",
+                            "Contenedor con el serial " + serial + " no fue encontrado"))
+            );
+        }
+
+        Optional<ContainerFillCycle> lastNotice = containerFillCycleRepository
+            .findByContainerAndDeletedFalseAndMinutesToEmptyNull(containerOpt.get());
+
         if(lastNotice.isEmpty())
-            return Optional.of(errorFactory.build(
+            return errorFactory.build(
                 HttpStatus.NOT_FOUND,
-                List.of(new ApiError("FILL_NOTICE_NOT_FOUND", null, "No se ha encontrado ninguna notificacion para cancelar"))
-            ));
-        ContainerFillCycleData fillCycleData = lastNotice.get();
-        if(fillCycleData.getMinutesToEmpty() != null)
-            return Optional.of(errorFactory.build(
-                    HttpStatus.NOT_FOUND,
-                    List.of(new ApiError("FILLING_CYCLE_COMPLETE", null, "Ya se recogio el contenedor")))
-            );
-        fillCycleData.setDeleted(true);
-        try {
-            containerFillCycleDataRepository.save(fillCycleData);
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.of(errorFactory.build(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    List.of(new ApiError("PERSISTENCE_ERROR", null, "Error interno al cancelar la notificacion")))
-            );
-        }
+                List.of(new ApiError("FILL_NOTICE_NOT_FOUND", 
+                null, "No se ha encontrado ninguna notificacion para cancelar"))
+                );
+        
+        if(StringUtils.hasText(reason))
+            reason = "No se especifico el motivo de cancelación";
+        
+        ContainerFillCycle lastCycle = lastNotice.get();
+        lastCycle.setDeleted(true);
+        Container container = containerOpt.get();
+        container.setStatus(ContainerStatus.AVAILABLE);
+
+        collectionCanceledRepository.save(
+            CollectionCanceled.builder()
+            .containerFillCycle(lastCycle)
+            .user(user)
+            .reason(reason)
+            .build());
+        containerFillCycleRepository.save(lastCycle);
+        containerRepository.save(container);
+
+        return errorFactory.buildSuccess(HttpStatus.OK, "Notificacion cancelada exitosamente");
     }
 
     @Transactional
     public Optional<ApiResponse<Void>> completeFillingCycle(Container container){
-        Optional<ContainerFillCycleData> lastNotice = containerFillCycleDataRepository
+        Optional<ContainerFillCycle> lastNotice = containerFillCycleRepository
                 .findTop1ByContainerAndDeletedFalseOrderByTimeFillingNoticeDesc(container);
         if(lastNotice.isEmpty()) return Optional.of(
                 errorFactory.build(
                     HttpStatus.NOT_FOUND,
                     List.of(new ApiError("FILL_NOTICE_NOT_FOUND", null, "No se ha encontrado ninguna notificacion pendiente")))
         );
-        ContainerFillCycleData fillCycleData = lastNotice.get();
+        ContainerFillCycle fillCycleData = lastNotice.get();
         if(fillCycleData.getMinutesToEmpty() != null)
             return Optional.of(errorFactory.build(
                     HttpStatus.NOT_FOUND,
@@ -166,7 +248,7 @@ public class ContainerFillCycleService {
         long minutesToEmpty = ChronoUnit.MINUTES.between(fillCycleData.getTimeFillingNotice(), LocalDateTime.now());
         fillCycleData.setMinutesToEmpty(minutesToEmpty);
         try {
-            containerFillCycleDataRepository.save(fillCycleData);
+            containerFillCycleRepository.save(fillCycleData);
             return Optional.empty();
         } catch (Exception e) {
             return Optional.of(errorFactory.build(
@@ -179,12 +261,12 @@ public class ContainerFillCycleService {
     public List<NewContainerSchedulerDto> createPrediction(Container container){
         DayOfWeek currentDay = LocalDateTime.now().getDayOfWeek();
         Month currentMonth = LocalDateTime.now().getMonth();
-        List<ContainerFillCycleData> historicalData = containerFillCycleDataRepository.getAllFillCycleData(
+        List<ContainerFillCycle> historicalData = containerFillCycleRepository.getAllFillCycleData(
                 container, currentDay, currentMonth);
         if(historicalData.isEmpty() || historicalData.size() < 5) return Collections.emptyList();;
         Map<Integer, Double> averageFillTimeByNumber = historicalData.stream()
                 .collect(Collectors.groupingBy(
-                        ContainerFillCycleData::getDayFillingNumber,
+                        ContainerFillCycle::getDayFillingNumber,
                         Collectors.averagingDouble(data -> {
                             LocalDateTime fillTime = data.getTimeFillingNotice();
                             return fillTime.getHour() + (fillTime.getMinute() / 60.0);
@@ -215,7 +297,7 @@ public class ContainerFillCycleService {
     @Transactional(readOnly = true)
     public ApiResponse<AverageTimeResponseDto> completeAverageTime(){
 
-        List<ContainerRecollectTimeProyection> granularData = containerFillCycleDataRepository.getAllRecollectTimeDatas();
+        List<ContainerRecollectTimeProyection> granularData = containerFillCycleRepository.getAllRecollectTimeDatas();
 
         Double globalAverage = granularData.stream()
             .collect(Collectors.averagingDouble(ContainerRecollectTimeProyection::getAverageTime));
