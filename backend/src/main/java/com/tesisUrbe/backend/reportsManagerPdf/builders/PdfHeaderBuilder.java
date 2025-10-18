@@ -18,7 +18,7 @@ public class PdfHeaderBuilder {
 
     private final UniversityConfig university;
 
-    public void build(Document doc, PdfWriter writer, String title, String username) throws Exception {
+    public void build(Document doc, String title, String username) throws Exception {
         PdfPTable outerTable = new PdfPTable(1);
         outerTable.setWidthPercentage(100);
         outerTable.setSpacingAfter(10f);

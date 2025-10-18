@@ -1,8 +1,8 @@
 report:
   author: Calmen, Juárez y Vilchez.
-  headerColor: "0000FF"
-  recordColor: "000000"
-  titleColor: "FFFFFF"
+  tableHeaderColor: "#0000FF"
+  headerTextColor: "#FFFFFF"
+  recordColor: "#000000"
 
 university:
   legal_name: Universidad Venezuela

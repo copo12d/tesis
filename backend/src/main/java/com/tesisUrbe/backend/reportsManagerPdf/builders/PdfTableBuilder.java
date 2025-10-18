@@ -20,15 +20,15 @@ public class PdfTableBuilder<T> implements PdfTableBuilderInterface<T> {
 
     @Override
     public void build(Document doc, List<T> records, List<String> columnTitles) throws Exception {
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+        Font headerTextColor = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Color.decode(config.getHeaderTextColor()));
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.decode(config.getRecordColor()));
 
         PdfPTable table = new PdfPTable(columnTitles.size());
         table.setWidthPercentage(100);
 
         for (String title : columnTitles) {
-            PdfPCell cell = new PdfPCell(new Phrase(title, headerFont));
-            cell.setBackgroundColor(Color.decode("#" + config.getHeaderColor()));
+            PdfPCell cell = new PdfPCell(new Phrase(title, headerTextColor));
+            cell.setBackgroundColor(Color.decode(config.getTableHeaderColor() ));
             table.addCell(cell);
         }
 
