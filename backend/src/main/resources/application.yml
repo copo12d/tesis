@@ -1,9 +1,6 @@
 spring:
   profiles:
     active: dev
-  config:
-    import: classpath:report-config.yml
-
 # Frontend and QR configuration
 app:
   frontend:
