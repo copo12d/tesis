@@ -8,21 +8,21 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.setting.ReportSetting;
 import com.tesisUrbe.backend.entities.setting.UbicationSetting;
 import com.tesisUrbe.backend.entities.setting.UniversitySetting;
+import com.tesisUrbe.backend.settingsManagement.repository.ReportSettingRepository;
+import com.tesisUrbe.backend.settingsManagement.repository.UbicationSettingRepository;
+import com.tesisUrbe.backend.settingsManagement.repository.UniversitySettingRepository;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -33,36 +33,20 @@ public class SettingsService {
     private final ApiErrorFactory errorFactory;
     private final ObjectMapper objectMapper;
 
-    private final String configPath = "settings.yml";
     private final String logoPath = "src/main/resources/static/images/logo.png";
-
-    private Map<String, Object> loadYaml() {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream(configPath)) {
-            if (input == null) {
-                throw new FileNotFoundException("Archivo settings.yml no encontrado en el classpath");
-            }
-            return new Yaml().load(input);
-        } catch (Exception e) {
-            log.error("Error al cargar YAML", e);
-            throw new RuntimeException("Error al cargar configuración");
-        }
-    }
-
-    private void saveYaml(Map<String, Object> data) {
-        try (FileWriter writer = new FileWriter(configPath)) {
-            DumperOptions options = new DumperOptions();
-            options.setPrettyFlow(true);
-            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            new Yaml(options).dump(data, writer);
-        } catch (Exception e) {
-            log.error("Error al guardar YAML", e);
-            throw new RuntimeException("Error al guardar configuración");
-        }
-    }
+    private final ReportSettingRepository reportRepo;
+    private final UniversitySettingRepository universityRepo;
+    private final UbicationSettingRepository ubicationRepo;
 
     public ApiResponse<ReportSetting> getReportSetting() {
-        Map<String, Object> yaml = loadYaml();
-        ReportSetting report = objectMapper.convertValue(yaml.get("report"), ReportSetting.class);
+        ReportSetting report = reportRepo.findById(1L).orElseGet(() -> {
+            ReportSetting r = new ReportSetting();
+            r.setId(1L);
+            r.setTableHeaderColor("#0000FF");
+            r.setHeaderTextColor("#FFFFFF");
+            r.setRecordColor("#000000");
+            return reportRepo.save(r);
+        });
         return new ApiResponse<>(errorFactory.buildMeta(HttpStatus.OK, "Estilos obtenidos correctamente"), report, null);
     }
 
@@ -74,10 +58,8 @@ public class SettingsService {
                     new ApiError("INVALID_COLOR", "recordColor", "Formato de color inválido")
             ));
         }
-
-        Map<String, Object> yaml = loadYaml();
-        yaml.put("report", report);
-        saveYaml(yaml);
+        report.setId(1L);
+        reportRepo.save(report);
         return errorFactory.buildSuccess(HttpStatus.OK, "Estilos actualizados correctamente");
     }
 
@@ -86,8 +68,9 @@ public class SettingsService {
     }
 
     public ApiResponse<UniversitySetting> getUniversitySetting() {
-        Map<String, Object> yaml = loadYaml();
-        UniversitySetting university = objectMapper.convertValue(yaml.get("university"), UniversitySetting.class);
+        UniversitySetting university = universityRepo.findById(1L).orElseThrow(() ->
+                new IllegalStateException("Configuración institucional no encontrada")
+        );
         return new ApiResponse<>(errorFactory.buildMeta(HttpStatus.OK, "Datos institucionales obtenidos correctamente"), university, null);
     }
 
@@ -102,34 +85,20 @@ public class SettingsService {
             errors.add(new ApiError("INVALID_EMAIL", "email", "Correo electrónico inválido"));
         }
 
-        if (university.getTaxId() == null) {
-            errors.add(new ApiError("INVALID_TAX_ID", "tax_id", "RIF no puede estar vacío"));
-        } else {
-            if (StringUtils.isBlank(university.getTaxId().getType())) {
-                errors.add(new ApiError("INVALID_TAX_ID", "tax_id.type", "Tipo de RIF inválido"));
-            }
-            if (StringUtils.isBlank(university.getTaxId().getNumber())) {
-                errors.add(new ApiError("INVALID_TAX_ID", "tax_id.number", "Número de RIF inválido"));
-            }
+        if (university.getTaxId() == null ||
+                StringUtils.isBlank(university.getTaxId().getType()) ||
+                StringUtils.isBlank(university.getTaxId().getNumber())) {
+            errors.add(new ApiError("INVALID_TAX_ID", "tax_id", "RIF inválido"));
         }
 
         if (!errors.isEmpty()) {
             return errorFactory.build(HttpStatus.BAD_REQUEST, errors);
         }
 
-        Map<String, Object> yaml = loadYaml();
-
-        Map<String, Object> universityMap = objectMapper.convertValue(
-                university,
-                new TypeReference<Map<String, Object>>() {}
-        );
-
-        yaml.put("university", universityMap);
-        saveYaml(yaml);
-
+        university.setId(1L);
+        universityRepo.save(university);
         return errorFactory.buildSuccess(HttpStatus.OK, "Datos institucionales actualizados correctamente");
     }
-
 
     public ApiResponse<Void> replaceLogo(MultipartFile file) {
         if (file.isEmpty()) {
@@ -158,8 +127,9 @@ public class SettingsService {
     }
 
     public ApiResponse<UbicationSetting> getUbicationSetting() {
-        Map<String, Object> yaml = loadYaml();
-        UbicationSetting ubication = objectMapper.convertValue(yaml.get("ubication"), UbicationSetting.class);
+        UbicationSetting ubication = ubicationRepo.findById(1L).orElseThrow(() ->
+                new IllegalStateException("Ubicación institucional no encontrada")
+        );
         return new ApiResponse<>(errorFactory.buildMeta(HttpStatus.OK, "Ubicación obtenida correctamente"), ubication, null);
     }
 
@@ -180,9 +150,8 @@ public class SettingsService {
             return errorFactory.build(HttpStatus.BAD_REQUEST, errors);
         }
 
-        Map<String, Object> yaml = loadYaml();
-        yaml.put("ubication", ubication);
-        saveYaml(yaml);
+        ubication.setId(1L);
+        ubicationRepo.save(ubication);
         return errorFactory.buildSuccess(HttpStatus.OK, "Ubicación actualizada correctamente");
     }
 
