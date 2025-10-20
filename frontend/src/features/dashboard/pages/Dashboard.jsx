@@ -13,7 +13,7 @@ const Dashboard = () => {
   const card3 = dashboardData?.cardsData?.[2] ?? { value: 0 };
 
   return (
-    <Box as="main" p={{ base: 4, md: 6 }} bg="gray.50" minH="100vh">
+    <Box as="main" p={{ base: 4, md: 6 }} bg="gray.50" h="100vh" overflowY="auto">
       {/* Contenedor centrado para evitar excesivo espacio lateral */}
       <Box maxW="1200px" mx="auto">
         <Heading as="h2" size="lg" color="green.600" mb={6}>
