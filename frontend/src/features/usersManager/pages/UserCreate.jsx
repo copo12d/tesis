@@ -5,7 +5,7 @@ import { UserForm } from "../components/UserForm";
 
 export function UserCreate() {
   const navigate = useNavigate();
-  const { create, loading } = useCreateUser({
+  const { create, loading, error } = useCreateUser({
     redirectOnSuccess: "/users/all",
     emitToasts: true,
   });
@@ -22,7 +22,7 @@ export function UserCreate() {
         loading={loading}
         onSubmit={async (values) => {
           const ok = await create(values);
-          if (ok) navigate("/users/all");
+          if (ok && error) navigate("/users/all");
         }}
         submitText="Crear usuario"
         title="Registrar usuario"

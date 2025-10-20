@@ -11,7 +11,7 @@ const headers = [
   { key: "fullName", label: "Nombre" },
   { key: "userName", label: "Usuario" },
   { key: "email", label: "Email" },
-  { key: "role", label: "Rol" },
+  { key: "roleDescription", label: "Rol" },
 ];
 
 const searchMenuItems = [
