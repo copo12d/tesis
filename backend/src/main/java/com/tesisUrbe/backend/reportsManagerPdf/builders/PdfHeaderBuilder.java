@@ -18,7 +18,7 @@ public class PdfHeaderBuilder {
 
     private final UniversityConfig university;
 
-    public void build(Document doc, PdfWriter writer, String title, String username) throws Exception {
+    public void build(Document doc, String title, String username) throws Exception {
         PdfPTable outerTable = new PdfPTable(1);
         outerTable.setWidthPercentage(100);
         outerTable.setSpacingAfter(10f);
@@ -43,14 +43,17 @@ public class PdfHeaderBuilder {
         Paragraph info = new Paragraph();
         info.setAlignment(Element.ALIGN_CENTER);
         info.setLeading(12f);
-        info.add(new Phrase(university.getLegalName() + "\n", titleFont));
-        info.add(new Phrase("RIF: " + university.getTaxId().getType() + "-" + university.getTaxId().getNumber() + "\n", titleFont));
-        info.add(new Phrase(university.getAddress_1() + "\n", normalFont));
-        info.add(new Phrase(university.getAddress_2() + "\n", normalFont));
-        info.add(new Phrase(university.getAddress_3() + "\n", normalFont));
-        info.add(new Phrase(university.getPhone() + "\n", normalFont));
-        info.add(new Phrase(university.getEmail() + "\n\n", normalFont));
-        info.add(new Phrase(title + "\n\n", titleFont));
+        addIfNotEmpty(info, university.getLegalName(), titleFont);
+        addIfNotEmpty(info, "RIF: " + university.getTaxId().getType() + "-" + university.getTaxId().getNumber(), titleFont);
+        addIfNotEmpty(info, university.getAddress_1(), normalFont);
+        addIfNotEmpty(info, university.getAddress_2(), normalFont);
+        addIfNotEmpty(info, university.getAddress_3(), normalFont);
+        addIfNotEmpty(info, university.getPhone(), normalFont);
+        addIfNotEmpty(info, university.getEmail(), normalFont);
+        if (info.getChunks().size() > 0) {
+            info.add(new Phrase("\n", normalFont));
+        }
+        addIfNotEmpty(info, title, titleFont);
 
         Paragraph signature = new Paragraph();
         signature.setAlignment(Element.ALIGN_RIGHT);
@@ -76,6 +79,12 @@ public class PdfHeaderBuilder {
 
         doc.add(outerTable);
         doc.add(Chunk.NEWLINE);
+    }
+
+    private void addIfNotEmpty(Paragraph paragraph, String text, Font font) {
+        if (text != null && !text.trim().isEmpty()) {
+            paragraph.add(new Phrase(text + "\n", font));
+        }
     }
 
 }

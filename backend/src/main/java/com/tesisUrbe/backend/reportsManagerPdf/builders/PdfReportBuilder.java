@@ -21,7 +21,7 @@ public class PdfReportBuilder<T> implements ReportBuilder<T> {
         PdfWriter writer = PdfWriter.getInstance(doc, out);
         writer.setPageEvent(footerBuilder);
         doc.open();
-        headerBuilder.build(doc, writer, reportTitle, username);
+        headerBuilder.build(doc, reportTitle, username);
         tableBuilder.build(doc, records, columnTitles);
         doc.close();
         return out.toByteArray();
