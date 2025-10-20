@@ -4,6 +4,7 @@ import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.tesisUrbe.backend.common.constants.CommonConstants;
 import com.tesisUrbe.backend.reportsManagerPdf.config.ReportStyleConfig;
 import lombok.AllArgsConstructor;
 
@@ -26,7 +27,7 @@ public class PdfFooterBuilder extends PdfPageEventHelper {
         canvas.beginText();
         canvas.setFontAndSize(footerFont.getBaseFont(), 10);
 
-        canvas.showTextAligned(Element.ALIGN_CENTER, config.getAuthor(), centerX, bottomY + 20, 0);
+        canvas.showTextAligned(Element.ALIGN_CENTER, CommonConstants.Author, centerX, bottomY + 20, 0);
         canvas.showTextAligned(Element.ALIGN_CENTER, "Todos los derechos reservados © " + LocalDateTime.now().getYear(), centerX, bottomY + 10, 0);
         canvas.showTextAligned(Element.ALIGN_CENTER, "Página " + writer.getPageNumber(), centerX, bottomY, 0);
 
