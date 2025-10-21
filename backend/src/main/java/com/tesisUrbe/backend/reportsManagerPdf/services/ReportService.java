@@ -285,7 +285,7 @@ public class ReportService {
                     "ID", "Nombre completo", "Usuario", "Correo", "Rol",
                     "Verificado", "Bloqueo de cuenta", "Bloqueo de usuario"
             );
-            
+
 
             ReportBuilder<AdminUserDto> builder = reportRegistry.getBuilder(AdminUserDto.class);
             byte[] pdf = builder.build("Reporte de Usuarios Administradores", columnTitles, dtos, auth.getName());

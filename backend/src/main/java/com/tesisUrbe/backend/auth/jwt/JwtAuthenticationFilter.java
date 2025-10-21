@@ -75,15 +75,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             AuthUserProjection authUser = userService.findAuthUserProjectionByUserName(username)
                     .orElse(null);
 
-            if (authUser == null || Boolean.TRUE.equals(authUser.isDeleted())) {
+            if (authUser == null || authUser.isDeleted()) {
                 sendUnauthorized(request, response, "La cuenta ha sido eliminada");
                 return;
             }
-            if (Boolean.TRUE.equals(authUser.isUserLocked())) {
+            if (authUser.isUserLocked()) {
                 sendUnauthorized(request, response, "El acceso fue bloqueado por un administrador");
                 return;
             }
-            if (Boolean.TRUE.equals(authUser.isAccountLocked())) {
+            if (authUser.isAccountLocked()) {
                 sendUnauthorized(request, response, "La cuenta está bloqueada por intentos fallidos");
                 return;
             }

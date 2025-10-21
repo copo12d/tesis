@@ -50,7 +50,7 @@ public class ContainerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
     private final UserService userService;
-    
+
     @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:5173}")
     private String frontendBaseUrl;
 

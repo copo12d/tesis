@@ -34,8 +34,8 @@ public class CollectionCanceled {
     @Builder.Default
     @Column(name = "cancel_time", nullable = false)
     private LocalDateTime cancelTime = LocalDateTime.now();
-    
+
     @Column(name = "reason", nullable = false)
     private String reason;
-    
+
 }

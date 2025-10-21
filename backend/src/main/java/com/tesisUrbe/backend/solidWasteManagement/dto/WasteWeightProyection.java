@@ -7,9 +7,13 @@ import java.time.Year;
 
 
 public interface WasteWeightProyection {
-    String getContainerType();  
+    String getContainerType();
+
     DayOfWeek getCollectionDayOfWeek();
+
     Year getCollectionYear();
-    Month getCollectionMonth(); 
+
+    Month getCollectionMonth();
+
     BigDecimal getWeight();
 }

@@ -215,13 +215,15 @@ public class BatchEncService {
             if (StringUtils.hasText(fechaFin)) {
                 fechaFinDate = LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         BatchStatus batchStatus = null;
         if (StringUtils.hasText(status)) {
             try {
                 batchStatus = BatchStatus.valueOf(status.toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         Page<BatchEnc> batchPage = batchRepository.findByAdvancedSearch(

@@ -4,19 +4,23 @@ import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
-import com.tesisUrbe.backend.prediction.dto.ManualSchedulerDto;
-import com.tesisUrbe.backend.prediction.dto.NewContainerSchedulerDto;
+import com.tesisUrbe.backend.prediction.dto.*;
 import com.tesisUrbe.backend.prediction.model.ContainerScheduler;
 import com.tesisUrbe.backend.prediction.repository.ContainerSchedulerRepository;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +35,32 @@ public class ContainerSchedulerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
 
+    /**
+     * Genera y persiste predicciones de horarios de llenado (recolección) para una lista
+     * de contenedores basada en su historial de ciclos de llenado.
+     * <p>
+     * Este método es transaccional: intenta procesar cada contenedor de la lista. Si se
+     * encuentran errores (como contenedor no encontrado o datos históricos insuficientes),
+     * estos se acumulan en la respuesta, pero el procesamiento continúa para los demás contenedores.
+     * Las predicciones exitosas se guardan en la base de datos.
+     * </p>
+     *
+     * @param containerSerial Una lista de números de serie (String) de los contenedores a procesar.
+     * @return Un objeto {@code ApiResponse} que encapsula el resultado. El cuerpo de la respuesta
+     * contendrá una lista de listas de {@code ContainerScheduler}, donde cada lista interna
+     * representa los nuevos cronogramas guardados para un contenedor específico.
+     * La lista de errores contendrá detalles sobre los contenedores que no pudieron ser procesados.
+     */
     @Transactional
     public ApiResponse<List<List<ContainerScheduler>>> schedulerPredictions(List<String> containerSerial) {
 
         List<List<ContainerScheduler>> allContainerSchedulers = new ArrayList<>(List.of());
         List<ApiError> errors = new ArrayList<>(List.of());
 
-        for(String serial : containerSerial){
+        for (String serial : containerSerial) {
             Optional<Container> container = containerRepository.findBySerialAndDeletedFalse(serial);
 
-            if(container.isEmpty()){
+            if (container.isEmpty()) {
                 errors.add(new ApiError("CONTAINER_NOT_FOUND", null,
                         "Contenedor con el serial " + serial + " no encontrado"));
                 continue;
@@ -50,7 +70,7 @@ public class ContainerSchedulerService {
 
             List<NewContainerSchedulerDto> containerPredictions = containerFillCycleService.createPrediction(verContainer);
 
-            if(containerPredictions.isEmpty()){
+            if (containerPredictions.isEmpty()) {
                 errors.add(new ApiError("INSUFFICIENT_DATA", null,
                         "Contenedor con el serial " + serial + " no posee data para generar predicciones"));
                 continue;
@@ -74,15 +94,16 @@ public class ContainerSchedulerService {
 
     }
 
+    //falta revision
     @Transactional
-    public ApiResponse<List<List<ContainerScheduler>>>  schedulerManual(List<ManualSchedulerDto> scheduler){
+    public ApiResponse<List<List<ContainerScheduler>>> schedulerManual(List<ManualSchedulerDto> scheduler) {
         List<List<ContainerScheduler>> allContainerSchedulers = new ArrayList<>(List.of());
         List<ApiError> errors = new ArrayList<>(List.of());
 
-        for(ManualSchedulerDto containerScheduler : scheduler){
+        for (ManualSchedulerDto containerScheduler : scheduler) {
             Optional<Container> container = containerRepository.findBySerialAndDeletedFalse(containerScheduler.getContainerSerial());
 
-            if(container.isEmpty()){
+            if (container.isEmpty()) {
                 errors.add(new ApiError("CONTAINER_NOT_FOUND", null,
                         "Contenedor con el serial " + containerScheduler.getContainerSerial() + " no encontrado"));
                 continue;
@@ -107,29 +128,88 @@ public class ContainerSchedulerService {
         );
     }
 
+    /**
+     * Realiza una búsqueda paginada y opcionalmente filtrada de la próxima recolección programada
+     * para todos los contenedores activos.
+     * <p>
+     * Este método consulta una proyección que incluye el serial del contenedor y su próxima hora
+     * de recolección programada. Los resultados se mapean a {@code NextRecollectionDto} para la respuesta.
+     * </p>
+     *
+     * @param serial Filtro opcional por el número de serie del contenedor. Si se proporciona,
+     * se utiliza un patrón 'like' (búsqueda parcial). Si es {@code null} o vacío,
+     * se omitirá el filtro.
+     * @param pageable Objeto de paginación que incluye el número de página, tamaño y criterios de ordenación.
+     * @return Un objeto {@code ApiResponse} que contiene una página de {@code NextRecollectionDto}.
+     * Cada DTO incluye el serial del contenedor y la hora programada formateada (o un mensaje
+     * indicando que no hay programación). El estado HTTP será 200 OK.
+     */
+    @Transactional(readOnly = true)
+    public ApiResponse<Page<NextRecollectionDto>> searchNextRecollectionPage(
+            String serial, Pageable pageable
+    ) {
+        Page<NextRecollectionProjection> proyectionPage = containerRepository.nextRecollectionAllContainers(
+                (serial == null || serial.isEmpty()) ? null : "%" + serial + "%",
+                pageable);
+
+        return new ApiResponse<Page<NextRecollectionDto>>(
+                errorFactory.buildMeta(HttpStatus.OK, "Busqueda de siguientes recolecciones programadas completa"),
+                new PageImpl<>(proyectionPage.getContent().stream()
+                        .map(container -> NextRecollectionDto.builder()
+                                .containerSerial(container.getContainerSerial())
+                                .nextRecollectionTime(
+                                        (container.getNextRecollectionTime() == null) ? "No tiene ninguna recolección programada"
+                                                : container.getNextRecollectionTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")))
+                                .build())
+                        .toList(),
+                        proyectionPage.getPageable(),
+                        proyectionPage.getTotalElements()),
+                null
+        );
+    }
+
+    //falta terminar
+    @Transactional(readOnly = true)
+    public ApiResponse<List<NextRecollectionDto>> nextRecollectionsBySerial(String serial) {
+
+
+        return new ApiResponse<List<NextRecollectionDto>>(
+                errorFactory.buildMeta(HttpStatus.OK, "Lista de todas las recolecciones programadas"),
+                null,
+                null
+        );
+    }
+
+    /**
+     * Verifica periódicamente los cronogramas de recolección de contenedores que están vencidos
+     * o que deberían haberse iniciado.
+     * <p>
+     * Este método se ejecuta automáticamente cada 15 minutos. Por cada cronograma vencido encontrado,
+     * intenta iniciar el ciclo de llenado del contenedor.
+     * </p>
+     */
     @Transactional
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES) // Ejecuta cada 15 minutos
     public void checkOverdueSchedules() {
 
         LocalDateTime now = LocalDateTime.now();
 
-        List<ContainerScheduler> overdueSchedules =
-                containerSchedulerRepository.findAllByWasUsedFalseAndWasSuspendedFalseAndSchedulerFillTimeBefore(now);
+        List<SchedulerProjection> overdueSchedules = containerSchedulerRepository.findAllActiveScheduler(now);
 
         if (overdueSchedules.isEmpty()) {
             System.out.println(now + " - Tarea programada: No se encontraron cronogramas vencidos.");
             return;
         }
 
-        for (ContainerScheduler scheduler : overdueSchedules) {
+        for (SchedulerProjection scheduler : overdueSchedules) {
             Container container = scheduler.getContainer();
-            container.setStatus(ContainerStatus.FULL);
-            containerRepository.save(container);
 
-            containerFillCycleService.fillContainerNotice(container);
-
-            scheduler.setWasUsed(true);
-            containerSchedulerRepository.save(scheduler);
+            ApiResponse<Void> response = containerFillCycleService.fillContainerNotice(container);
+            if(HttpStatus.OK.value() == response.meta().status()){
+                containerSchedulerRepository.setAllUsed(container, now);
+            } else {
+                containerSchedulerRepository.suspendForCurrentCycle(container, now);
+            }
         }
     }
 
