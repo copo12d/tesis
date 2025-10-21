@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class ReportStyleConfig {
     private String author;
-    private String headerColor;
+    private String tableHeaderColor;
+    private String headerTextColor;
     private String recordColor;
-    private String titleColor;
 }
 

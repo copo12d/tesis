@@ -108,7 +108,7 @@ export function BatchDetailPage() {
           size="lg"
           loading={processing}
           onClick={handleProcess}
-          disabled={header?.status === "PROCESADO"}
+          disabled={header?.status === "Lote Procesado"}
           fontWeight="bold"
           fontSize="lg"
           px={8}

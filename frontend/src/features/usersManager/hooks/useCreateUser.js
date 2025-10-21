@@ -18,6 +18,18 @@ export function useCreateUser({
     setApiMessage(null);
     try {
       const res = await UsersAPI.create(data);
+
+      // Si hay errores en la respuesta, no redirige ni muestra éxito
+      const apiErrors = res?.data?.errors;
+      if (Array.isArray(apiErrors) && apiErrors.length > 0) {
+        let msg = apiErrors[0].message || "Error al crear usuario";
+        setError(msg);
+        if (emitToasts) {
+          toast.error(msg, { duration: 4000 });
+        }
+        return { success: false, message: msg };
+      }
+
       const message =
         res?.data?.meta?.message ||
         "Usuario creado correctamente";
