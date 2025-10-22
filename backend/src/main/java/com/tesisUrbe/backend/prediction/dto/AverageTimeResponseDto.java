@@ -11,5 +11,5 @@ public class AverageTimeResponseDto {
     Double globalAverage;
     List<ContainerAverageTime> containerAverage;
 
-    
+
 }

@@ -43,9 +43,14 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
             @Param("fechaInicio") LocalDate fechaInicio,
             @Param("fechaFin") LocalDate fechaFin
     );
+
     List<BatchEnc> findByCreationDateBetweenAndDeletedFalse(LocalDate start, LocalDate end);
+
     List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDate start);
+
     List<BatchEnc> findByCreationDateLessThanEqualAndDeletedFalse(LocalDate end);
+
     List<BatchEnc> findByDeletedFalse();
+
     List<BatchEnc> findByStatusAndDeletedFalse(BatchStatus status);
 }

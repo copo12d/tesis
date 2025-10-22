@@ -21,5 +21,5 @@ public class QrReportResponseDto {
     private String reportDate;
     private String reportTime;
     private String cycleStatus;
-    
+
 }

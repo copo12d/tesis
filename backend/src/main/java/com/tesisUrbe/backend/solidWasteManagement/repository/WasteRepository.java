@@ -18,17 +18,17 @@ public interface WasteRepository extends JpaRepository<Waste, Long> {
 
 
     @Query("""    
-    SELECT 
-        w.container.containerType.name AS containerType,
-        DAY_OF_WEEK(w.collectionDate) AS collectionDayOfWeek,
-        YEAR(w.collectionDate) AS collectionYear,
-        MONTH(w.collectionDate) AS collectionMonth,
-        SUM(w.weight) AS totalWeight
-    FROM Waste w
-    WHERE w.deleted = false
-    GROUP BY w.container.containerType.name, DAY_OF_WEEK(w.collectionDate), YEAR(w.collectionDate), MONTH(w.collectionDate)
+            SELECT 
+                w.container.containerType.name AS containerType,
+                DAY_OF_WEEK(w.collectionDate) AS collectionDayOfWeek,
+                YEAR(w.collectionDate) AS collectionYear,
+                MONTH(w.collectionDate) AS collectionMonth,
+                SUM(w.weight) AS totalWeight
+            FROM Waste w
+            WHERE w.deleted = false
+            GROUP BY w.container.containerType.name, DAY_OF_WEEK(w.collectionDate), YEAR(w.collectionDate), MONTH(w.collectionDate)
             """)
     List<WasteWeightProyection> getAllWeightTotal();
-    
+
 
 }

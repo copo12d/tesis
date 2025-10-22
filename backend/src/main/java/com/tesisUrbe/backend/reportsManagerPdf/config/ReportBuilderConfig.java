@@ -88,7 +88,7 @@ public class ReportBuilderConfig {
                 user.getFullName() != null ? user.getFullName().replaceAll("[\\r\\n]+", " ") : "",
                 user.getUserName() != null ? user.getUserName() : "",
                 user.getEmail() != null ? user.getEmail() : "",
-                user.getRole() != null ? user.getRole(): "",
+                user.getRole() != null ? user.getRole() : "",
                 user.isVerified() ? "Sí" : "No",
                 user.isAccountLocked() ? "Sí" : "No",
                 user.isUserLocked() ? "Sí" : "No"
@@ -132,10 +132,10 @@ public class ReportBuilderConfig {
             ReportModule<ContainerResponseDto> containerModule
     ) {
         return args -> {
-            registry.register(BatchRegResponseDto.class, batchModule.getReportBuilder());
-            registry.register(AdminUserDto.class, adminModule.getReportBuilder());
-            registry.register(BatchEncResponseDto.class, batchEncModule.getReportBuilder());
-            registry.register(ContainerResponseDto.class, containerModule.getReportBuilder());
+            registry.register(BatchRegResponseDto.class, batchModule.reportBuilder());
+            registry.register(AdminUserDto.class, adminModule.reportBuilder());
+            registry.register(BatchEncResponseDto.class, batchEncModule.reportBuilder());
+            registry.register(ContainerResponseDto.class, containerModule.reportBuilder());
         };
     }
 

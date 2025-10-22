@@ -45,22 +45,22 @@ public class RoleService {
 
 
         if (isSuperuser) {
-              
+
             return roleRepository.findAll().stream()
                     .map(role -> RoleRespondDto.builder()
-                        .id(role.getId())
-                        .name(role.getName().name())
-                        .value(role.getName().getDescription())
-                        .build())
+                            .id(role.getId())
+                            .name(role.getName().name())
+                            .value(role.getName().getDescription())
+                            .build())
                     .toList();
         } else {
             return roleRepository.findAll().stream()
                     .filter(role -> role.getName() != RoleList.ROLE_SUPERUSER)
                     .map(role -> RoleRespondDto.builder()
-                        .id(role.getId())
-                        .name(role.getName().name())
-                        .value(role.getName().getDescription())
-                        .build())
+                            .id(role.getId())
+                            .name(role.getName().name())
+                            .value(role.getName().getDescription())
+                            .build())
                     .toList();
         }
     }

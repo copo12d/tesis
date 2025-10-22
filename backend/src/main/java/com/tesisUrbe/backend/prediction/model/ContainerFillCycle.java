@@ -3,6 +3,7 @@ package com.tesisUrbe.backend.prediction.model;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -34,14 +35,6 @@ public class ContainerFillCycle {
     @Column(name = "minutes_to_empty")
     private Long minutesToEmpty = null;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false)
-    private DayOfWeek dayOfWeek;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "month_of_year", nullable = false)
-    private Month monthOfYear;
-
     @Column(name = "day_filling_number", nullable = false)
     private Integer dayFillingNumber;
 
@@ -54,10 +47,7 @@ public class ContainerFillCycle {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime noticeTime = LocalDateTime.now();
-        this.timeFillingNotice = noticeTime;
-        this.dayOfWeek = noticeTime.getDayOfWeek();
-        this.monthOfYear = noticeTime.getMonth();
+        this.timeFillingNotice = LocalDateTime.now();
     }
 
 }
