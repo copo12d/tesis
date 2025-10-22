@@ -6,8 +6,6 @@ import com.tesisUrbe.backend.prediction.dto.NextRecollectionDto;
 import com.tesisUrbe.backend.prediction.model.ContainerScheduler;
 import com.tesisUrbe.backend.prediction.service.ContainerSchedulerService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -55,13 +53,28 @@ public class ContainerSchedulerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    //falta probar
+    /**
+     * Crea un nuevo conjunto de cronogramas de recolección (schedulers) de forma manual
+     * para un contenedor específico.
+     * <p>
+     * Este *endpoint* está restringido a usuarios con los roles 'ROLE_ADMIN' o 'ROLE_SUPERUSER'.
+     * La solicitud requiere un {@code ManualSchedulerDto} que debe ser validado y que
+     * contiene el serial del contenedor y la lista de horarios a programar.
+     * </p>
+     *
+     * @param manualScheduler Objeto {@code ManualSchedulerDto} validado que contiene los detalles
+     * del contenedor y los horarios programados a insertar.
+     * @return Un objeto {@code ResponseEntity} que encapsula un {@code ApiResponse}. El cuerpo
+     * contiene una lista de {@code NextRecollectionDto} con los cronogramas que fueron creados
+     * exitosamente. El estado HTTP reflejará el resultado de la operación (ej., 200 OK si es exitoso,
+     * o 400 Bad Request si el contenedor no es válido).
+     */
     @PostMapping("/admin/manual")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
-    public ResponseEntity<ApiResponse<List<List<ContainerScheduler>>>> createdSchedulerManual(
-            @Valid @RequestBody List<ManualSchedulerDto> manualScheduler
+    public ResponseEntity<ApiResponse<List<NextRecollectionDto>>> createdSchedulerManual(
+            @Valid @RequestBody ManualSchedulerDto manualScheduler
     ) {
-        ApiResponse<List<List<ContainerScheduler>>> response = containerSchedulerService.schedulerManual(manualScheduler);
+        ApiResponse<List<NextRecollectionDto>> response = containerSchedulerService.schedulerManual(manualScheduler);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
@@ -100,7 +113,7 @@ public class ContainerSchedulerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    //falta terminar
+    //Listo
     @GetMapping("/employee/next-recollection/{serial}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERUSER', 'EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<NextRecollectionDto>>> containerScheduler(
@@ -108,6 +121,17 @@ public class ContainerSchedulerController {
     ) {
 
         ApiResponse<List<NextRecollectionDto>> response = containerSchedulerService.nextRecollectionsBySerial(serial);
+
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+
+    @PutMapping("/admin/suspend/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERUSER')")
+    public ResponseEntity<ApiResponse<Void>> suspendScheduler(
+            @PathVariable("id") Long id
+    ){
+        ApiResponse<Void> response = containerSchedulerService.adminSchedulerSuspension(id);
 
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }

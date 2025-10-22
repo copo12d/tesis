@@ -7,7 +7,6 @@ import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.prediction.dto.*;
 import com.tesisUrbe.backend.prediction.model.ContainerScheduler;
 import com.tesisUrbe.backend.prediction.repository.ContainerSchedulerRepository;
-import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -94,37 +93,55 @@ public class ContainerSchedulerService {
 
     }
 
-    //falta revision
+    /**
+     * Crea y persiste un nuevo conjunto de cronogramas de recolección para un contenedor
+     * específico de manera manual.
+     * <p>
+     * El método toma un {@code ManualSchedulerDto} que contiene el serial del contenedor
+     * y una lista de fechas y horas programadas. Primero valida la existencia del contenedor.
+     * Si es exitoso, mapea las horas programadas a entidades {@code ContainerScheduler} y las guarda.
+     * </p>
+     *
+     * @param scheduler Objeto {@code ManualSchedulerDto} que contiene el serial del contenedor
+     * y la lista de {@code LocalDateTime} para los horarios de recolección.
+     * @return Un objeto {@code ApiResponse} que encapsula el resultado de la operación.
+     * <ul>
+     * <li>Si es exitoso (HTTP 200 OK), devuelve una lista de {@code NextRecollectionDto} con
+     * los cronogramas creados.</li>
+     * <li>Si el contenedor especificado no es válido o no se encuentra, devuelve un error
+     * {@code BAD_REQUEST} con el código {@code INVALID_CONTAINER}.</li>
+     * </ul>
+     */
     @Transactional
-    public ApiResponse<List<List<ContainerScheduler>>> schedulerManual(List<ManualSchedulerDto> scheduler) {
-        List<List<ContainerScheduler>> allContainerSchedulers = new ArrayList<>(List.of());
-        List<ApiError> errors = new ArrayList<>(List.of());
+    public ApiResponse<List<NextRecollectionDto>> schedulerManual(ManualSchedulerDto scheduler) {
 
-        for (ManualSchedulerDto containerScheduler : scheduler) {
-            Optional<Container> container = containerRepository.findBySerialAndDeletedFalse(containerScheduler.getContainerSerial());
+        Optional<Container> container = containerRepository.findBySerialAndDeletedFalse(scheduler.getContainerSerial());
 
-            if (container.isEmpty()) {
-                errors.add(new ApiError("CONTAINER_NOT_FOUND", null,
-                        "Contenedor con el serial " + containerScheduler.getContainerSerial() + " no encontrado"));
-                continue;
-            }
+        if (container.isEmpty())
+            return errorFactory.build(HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("INVALID_CONTAINER", "containerId", "Contenedor no válido")));
 
-            Container verContainer = container.get();
+        Container verContainer = container.get();
 
-            List<ContainerScheduler> containerSchedulers = containerScheduler.getSchedulers().stream()
-                    .map(prediction -> ContainerScheduler.builder()
-                            .container(verContainer)
-                            .schedulerFillTime(prediction)
-                            .build())
-                    .toList();
+        List<ContainerScheduler> containerSchedulers = scheduler.getSchedulers().stream()
+                .map(prediction -> ContainerScheduler.builder()
+                        .container(verContainer)
+                        .schedulerFillTime(prediction)
+                        .build())
+                .toList();
 
-            allContainerSchedulers.add(containerSchedulerRepository.saveAll(containerSchedulers));
-        }
+        List<ContainerScheduler> savedScheduler = containerSchedulerRepository.saveAll(containerSchedulers);
 
         return new ApiResponse<>(
-                errorFactory.buildMeta(HttpStatus.OK, "Prediccion de Cronograma completo"),
-                allContainerSchedulers,
-                errors
+                errorFactory.buildMeta(HttpStatus.OK, "Cronograma del contenedor completo"),
+                savedScheduler.stream()
+                        .map(singleScheduler -> NextRecollectionDto.builder()
+                                .containerSerial(singleScheduler.getContainer().getSerial())
+                                .nextRecollectionTime(singleScheduler.getSchedulerFillTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")))
+                                .build()
+                        )
+                        .toList(),
+                null
         );
     }
 
@@ -168,16 +185,37 @@ public class ContainerSchedulerService {
         );
     }
 
-    //falta terminar
+    //Listo
     @Transactional(readOnly = true)
     public ApiResponse<List<NextRecollectionDto>> nextRecollectionsBySerial(String serial) {
 
+        Optional<Container> optContainer = containerRepository.findBySerialAndDeletedFalse(serial);
+
+        if(optContainer.isEmpty())
+            return errorFactory.build(HttpStatus.BAD_REQUEST,
+                    List.of(new ApiError("INVALID_CONTAINER", "containerId", "Contenedor no válido")));
+
+        List<SchedulerProjection> scheduler = containerSchedulerRepository.containerScheduler(
+                optContainer.get(), LocalDateTime.now());
 
         return new ApiResponse<List<NextRecollectionDto>>(
                 errorFactory.buildMeta(HttpStatus.OK, "Lista de todas las recolecciones programadas"),
-                null,
+                scheduler.stream()
+                        .map(time -> NextRecollectionDto.builder()
+                                .id(time.getId())
+                                .nextRecollectionTime(time.getSchedulerFillTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")))
+                                .build())
+                        .toList(),
                 null
         );
+    }
+
+    @Transactional
+    public ApiResponse<Void> adminSchedulerSuspension(Long id){
+
+        containerSchedulerRepository.suspendById(id);
+
+        return errorFactory.buildSuccess(HttpStatus.OK, "Recoleccion programada suspendida");
     }
 
     /**
@@ -212,5 +250,7 @@ public class ContainerSchedulerService {
             }
         }
     }
+
+
 
 }

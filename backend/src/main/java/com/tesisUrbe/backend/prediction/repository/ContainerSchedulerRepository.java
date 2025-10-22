@@ -72,9 +72,9 @@ public interface ContainerSchedulerRepository extends JpaRepository<ContainerSch
     @Query("""
             UPDATE ContainerScheduler cs
             SET cs.wasUsed = TRUE
-            WHERE cs.container = :container AND
-              cs.schedulerFillTime <= :referenceTime AND
-              cs.wasUsed = FALSE
+            WHERE cs.container = :container
+              AND cs.schedulerFillTime <= :referenceTime
+              AND cs.wasUsed = FALSE
             """)
     void setAllUsed(
             @Param("container") Container container,
@@ -84,10 +84,26 @@ public interface ContainerSchedulerRepository extends JpaRepository<ContainerSch
     @Query("""
             UPDATE ContainerScheduler cs
             SET cs.wasSuspended = TRUE
-            WHERE cs.container = :container AND
-              cs.schedulerFillTime <= :referenceTime AND
-              cs.wasSuspended = FALSE
+            WHERE cs.container = :container
+              AND cs.schedulerFillTime <= :referenceTime
+              AND cs.wasSuspended = FALSE
             """)
     void suspendForCurrentCycle(@Param("container") Container container, @Param("referenceTime") LocalDateTime referenceTime);
 
+    @Query("""
+            SELECT
+                cs.id as id,
+                cs.schedulerFillTime as schedulerFillTime
+            FROM ContainerScheduler cs
+            WHERE cs.container = :container
+              AND cs.schedulerFillTime > :referenceTime
+              AND cs.wasSuspended = FALSE
+            """)
+    List<SchedulerProjection> containerScheduler(
+            @Param("container") Container container,
+            @Param("referenceTime") LocalDateTime referenceTime);
+
+    @Modifying
+    @Query("UPDATE ContainerScheduler cs SET cs.wasSuspended = TRUE WHERE cs.id = :id")
+    void suspendById(@Param("id") Long id);
 }

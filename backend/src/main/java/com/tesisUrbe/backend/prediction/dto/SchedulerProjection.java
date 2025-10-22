@@ -8,4 +8,5 @@ public interface SchedulerProjection {
 
     Container getContainer();
     LocalDateTime getSchedulerFillTime();
+    Long getId();
 }
