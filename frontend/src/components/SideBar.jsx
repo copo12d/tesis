@@ -30,7 +30,7 @@ const Sidebar = () => {
 
   const navItems = [
     { label: "Ayuda", icon: FiMail },
-    { label: "Configuración", icon: FiSettings },
+    { label: "Configuración", icon: FiSettings, onClick: () => navigate("/settings") },
   ];
 
   return (
