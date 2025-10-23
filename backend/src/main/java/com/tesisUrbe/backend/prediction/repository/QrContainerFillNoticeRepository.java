@@ -1,8 +1,6 @@
 package com.tesisUrbe.backend.prediction.repository;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.Month;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

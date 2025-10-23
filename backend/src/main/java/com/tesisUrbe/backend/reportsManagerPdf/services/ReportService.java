@@ -18,7 +18,6 @@ import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.dto.AdminUserDto;
-import com.tesisUrbe.backend.usersManagement.dto.UserReportDto;
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
