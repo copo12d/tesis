@@ -35,6 +35,6 @@ public class QrContainerFillNotice {
 
     @Builder.Default
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "container_fill_cycle_id", nullable = true)
-    private ContainerFillCycle containerFillCycle = null;
+    @JoinColumn(name = "container_fill_cycle_id", nullable = true) 
+    private ContainerFillCycle containerFillCycle = null; 
 }

@@ -11,6 +11,6 @@ import lombok.Value;
 @Builder
 public class TotalWeightResponseDto {
 
-
+    
     DayOfWeek totalWeightOfTheDay;
 }

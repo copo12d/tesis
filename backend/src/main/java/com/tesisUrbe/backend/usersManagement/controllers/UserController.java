@@ -107,7 +107,7 @@ public class UserController {
         return ResponseEntity.status(response.meta().status()).body(response);
     }
 
-    @DeleteMapping("/admin/{id}")
+    @DeleteMapping("admin/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable Long id) {
         ApiResponse<Void> response = userService.softDeleteUser(id);

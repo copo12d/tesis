@@ -17,7 +17,7 @@ public final class RandomTokenUtils {
      * @param prefix El prefijo String para el token, para asegurar su unicidad.
      * @return Un String que representa un token único y codificado.
      */
-    public static String randomToken(String prefix) {
+    public static String randomToken(String prefix){
         String uuid = UUID.randomUUID().toString();
 
         String tokenData = prefix + uuid;

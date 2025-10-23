@@ -16,6 +16,6 @@ public class ContainerAverageTime {
     Double totalAverage;
     Map<DayOfWeek, Double> dayAverage;
     Map<Month, Double> monthAverage;
-    Map<Map<Month, DayOfWeek>, Double> monthDayAverage;
+    Map<Map<Month,DayOfWeek>, Double> monthDayAverage;
 
 }

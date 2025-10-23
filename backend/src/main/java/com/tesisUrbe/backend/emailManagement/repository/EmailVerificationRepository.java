@@ -10,10 +10,10 @@ import java.util.List;
 public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
 
     @Query("""
-                SELECT ev FROM EmailVerification ev
-                WHERE ev.user.id = :userId
-                ORDER BY ev.id DESC
-            """)
+    SELECT ev FROM EmailVerification ev
+    WHERE ev.user.id = :userId
+    ORDER BY ev.id DESC
+""")
     List<EmailVerification> findLatestByUserId(@Param("userId") Long userId, org.springframework.data.domain.Pageable pageable);
 
 }

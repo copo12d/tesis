@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
+@AllArgsConstructor 
 public class ContainerResponseDto {
     private Long id;
     private String serial;

@@ -51,7 +51,7 @@ public class WasteController {
 
     @GetMapping("/admin/total-weight/all")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
-    public ResponseEntity<ApiResponse<List<WasteWeightResponse>>> getAllWasteWeight() {
+    public ResponseEntity<ApiResponse<List<WasteWeightResponse>>> getAllWasteWeight(){
         ApiResponse<List<WasteWeightResponse>> response = wasteService.getAllWasteWeight();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }

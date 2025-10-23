@@ -13,21 +13,21 @@ public interface ContainerTypeRepository extends JpaRepository<ContainerType, Lo
     boolean existsByName(String name);
 
     @Query("""
-                SELECT ct FROM ContainerType ct
-                WHERE ct.deleted = false AND ct.id = :id
-            """)
+        SELECT ct FROM ContainerType ct
+        WHERE ct.deleted = false AND ct.id = :id
+    """)
     Page<ContainerType> findByIdAndDeletedFalse(@Param("id") Long id, Pageable pageable);
 
     @Query("""
-                SELECT ct FROM ContainerType ct
-                WHERE ct.deleted = false AND LOWER(ct.name) LIKE LOWER(CONCAT('%', :name, '%'))
-            """)
+        SELECT ct FROM ContainerType ct
+        WHERE ct.deleted = false AND LOWER(ct.name) LIKE LOWER(CONCAT('%', :name, '%'))
+    """)
     Page<ContainerType> findByNameContainingIgnoreCaseAndDeletedFalse(@Param("name") String name, Pageable pageable);
 
     @Query("""
-                SELECT ct FROM ContainerType ct
-                WHERE ct.deleted = false
-            """)
+        SELECT ct FROM ContainerType ct
+        WHERE ct.deleted = false
+    """)
     Page<ContainerType> findAllActive(Pageable pageable);
 
     @Query("SELECT ct FROM ContainerType ct WHERE ct.deleted = false")

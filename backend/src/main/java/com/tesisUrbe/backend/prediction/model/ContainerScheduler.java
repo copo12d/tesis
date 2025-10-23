@@ -3,8 +3,9 @@ package com.tesisUrbe.backend.prediction.model;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.Month;
 
 @Entity
 @Table(name = "container_scheduler")
@@ -25,11 +26,9 @@ public class ContainerScheduler {
     @Column(name = "scheduler_fill_time", nullable = false)
     private LocalDateTime schedulerFillTime;
 
-    @Builder.Default
     @Column(name = "was_used", nullable = false)
-    private boolean wasUsed = false;
+    private  boolean wasUsed;
 
-    @Builder.Default
     @Column(name = "was_suspended", nullable = false)
     private boolean wasSuspended = false;
 }

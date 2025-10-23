@@ -258,16 +258,16 @@ public class UserService implements UserDetailsService {
         }
 
         AdminUserDto dto = AdminUserDto.builder()
-                .id(targetUser.getId())
-                .fullName(targetUser.getFullName())
-                .userName(targetUser.getUserName())
-                .email(targetUser.getEmail())
-                .role(targetUser.getRole().getName().name())
-                .roleDescription(targetUser.getRole().getName().getDescription())
-                .verified(targetUser.isVerified())
-                .accountLocked(targetUser.isAccountLocked())
-                .userLocked(targetUser.isUserLocked())
-                .build();
+            .id(targetUser.getId())
+            .fullName(targetUser.getFullName())
+            .userName(targetUser.getUserName())
+            .email(targetUser.getEmail())
+            .role(targetUser.getRole().getName().name())
+            .roleDescription(targetUser.getRole().getName().getDescription())
+            .verified(targetUser.isVerified())
+            .accountLocked(targetUser.isAccountLocked())
+            .userLocked(targetUser.isUserLocked())
+            .build();
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Usuario obtenido correctamente"),
@@ -321,16 +321,16 @@ public class UserService implements UserDetailsService {
                 usersPage.getContent().stream()
                         .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
                         .map(user -> AdminUserDto.builder()
-                                .id(user.getId())
-                                .fullName(user.getFullName())
-                                .userName(user.getUserName())
-                                .email(user.getEmail())
-                                .role(user.getRole().getName().name())
-                                .roleDescription(user.getRole().getName().getDescription())
-                                .verified(user.isVerified())
-                                .accountLocked(user.isAccountLocked())
-                                .userLocked(user.isUserLocked())
-                                .build())
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .userName(user.getUserName())
+                            .email(user.getEmail())
+                            .role(user.getRole().getName().name())
+                            .roleDescription(user.getRole().getName().getDescription()) 
+                            .verified(user.isVerified())
+                            .accountLocked(user.isAccountLocked())
+                            .userLocked(user.isUserLocked())
+                        .build())
                         .toList(),
                 usersPage.getPageable(),
                 usersPage.getTotalElements()
@@ -381,16 +381,16 @@ public class UserService implements UserDetailsService {
                 usersPage.getContent().stream()
                         .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
                         .map(user -> AdminUserDto.builder()
-                                .id(user.getId())
-                                .fullName(user.getFullName())
-                                .userName(user.getUserName())
-                                .email(user.getEmail())
-                                .role(user.getRole().getName().name())
-                                .roleDescription(user.getRole().getName().getDescription())
-                                .verified(user.isVerified())
-                                .accountLocked(user.isAccountLocked())
-                                .userLocked(user.isUserLocked())
-                                .build())
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .userName(user.getUserName())
+                            .email(user.getEmail())
+                            .role(user.getRole().getName().name())
+                            .roleDescription(user.getRole().getName().getDescription()) 
+                            .verified(user.isVerified())
+                            .accountLocked(user.isAccountLocked())
+                            .userLocked(user.isUserLocked())
+                        .build())
                         .toList(),
                 usersPage.getPageable(),
                 usersPage.getTotalElements()
@@ -459,7 +459,7 @@ public class UserService implements UserDetailsService {
                         );
                     }
                 })
-                .orElseGet(() -> errorFactory.build(
+                .orElseGet(() -> errorFactory.<Void>build(
                         HttpStatus.NOT_FOUND,
                         List.of(new ApiError("USER_NOT_FOUND", null, "Usuario no encontrado"))
                 ));
