@@ -4,9 +4,7 @@ import com.tesisUrbe.backend.entities.solidWaste.Container;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.List;
 
 @Entity

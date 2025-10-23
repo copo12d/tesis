@@ -10,7 +10,6 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;

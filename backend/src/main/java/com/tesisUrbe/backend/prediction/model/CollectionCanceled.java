@@ -3,7 +3,6 @@ package com.tesisUrbe.backend.prediction.model;
 import java.time.LocalDateTime;
 
 import com.tesisUrbe.backend.entities.account.User;
-import com.tesisUrbe.backend.entities.solidWaste.Container;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

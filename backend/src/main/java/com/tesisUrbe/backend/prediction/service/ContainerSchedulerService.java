@@ -34,22 +34,6 @@ public class ContainerSchedulerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
 
-    /**
-     * Genera y persiste predicciones de horarios de llenado (recolección) para una lista
-     * de contenedores basada en su historial de ciclos de llenado.
-     * <p>
-     * Este método es transaccional: intenta procesar cada contenedor de la lista. Si se
-     * encuentran errores (como contenedor no encontrado o datos históricos insuficientes),
-     * estos se acumulan en la respuesta, pero el procesamiento continúa para los demás contenedores.
-     * Las predicciones exitosas se guardan en la base de datos.
-     * </p>
-     *
-     * @param containerSerial Una lista de números de serie (String) de los contenedores a procesar.
-     * @return Un objeto {@code ApiResponse} que encapsula el resultado. El cuerpo de la respuesta
-     * contendrá una lista de listas de {@code ContainerScheduler}, donde cada lista interna
-     * representa los nuevos cronogramas guardados para un contenedor específico.
-     * La lista de errores contendrá detalles sobre los contenedores que no pudieron ser procesados.
-     */
     @Transactional
     public ApiResponse<List<List<ContainerScheduler>>> schedulerPredictions(List<String> containerSerial) {
 
@@ -93,25 +77,6 @@ public class ContainerSchedulerService {
 
     }
 
-    /**
-     * Crea y persiste un nuevo conjunto de cronogramas de recolección para un contenedor
-     * específico de manera manual.
-     * <p>
-     * El método toma un {@code ManualSchedulerDto} que contiene el serial del contenedor
-     * y una lista de fechas y horas programadas. Primero valida la existencia del contenedor.
-     * Si es exitoso, mapea las horas programadas a entidades {@code ContainerScheduler} y las guarda.
-     * </p>
-     *
-     * @param scheduler Objeto {@code ManualSchedulerDto} que contiene el serial del contenedor
-     * y la lista de {@code LocalDateTime} para los horarios de recolección.
-     * @return Un objeto {@code ApiResponse} que encapsula el resultado de la operación.
-     * <ul>
-     * <li>Si es exitoso (HTTP 200 OK), devuelve una lista de {@code NextRecollectionDto} con
-     * los cronogramas creados.</li>
-     * <li>Si el contenedor especificado no es válido o no se encuentra, devuelve un error
-     * {@code BAD_REQUEST} con el código {@code INVALID_CONTAINER}.</li>
-     * </ul>
-     */
     @Transactional
     public ApiResponse<List<NextRecollectionDto>> schedulerManual(ManualSchedulerDto scheduler) {
 
@@ -145,22 +110,6 @@ public class ContainerSchedulerService {
         );
     }
 
-    /**
-     * Realiza una búsqueda paginada y opcionalmente filtrada de la próxima recolección programada
-     * para todos los contenedores activos.
-     * <p>
-     * Este método consulta una proyección que incluye el serial del contenedor y su próxima hora
-     * de recolección programada. Los resultados se mapean a {@code NextRecollectionDto} para la respuesta.
-     * </p>
-     *
-     * @param serial Filtro opcional por el número de serie del contenedor. Si se proporciona,
-     * se utiliza un patrón 'like' (búsqueda parcial). Si es {@code null} o vacío,
-     * se omitirá el filtro.
-     * @param pageable Objeto de paginación que incluye el número de página, tamaño y criterios de ordenación.
-     * @return Un objeto {@code ApiResponse} que contiene una página de {@code NextRecollectionDto}.
-     * Cada DTO incluye el serial del contenedor y la hora programada formateada (o un mensaje
-     * indicando que no hay programación). El estado HTTP será 200 OK.
-     */
     @Transactional(readOnly = true)
     public ApiResponse<Page<NextRecollectionDto>> searchNextRecollectionPage(
             String serial, Pageable pageable
@@ -185,7 +134,6 @@ public class ContainerSchedulerService {
         );
     }
 
-    //Listo
     @Transactional(readOnly = true)
     public ApiResponse<List<NextRecollectionDto>> nextRecollectionsBySerial(String serial) {
 
@@ -218,14 +166,7 @@ public class ContainerSchedulerService {
         return errorFactory.buildSuccess(HttpStatus.OK, "Recoleccion programada suspendida");
     }
 
-    /**
-     * Verifica periódicamente los cronogramas de recolección de contenedores que están vencidos
-     * o que deberían haberse iniciado.
-     * <p>
-     * Este método se ejecuta automáticamente cada 15 minutos. Por cada cronograma vencido encontrado,
-     * intenta iniciar el ciclo de llenado del contenedor.
-     * </p>
-     */
+   
     @Transactional
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES) // Ejecuta cada 15 minutos
     public void checkOverdueSchedules() {
