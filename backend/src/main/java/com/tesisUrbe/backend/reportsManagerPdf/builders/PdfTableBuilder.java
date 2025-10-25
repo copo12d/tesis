@@ -6,7 +6,7 @@ import com.lowagie.text.FontFactory;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.tesisUrbe.backend.reportsManagerPdf.config.ReportStyleConfig;
+import com.tesisUrbe.backend.settingsManagement.services.SettingsService;
 import lombok.AllArgsConstructor;
 
 import java.awt.*;
@@ -15,20 +15,20 @@ import java.util.List;
 @AllArgsConstructor
 public class PdfTableBuilder<T> implements PdfTableBuilderInterface<T> {
 
-    private final ReportStyleConfig config;
+    private final SettingsService settingsService;
     private final RowMapper<T> rowMapper;
 
     @Override
     public void build(Document doc, List<T> records, List<String> columnTitles) throws Exception {
-        Font headerTextColor = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Color.decode(config.getHeaderTextColor()));
-        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.decode(config.getRecordColor()));
+        Font headerTextColor = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Color.decode(settingsService.getReportSetting().data().getHeaderTextColor()));
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.decode(settingsService.getReportSetting().data().getRecordColor()));
 
         PdfPTable table = new PdfPTable(columnTitles.size());
         table.setWidthPercentage(100);
 
         for (String title : columnTitles) {
             PdfPCell cell = new PdfPCell(new Phrase(title, headerTextColor));
-            cell.setBackgroundColor(Color.decode(config.getTableHeaderColor() ));
+            cell.setBackgroundColor(Color.decode(settingsService.getReportSetting().data().getTableHeaderColor() ));
             table.addCell(cell);
         }
 

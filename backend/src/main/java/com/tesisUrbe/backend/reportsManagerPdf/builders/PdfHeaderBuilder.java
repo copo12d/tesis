@@ -6,8 +6,7 @@ import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
-import com.tesisUrbe.backend.reportsManagerPdf.config.UniversityConfig;
+import com.tesisUrbe.backend.settingsManagement.services.SettingsService;
 import lombok.RequiredArgsConstructor;
 
 import java.text.SimpleDateFormat;
@@ -16,7 +15,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class PdfHeaderBuilder {
 
-    private final UniversityConfig university;
+    private final SettingsService settingsService;
 
     public void build(Document doc, String title, String username) throws Exception {
         PdfPTable outerTable = new PdfPTable(1);
@@ -28,7 +27,7 @@ public class PdfHeaderBuilder {
         innerTable.setWidthPercentage(100);
         innerTable.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-        Image logo = Image.getInstance(getClass().getResourceAsStream("/static" + university.getLogoPath()).readAllBytes());
+        Image logo = Image.getInstance(getClass().getResourceAsStream("/static" + settingsService.getUniversitySetting().data().getLogoPath()).readAllBytes());
         logo.scaleToFit(80, 80);
         PdfPCell logoCell = new PdfPCell(logo);
         logoCell.setBorder(Rectangle.NO_BORDER);
@@ -43,13 +42,13 @@ public class PdfHeaderBuilder {
         Paragraph info = new Paragraph();
         info.setAlignment(Element.ALIGN_CENTER);
         info.setLeading(12f);
-        addIfNotEmpty(info, university.getLegalName(), titleFont);
-        addIfNotEmpty(info, "RIF: " + university.getTaxId().getType() + "-" + university.getTaxId().getNumber(), titleFont);
-        addIfNotEmpty(info, university.getAddress_1(), normalFont);
-        addIfNotEmpty(info, university.getAddress_2(), normalFont);
-        addIfNotEmpty(info, university.getAddress_3(), normalFont);
-        addIfNotEmpty(info, university.getPhone(), normalFont);
-        addIfNotEmpty(info, university.getEmail(), normalFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getLegalName(), titleFont);
+        addIfNotEmpty(info, "RIF: " + settingsService.getUniversitySetting().data().getTaxId().getType() + "-" + settingsService.getUniversitySetting().data().getTaxId().getNumber(), titleFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getAddress1(), normalFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getAddress2(), normalFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getAddress3(), normalFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getPhone(), normalFont);
+        addIfNotEmpty(info, settingsService.getUniversitySetting().data().getEmail(), normalFont);
         if (info.getChunks().size() > 0) {
             info.add(new Phrase("\n", normalFont));
         }
