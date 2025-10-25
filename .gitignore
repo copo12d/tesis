@@ -1,3 +1,4 @@
 .env
 backend/target
 .vscode
+backend/src/main/resources/application.yml

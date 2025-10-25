@@ -1,8 +1,15 @@
-import { Stack, Button, Text, Field, Box } from "@chakra-ui/react";
+import {
+  Stack,
+  Button,
+  Text,
+  Field,
+  Box,
+  Spinner,
+} from "@chakra-ui/react";
 import { LiaBarcodeSolid, LiaRulerCombinedSolid } from "react-icons/lia";
 import { useContainerForm } from "../hooks/useContainerForm";
 import { useContainerTypes } from "../hooks/useContainerTypes";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -17,6 +24,8 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { IconInputField } from "@/components/ui/IconInputField";
 import { StyledSelectField } from "@/components/ui/StyledSelectField";
+import { SettingsAPI } from "@/features/settings/api/api.settings";
+import { toast } from "react-hot-toast";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -25,14 +34,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-export const MAP_CENTER = [10.6941532, -71.6343502];
-export const MAP_ZOOM = 20;
-
 function CenterMapButton({ center, zoom }) {
   const map = useMap();
   return (
     <Box position="absolute" top={2} right={2} zIndex={1000}>
-      <Button size="sm" onClick={() => map.setView(center, zoom)}>
+      <Button size="sm" onClick={() => map.flyTo(center, zoom)}>
         Centrar ubicación
       </Button>
     </Box>
@@ -56,6 +62,10 @@ export function ContainerForm({
 
   const { types: containerTypes, loading: loadingTypes } = useContainerTypes();
 
+  const [mapCenter, setMapCenter] = useState(null);
+  const [mapZoom, setMapZoom] = useState(20);
+  const hasCentered = useRef(false);
+
   const [markerPosition, setMarkerPosition] = useState(
     form.latitude && form.longitude
       ? [Number(form.latitude), Number(form.longitude)]
@@ -63,6 +73,25 @@ export function ContainerForm({
   );
 
   const markerRef = useRef(null);
+
+  useEffect(() => {
+    async function fetchMapCenter() {
+      try {
+        const res = await SettingsAPI.getUbication();
+        const data = res.data.data || {};
+        if (data.latitude && data.longitude) {
+          setMapCenter([data.latitude, data.longitude]);
+          setMapZoom(data.mapZoom ?? 20);
+          hasCentered.current = true;
+        }
+      } catch (error) {
+        console.error("Error al cargar el centro del mapa:", error);
+        toast.error("No se pudo cargar el centro del mapa");
+      }
+    }
+
+    fetchMapCenter();
+  }, []);
 
   const onMapClick = useCallback(
     (latlng) => {
@@ -111,7 +140,7 @@ export function ContainerForm({
         borderColor="green.700"
       >
         <Text fontSize="xl" fontWeight="bold">
-          {initialValues?.id ? "Editar contenedor" : "Nuevo contenedor"}
+          {isEdit ? "Editar contenedor" : "Nuevo contenedor"}
         </Text>
       </Box>
 
@@ -193,57 +222,66 @@ export function ContainerForm({
                 mx="auto"
               >
                 <Box width="100%" height="400px">
-                  <MapContainer
-                    center={markerPosition ?? MAP_CENTER}
-                    zoom={MAP_ZOOM}
-                    scrollWheelZoom={false}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: "relative",
-                    }}
-                  >
-                    <CenterMapButton center={MAP_CENTER} zoom={MAP_ZOOM} />
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <LocationSelector />
-                    {markerPosition && (
-                      <Marker
-                        position={markerPosition}
-                        draggable={true}
-                        ref={markerRef}
-                        eventHandlers={{
-                          dragend: (e) => {
-                            const latlng = e.target.getLatLng();
-                            setMarkerPosition([latlng.lat, latlng.lng]);
-                            setField("latitude", latlng.lat);
-                            setField("longitude", latlng.lng);
+                  {mapCenter ? (
+                    <MapContainer
+                      center={mapCenter}
+                      zoom={mapZoom}
+                      scrollWheelZoom={false}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <LocationSelector />
+                      {markerPosition && (
+                        <Marker
+                          position={markerPosition}
+                          draggable={true}
+                          ref={markerRef}
+                          eventHandlers={{
+                            dragend: (e) => {
+                              const latlng = e.target.getLatLng();
+                              setMarkerPosition([latlng.lat, latlng.lng]);
+                              setField("latitude", latlng.lat);
+                              setField("longitude", latlng.lng);
 
-                            setTimeout(() => {
-                              if (markerRef.current) {
-                                markerRef.current.openPopup();
-                              }
-                            }, 100);
-                          },
-                        }}
-                      >
-                        <Popup
-                          autoClose={false}
-                          closeOnClick={false}
-                          closeButton={false}
-                          keepInView={true}
+                              setTimeout(() => {
+                                markerRef.current?.openPopup();
+                              }, 100);
+                            },
+                          }}
                         >
-                          <Text fontSize="sm">
-                            Latitud: {markerPosition[0].toFixed(6)}
-                            <br />
-                            Longitud: {markerPosition[1].toFixed(6)}
-                          </Text>
-                        </Popup>
-                      </Marker>
-                    )}
-                  </MapContainer>
+                          <Popup
+                            autoClose={false}
+                            closeOnClick={false}
+                            closeButton={false}
+                            keepInView={true}
+                          >
+                            <Text fontSize="sm">
+                              Latitud: {markerPosition[0].toFixed(6)}
+                              <br />
+                              Longitud: {markerPosition[1].toFixed(6)}
+                            </Text>
+                          </Popup>
+                        </Marker>
+                      )}
+                    </MapContainer>
+                  ) : (
+                    <Box
+                      width="100%"
+                      height="100%"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Spinner size="lg" color="green.500" />
+                    </Box>
+                  )}
                 </Box>
               </Box>
 
@@ -254,7 +292,7 @@ export function ContainerForm({
               )}
               <Text fontSize="sm" color="gray.600" mx="auto">
                 Haz clic en el mapa para colocar el contenedor. Puedes ajustar
-                el centro inicial en la constante MAP_CENTER.
+                el centro inicial desde el backend.
               </Text>
             </Field.Root>
 
