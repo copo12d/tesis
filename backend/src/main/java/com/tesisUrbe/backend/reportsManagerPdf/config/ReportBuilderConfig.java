@@ -1,8 +1,10 @@
 package com.tesisUrbe.backend.reportsManagerPdf.config;
 
 import com.tesisUrbe.backend.common.util.NormalizationUtils;
+import com.tesisUrbe.backend.entities.setting.UniversitySetting;
 import com.tesisUrbe.backend.reportsManagerPdf.builders.*;
 import com.tesisUrbe.backend.reportsManagerPdf.registry.ReportRegistry;
+import com.tesisUrbe.backend.settingsManagement.services.SettingsService;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
@@ -18,18 +20,18 @@ public class ReportBuilderConfig {
 
 
     @Bean
-    public PdfHeaderBuilder pdfHeaderBuilder(UniversityConfig university) {
-        return new PdfHeaderBuilder(university);
+    public PdfHeaderBuilder pdfHeaderBuilder(SettingsService settingsService) {
+        return new PdfHeaderBuilder(settingsService);
     }
 
     @Bean
-    public PdfFooterBuilder pdfFooterBuilder(ReportStyleConfig style) {
-        return new PdfFooterBuilder(style);
+    public PdfFooterBuilder pdfFooterBuilder() {
+        return new PdfFooterBuilder();
     }
 
     @Bean
     public ReportModule<BatchRegResponseDto> batchReportModule(
-            ReportStyleConfig style,
+            SettingsService settingsService,
             PdfHeaderBuilder header,
             PdfFooterBuilder footer
     ) {
@@ -41,7 +43,7 @@ public class ReportBuilderConfig {
                 reg.getCreatedByUsername()
         );
 
-        PdfTableBuilderInterface<BatchRegResponseDto> table = new PdfTableBuilder<>(style, mapper);
+        PdfTableBuilderInterface<BatchRegResponseDto> table = new PdfTableBuilder<>(settingsService, mapper);
         ReportBuilder<BatchRegResponseDto> builder = new PdfReportBuilder<>(header, footer, table);
 
         return new ReportModule<>(mapper, table, builder);
@@ -49,7 +51,7 @@ public class ReportBuilderConfig {
 
     @Bean
     public ReportModule<BatchEncResponseDto> batchEncReportModule(
-            ReportStyleConfig style,
+            SettingsService settingsService,
             PdfHeaderBuilder header,
             PdfFooterBuilder footer
     ) {
@@ -71,7 +73,7 @@ public class ReportBuilderConfig {
         );
 
 
-        PdfTableBuilderInterface<BatchEncResponseDto> table = new PdfTableBuilder<>(style, mapper);
+        PdfTableBuilderInterface<BatchEncResponseDto> table = new PdfTableBuilder<>(settingsService, mapper);
         ReportBuilder<BatchEncResponseDto> builder = new PdfReportBuilder<>(header, footer, table);
 
         return new ReportModule<>(mapper, table, builder);
@@ -79,7 +81,7 @@ public class ReportBuilderConfig {
 
     @Bean
     public ReportModule<AdminUserDto> adminReportModule(
-            ReportStyleConfig style,
+            SettingsService settingsService,
             PdfHeaderBuilder header,
             PdfFooterBuilder footer
     ) {
@@ -94,7 +96,7 @@ public class ReportBuilderConfig {
                 user.isUserLocked() ? "Sí" : "No"
         );
 
-        PdfTableBuilderInterface<AdminUserDto> table = new PdfTableBuilder<>(style, mapper);
+        PdfTableBuilderInterface<AdminUserDto> table = new PdfTableBuilder<>(settingsService, mapper);
         ReportBuilder<AdminUserDto> builder = new PdfReportBuilder<>(header, footer, table);
 
         return new ReportModule<>(mapper, table, builder);
@@ -102,7 +104,7 @@ public class ReportBuilderConfig {
 
     @Bean
     public ReportModule<ContainerResponseDto> containerReportModule(
-            ReportStyleConfig style,
+            SettingsService settingsService,
             PdfHeaderBuilder header,
             PdfFooterBuilder footer
     ) {
@@ -117,7 +119,7 @@ public class ReportBuilderConfig {
                 dto.getCreatedAt() != null ? NormalizationUtils.formatDateTime(dto.getCreatedAt()) : ""
         );
 
-        PdfTableBuilderInterface<ContainerResponseDto> table = new PdfTableBuilder<>(style, mapper);
+        PdfTableBuilderInterface<ContainerResponseDto> table = new PdfTableBuilder<>(settingsService, mapper);
         ReportBuilder<ContainerResponseDto> builder = new PdfReportBuilder<>(header, footer, table);
 
         return new ReportModule<>(mapper, table, builder);

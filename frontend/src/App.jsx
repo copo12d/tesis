@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
+import  SettingsPage  from './features/settings/pages/SettingsPage';
 import { Login } from './features/auth/pages/Login';
 import { Register } from './features/auth/pages/Register';
 import { Dashboard } from './features/dashboard/pages/Dashboard';
@@ -62,6 +63,7 @@ function App() {
             <Route path="/batch/list" element={<BatchListPage />} />
             <Route path="/batch/create" element={<BatchCreate />} />
             <Route path="/batch/details/:id" element={<BatchDetailPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             {/* aquí más rutas protegidas futuras */}
           </Route>
           <Route path="mobile/containers/collect/" element={

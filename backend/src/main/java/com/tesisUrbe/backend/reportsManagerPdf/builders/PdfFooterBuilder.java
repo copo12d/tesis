@@ -5,15 +5,12 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 import com.tesisUrbe.backend.common.constants.CommonConstants;
-import com.tesisUrbe.backend.reportsManagerPdf.config.ReportStyleConfig;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 public class PdfFooterBuilder extends PdfPageEventHelper {
-
-    private final ReportStyleConfig config;
 
     @Override
     public void onEndPage(PdfWriter writer, Document document) {
