@@ -16,21 +16,10 @@ import UniversitySettingDialog from "../components/UniversitySettingDialog";
 import UbicationSettingDialog from "../components/UbicationSettingDialog";
 import ReportSettingDialog from "../components/ReportSettingDialog";
 import LogoSettingDialog from "../components/LogoSettingDialog";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMapEvents,
-  useMap,
-  Popup,
-} from "react-leaflet";
-import L from "leaflet";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
 
 export default function SettingsPage() {
-  const [activeForm, setActiveForm] = useState(null);
+  const [activeForm, setActiveForm] = useState('institutional');
 
   const menuItems = [
     {

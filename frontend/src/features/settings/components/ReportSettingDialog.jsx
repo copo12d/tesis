@@ -23,11 +23,11 @@ export default function ReportSettingDialog() {
   useEffect(() => {
     SettingsAPI.getReport()
       .then((res) => {
-        const data = res.data || {};
+        const data = res.data.data || {};
         setForm({
-          tableHeaderColor: data.tableHeaderColor || "#0000FF",
-          headerTextColor: data.headerTextColor || "#FFFFFF",
-          recordColor: data.recordColor || "#000000",
+          tableHeaderColor: data.tableHeaderColor,
+          headerTextColor: data.headerTextColor,
+          recordColor: data.recordColor,
         });
       })
       .catch((error) => {
@@ -38,7 +38,8 @@ export default function ReportSettingDialog() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const fieldName = name.replace("_picker", "");
+    setForm((prev) => ({ ...prev, [fieldName]: value }));
   };
 
   const handleSubmit = async () => {
@@ -54,29 +55,31 @@ export default function ReportSettingDialog() {
   };
 
   const renderColorField = (name, label, value, required = false) => (
-    <VStack align="start" spacing={1} w="full">
+    <VStack align="start" spacing={1} w="full" key={name}>
       <Text fontSize="sm" fontWeight="medium" color="gray.700">
         {label}
         {required && <Text as="span" color="red.500" ml={1}>*</Text>}
       </Text>
-      <HStack spacing={2} w="full">
+      <HStack spacing={2} w="full" position="relative">
         <Input
-        name={name}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        size="md"
-        w="full"
-        bg="white"
-        borderColor="gray.300"
-        _hover={{ borderColor: "green.400" }}
-        _focus={{ 
-          borderColor: "green.600", 
-          boxShadow: "0 0 0 1px var(--chakra-colors-green-600)",
-          bg: "white"
-        }}
-        _placeholder={{ color: "gray.500" }}
-      />
+          name={name}
+          value={value}
+          onChange={handleChange}
+          placeholder="Ej. #FF0000"
+          size="md"
+          w="full"
+          bg="white"
+          color="teal.700"
+          borderColor="gray.300"
+          pl={2}
+          _hover={{ borderColor: "teal.700" }}
+          _focus={{ 
+            borderColor: "green.600", 
+            boxShadow: "0 0 0 1px var(--chakra-colors-green-600)",
+            bg: "white"
+          }}
+          _placeholder={{ color: "gray.500" }}
+        />
         <Box
           w="40px"
           h="40px"
@@ -86,7 +89,7 @@ export default function ReportSettingDialog() {
           borderRadius="md"
           cursor="pointer"
           onClick={() => {
-            const input = document.querySelector(`input[name="${name}"]`);
+            const input = document.querySelector(`input[name="${name}_picker"]`);
             if (input) input.click();
           }}
         />
@@ -137,22 +140,22 @@ export default function ReportSettingDialog() {
       {/* Contenido del formulario */}
       <Box px={6} py={6}>
         <Stack spacing={4}>
-        {renderColorField("tableHeaderColor", "Color de encabezado", form.tableHeaderColor, true)}
-        {renderColorField("headerTextColor", "Color de texto del encabezado", form.headerTextColor, true)}
-        {renderColorField("recordColor", "Color de registros", form.recordColor, true)}
-        <Button 
-          colorScheme="green" 
-          bg="green.600"
-          color="white"
-          _hover={{ bg: "green.700" }}
-          _active={{ bg: "green.800" }}
-          boxShadow="sm"
-          onClick={handleSubmit} 
-          isLoading={loading} 
-          loadingText="Guardando..."
-        >
-          Guardar estilos
-        </Button>
+          {renderColorField("tableHeaderColor", "Color de encabezado", form.tableHeaderColor, true)}
+          {renderColorField("headerTextColor", "Color de texto del encabezado", form.headerTextColor, true)}
+          {renderColorField("recordColor", "Color de registros", form.recordColor, true)}
+          <Button 
+            colorScheme="green" 
+            bg="green.600"
+            color="white"
+            _hover={{ bg: "green.700" }}
+            _active={{ bg: "green.800" }}
+            boxShadow="sm"
+            onClick={handleSubmit} 
+            isLoading={loading} 
+            loadingText="Guardando..."
+          >
+            Guardar estilos
+          </Button>
         </Stack>
       </Box>
     </Stack>
