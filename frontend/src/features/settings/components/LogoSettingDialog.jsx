@@ -30,9 +30,9 @@ export default function LogoSettingDialog() {
     try {
       // Intentar cargar el logo actual desde la API
       const response = await SettingsAPI.getUniversity();
-      if (response.data?.logoPath) {
+      if (response.data.data?.logoPath) {
         // Construir la URL completa del logo
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://192.168.137.1:8080';
+        const baseUrl = import.meta.env.VITE_API_URL;
         const logoUrl = `${baseUrl}/static/images/${response.data.logoPath}`;
         setCurrentLogo(logoUrl);
       }

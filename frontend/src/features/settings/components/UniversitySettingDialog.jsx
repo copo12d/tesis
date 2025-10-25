@@ -27,7 +27,7 @@ export default function UniversitySettingDialog() {
   useEffect(() => {
     SettingsAPI.getUniversity()
       .then((res) => {
-        const data = res.data || {};
+        const data = res.data.data || {};
         setForm({
           legalName: data.legalName || "",
           taxId: {
@@ -84,7 +84,9 @@ export default function UniversitySettingDialog() {
         size="md"
         w="full"
         bg="white"
+        color="teal.700"
         borderColor="gray.300"
+        pl={2}
         _hover={{ borderColor: "green.400" }}
         _focus={{ 
           borderColor: "green.600", 
@@ -136,7 +138,6 @@ export default function UniversitySettingDialog() {
         {renderField("address3", "Dirección 3", form.address3 || "", "Dirección 3")}
         {renderField("phone", "Teléfono", form.phone || "", "Teléfono")}
         {renderField("email", "Correo electrónico", form.email || "", "Correo electrónico")}
-        {renderField("logoPath", "Ruta del logo", form.logoPath || "", "Ruta del logo")}
         <Button 
           colorScheme="green" 
           bg="green.600"

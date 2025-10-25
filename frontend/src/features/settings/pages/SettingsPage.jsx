@@ -16,6 +16,18 @@ import UniversitySettingDialog from "../components/UniversitySettingDialog";
 import UbicationSettingDialog from "../components/UbicationSettingDialog";
 import ReportSettingDialog from "../components/ReportSettingDialog";
 import LogoSettingDialog from "../components/LogoSettingDialog";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+  Popup,
+} from "react-leaflet";
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 export default function SettingsPage() {
   const [activeForm, setActiveForm] = useState(null);
@@ -87,7 +99,7 @@ export default function SettingsPage() {
                 key={item.id}
                 variant={activeForm === item.id ? "solid" : "outline"}
                 colorScheme={activeForm === item.id ? "green" : item.color}
-                bg={activeForm === item.id ? "green.600" : "transparent"}
+                bg={activeForm === item.id ? "green.600" : "teal.700"}
                 color={activeForm === item.id ? "white" : "inherit"}
                 size="lg"
                 h="auto"
@@ -96,7 +108,8 @@ export default function SettingsPage() {
                 justifyContent="flex-start"
                 textAlign="left"
                 _hover={{
-                  bg: activeForm === item.id ? "green.700" : "gray.50"
+                  bg: activeForm === item.id ? "green.600" : "green.600",
+                  color: activeForm === item.id ? "white" : "white"
                 }}
               >
                 <HStack spacing={3} w="full">

@@ -3,8 +3,8 @@ import {
   Button,
   Stack,
   Text,
-  Heading,
   VStack,
+  Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -24,15 +24,13 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+// Configurar íconos de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
-
-const MAP_CENTER = [10.6941532, -71.6343502];
-const MAP_ZOOM = 20;
 
 function CenterMapButton({ center, zoom }) {
   const map = useMap();
@@ -55,24 +53,23 @@ function LocationSelector({ onClick }) {
 }
 
 export default function UbicationSettingDialog() {
-  const [form, setForm] = useState({
-    latitude: MAP_CENTER[0],
-    longitude: MAP_CENTER[1],
-    mapZoom: MAP_ZOOM,
-  });
-
+  const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
   const markerRef = useRef(null);
+  const hasCentered = useRef(false);
+
+  const markerPosition = form ? [form.latitude, form.longitude] : null;
 
   useEffect(() => {
     SettingsAPI.getUbication()
       .then((res) => {
-        const data = res.data || {};
+        const data = res.data.data || {};
         setForm({
-          latitude: data.latitude || MAP_CENTER[0],
-          longitude: data.longitude || MAP_CENTER[1],
-          mapZoom: data.mapZoom || MAP_ZOOM,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          mapZoom: data.mapZoom ?? 20,
         });
+        hasCentered.current = true;
       })
       .catch((error) => {
         console.error("Error loading ubication data:", error);
@@ -87,7 +84,7 @@ export default function UbicationSettingDialog() {
       longitude: latlng.lng,
     }));
     setTimeout(() => {
-      if (markerRef.current) markerRef.current.openPopup();
+      markerRef.current?.openPopup();
     }, 100);
   }, []);
 
@@ -114,7 +111,7 @@ export default function UbicationSettingDialog() {
       maxW="6xl"
       mx="auto"
     >
-      {/* Encabezado verde */}
+      {/* Encabezado */}
       <Box
         bg="green.600"
         color="white"
@@ -129,80 +126,102 @@ export default function UbicationSettingDialog() {
         </Text>
       </Box>
 
-      {/* Contenido del formulario */}
+      {/* Contenido */}
       <Box px={6} py={6}>
         <Stack spacing={4}>
-        <VStack align="start" spacing={2} w="full">
-          <Text fontSize="sm" fontWeight="medium" color="gray.700">
-            Haz clic en el mapa para seleccionar la ubicación
-          </Text>
-          <Box borderWidth={1} borderRadius="md" overflow="hidden" boxShadow="sm" bg="white">
-            <Box width="100%" height="400px" position="relative">
-              <MapContainer
-                center={[form.latitude || MAP_CENTER[0], form.longitude || MAP_CENTER[1]]}
-                zoom={form.mapZoom || MAP_ZOOM}
-                scrollWheelZoom={true}
-                style={{ width: "100%", height: "100%" }}
-              >
-                <CenterMapButton center={MAP_CENTER} zoom={MAP_ZOOM} />
-                <TileLayer
-                  attribution='&copy; OpenStreetMap contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <LocationSelector onClick={handleMapClick} />
-                <Marker
-                  position={[form.latitude || MAP_CENTER[0], form.longitude || MAP_CENTER[1]]}
-                  draggable={true}
-                  ref={markerRef}
-                  eventHandlers={{
-                    dragend: (e) => {
-                      const latlng = e.target.getLatLng();
-                      setForm((prev) => ({
-                        ...prev,
-                        latitude: latlng.lat,
-                        longitude: latlng.lng,
-                      }));
-                      setTimeout(() => {
-                        if (markerRef.current) markerRef.current.openPopup();
-                      }, 100);
-                    },
+          <VStack align="start" spacing={2} w="full">
+            <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              Haz clic en el mapa para seleccionar la ubicación
+            </Text>
+
+            <Box width="100%" height="400px">
+              {form ? (
+                <MapContainer
+                  center={hasCentered.current ? markerPosition : undefined}
+                  zoom={form.mapZoom}
+                  scrollWheelZoom={false}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative",
                   }}
                 >
-                  <Popup>
-                    <Text fontSize="sm">
-                      Latitud: {form.latitude?.toFixed(6) || '0.000000'}
-                      <br />
-                      Longitud: {form.longitude?.toFixed(6) || '0.000000'}
-                    </Text>
-                  </Popup>
-                </Marker>
-              </MapContainer>
+                  <CenterMapButton center={markerPosition} zoom={form.mapZoom} />
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <LocationSelector onClick={handleMapClick} />
+                  <Marker
+                    position={markerPosition}
+                    draggable={true}
+                    ref={markerRef}
+                    eventHandlers={{
+                      dragend: (e) => {
+                        const latlng = e.target.getLatLng();
+                        setForm((prev) => ({
+                          ...prev,
+                          latitude: latlng.lat,
+                          longitude: latlng.lng,
+                        }));
+                        setTimeout(() => {
+                          markerRef.current?.openPopup();
+                        }, 100);
+                      },
+                    }}
+                  >
+                    <Popup
+                      autoClose={false}
+                      closeOnClick={false}
+                      closeButton={false}
+                      keepInView={true}
+                    >
+                      <Text fontSize="sm">
+                        Latitud: {form.latitude?.toFixed(6)}
+                        <br />
+                        Longitud: {form.longitude?.toFixed(6)}
+                      </Text>
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              ) : (
+                <Box
+                  width="100%"
+                  height="100%"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Spinner size="lg" color="green.500" />
+                </Box>
+              )}
             </Box>
-          </Box>
-          {!form.latitude || !form.longitude ? (
-            <Text fontSize="xs" color="red.500">
-              Debes seleccionar una ubicación en el mapa
-            </Text>
-          ) : (
-            <Text fontSize="xs" color="gray.500">
-              Puedes mover el marcador o hacer clic en el mapa para ajustar la ubicación.
-            </Text>
-          )}
-        </VStack>
 
-        <Button
-          colorScheme="green"
-          bg="green.600"
-          color="white"
-          _hover={{ bg: "green.700" }}
-          _active={{ bg: "green.800" }}
-          onClick={handleSubmit}
-          isLoading={loading}
-          loadingText="Guardando..."
-          boxShadow="sm"
-        >
-          Guardar ubicación
-        </Button>
+            {!form?.latitude || !form?.longitude ? (
+              <Text fontSize="xs" color="red.500">
+                Debes seleccionar una ubicación en el mapa
+              </Text>
+            ) : (
+              <Text fontSize="xs" color="gray.500">
+                Puedes mover el marcador o hacer clic en el mapa para ajustar la ubicación.
+              </Text>
+            )}
+          </VStack>
+
+          <Button
+            colorScheme="green"
+            bg="green.600"
+            color="white"
+            _hover={{ bg: "green.700" }}
+            _active={{ bg: "green.800" }}
+            onClick={handleSubmit}
+            isLoading={loading}
+            loadingText="Guardando..."
+            boxShadow="sm"
+            isDisabled={!form}
+          >
+            Guardar ubicación
+          </Button>
         </Stack>
       </Box>
     </Stack>
