@@ -21,6 +21,7 @@ public final class NormalizationUtils {
         }
         return normalized;
     }
+
     public static String normalizeUsername(String username) {
         return normalize(username, true);
     }

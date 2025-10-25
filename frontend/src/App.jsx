@@ -93,11 +93,14 @@ function App() {
               </PublicRoute>
             }
           />
-          <Route path="/mobile/thanks" element={<ThanksPage />} />
-
-            <Route
-              path="/login"
-              element={
+          <Route path="/mobile/thanks" element={
+            <MobileRoute>
+              <ThanksPage />
+            </MobileRoute>
+          } />
+          <Route
+            path="/login"
+            element={
                 <PublicRoute>
                   <Login />
                 </PublicRoute>

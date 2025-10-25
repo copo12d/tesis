@@ -69,7 +69,7 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @GetMapping("public/count")
+    @GetMapping("/public/count")
     public ResponseEntity<ApiResponse<Long>> getPublicActiveContainerCount() {
         ApiResponse<Long> response = containerService.getActiveContainerCount();
 
@@ -89,7 +89,7 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("admin/alerts/full")
+    @GetMapping("/admin/alerts/full")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<List<ContainerAlertDto>>> getFullContainerAlerts() {
         ApiResponse<List<ContainerAlertDto>> response = containerService.getFullContainerAlerts();

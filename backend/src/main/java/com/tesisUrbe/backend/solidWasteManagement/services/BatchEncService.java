@@ -10,7 +10,6 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -215,13 +214,15 @@ public class BatchEncService {
             if (StringUtils.hasText(fechaFin)) {
                 fechaFinDate = LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         BatchStatus batchStatus = null;
         if (StringUtils.hasText(status)) {
             try {
                 batchStatus = BatchStatus.valueOf(status.toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         Page<BatchEnc> batchPage = batchRepository.findByAdvancedSearch(

@@ -1,5 +1,7 @@
 package com.tesisUrbe.backend.solidWasteManagement.dto;
+
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,5 +14,6 @@ public record ContainerAlertDto(
         String containerType,
         ContainerStatus status,
         LocalDateTime lastUpdated
-) {}
+) {
+}
 

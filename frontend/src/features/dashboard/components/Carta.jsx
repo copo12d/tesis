@@ -1,59 +1,30 @@
+import { Box } from "@chakra-ui/react";
+import { DashboardCard } from "./DashboardCard";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import 'react-circular-progressbar/dist/styles.css';
-import '../styles/estilos-carta.css';
+import "react-circular-progressbar/dist/styles.css";
 
-// --- Cambios nuevos comentados ---
-// import { MiniGrafica } from "./MiniGrafica";
+export const Carta = ({ value = 0, title = "" }) => {
+  const v = Number.isFinite(Number(value)) ? Number(value) : 0;
 
-// export const Carta = ({ value, title, graficaData }) => {
-//   return (
-//     <div className="carta-container">
-//       <div className="header">
-//         <div className="title" style={{ color: "#fff" }}>{title}</div>
-//       </div>
-//       <div style={{ margin: "10px 0 0 0", textAlign: "left" }}>
-//         <MiniGrafica data={graficaData} />
-//       </div>
-//       <div
-//         className="carta-value"
-//         style={{
-//           fontSize: "2rem",
-//           fontWeight: "bold",
-//           color: "#d9cc1d",
-//           margin: "0.2rem 0 0 0",
-//           textAlign: "left"
-//         }}
-//       >
-//         {value}
-//       </div>
-//     </div>
-//   );
-// };
-
-// --- Versión anterior con CircularProgressbar ---
-export const Carta = ({ value, title }) => {
   return (
-    <div className="carta-container">
-      <div className="header">
-        <div className="title">{title}</div>
-      </div>
-      <div className="carta-progress">
+    <DashboardCard title={title}>
+      <Box mx="auto" mt={2} mb={1} w="110px" h="110px">
         <CircularProgressbar
-          value={value}
+          value={v}
           maxValue={100}
-          text={`${value}%`}
+          text={`${v}%`}
           strokeWidth={12}
           styles={buildStyles({
             textSize: "22px",
-            textColor: "#1b1c31",
+            textColor: "#0f172a",
             pathColor: "#5a9e18",
             trailColor: "#d9cc1d",
             pathTransitionDuration: 0.5,
-            strokeLinecap: "round"
+            strokeLinecap: "round",
           })}
         />
-      </div>
-    </div>
+      </Box>
+    </DashboardCard>
   );
 };
 

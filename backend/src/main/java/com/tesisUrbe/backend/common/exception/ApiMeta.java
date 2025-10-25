@@ -8,4 +8,5 @@ public record ApiMeta(
         String requestId,
         Instant timestamp,
         String message
-) {}
+) {
+}

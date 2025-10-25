@@ -6,4 +6,5 @@ public record ApiResponse<T>(
         ApiMeta meta,
         T data,
         List<ApiError> errors
-) {}
+) {
+}

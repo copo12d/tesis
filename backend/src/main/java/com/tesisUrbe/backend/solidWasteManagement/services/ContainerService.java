@@ -3,7 +3,6 @@ package com.tesisUrbe.backend.solidWasteManagement.services;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
-import com.tesisUrbe.backend.common.util.ValidationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
@@ -38,7 +37,6 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,7 +48,7 @@ public class ContainerService {
     private final ContainerRepository containerRepository;
     private final ApiErrorFactory errorFactory;
     private final UserService userService;
-    
+
     @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
