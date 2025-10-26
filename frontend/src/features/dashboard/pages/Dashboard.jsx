@@ -1,9 +1,16 @@
 import '../styles/dashboard.css';
 import { Carta } from '../components/Carta';
-import Grafica_semanal from '../components/Grafica_semanal';
+// import Grafica_semanal from '../components/Grafica_semanal';
 import { useDashboard } from '../hooks/useDashboard';
-import { Box, Heading, Grid, GridItem } from '@chakra-ui/react';
-import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
+import { Box, Heading, Grid, GridItem, Skeleton } from '@chakra-ui/react';
+// import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
+import { lazy, Suspense } from 'react';
+
+// Lazy: componentes pesados
+const Grafica_semanal = lazy(() => import('../components/Grafica_semanal'));
+const ActiveContainersByTypeCard = lazy(() =>
+  import('../components/ActiveContainersByTypeCard').then(m => ({ default: m.ActiveContainersByTypeCard }))
+);
 
 const Dashboard = () => {
   const { dashboardData } = useDashboard();
@@ -29,8 +36,10 @@ const Dashboard = () => {
           alignItems="stretch"
         >
           <GridItem colSpan={{ base: 12, md: 4 }}>
-            {/* Nueva card con PieChart */}
-            <ActiveContainersByTypeCard />
+            {/* Card con PieChart (lazy) */}
+            <Suspense fallback={<Skeleton h="220px" borderRadius="md" />}>
+              <ActiveContainersByTypeCard />
+            </Suspense>
           </GridItem>
 
           <GridItem colSpan={{ base: 12, md: 4 }}>
@@ -45,10 +54,12 @@ const Dashboard = () => {
           </GridItem>
         </Grid>
 
-        {/* Gráfica semanal */}
+        {/* Gráfica semanal (lazy) */}
         <Grid templateColumns={{ base: '1fr' }} gap={6}>
           <GridItem>
-            <Grafica_semanal data={dashboardData?.weeklyData ?? []} />
+            <Suspense fallback={<Skeleton h="340px" borderRadius="md" />}>
+              <Grafica_semanal data={dashboardData?.weeklyData ?? []} />
+            </Suspense>
           </GridItem>
         </Grid>
       </Box>
