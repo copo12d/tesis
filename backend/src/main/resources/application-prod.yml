@@ -3,7 +3,7 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:postgresql://db:5432/${DB_NAME}
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -23,28 +23,44 @@ server:
 api:
   base-path: /api/v1
 
-  web:
-    cors:
-      allowed-origins:
-        - "${DOMAIN}"
-      allowed-methods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - OPTIONS
-      allowed-headers:
-        - Authorization
-        - Content-Type
-        - X-Requested-With
-      allow-credentials: true
-      max-age: 3600
+cors:
+  allowed-origin-patterns:
+    - "*"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+    - PATCH
+  allowed-headers:
+    - Authorization
+    - Content-Type
+    - Accept
+    - Origin
+    - Access-Control-Request-Method
+    - Access-Control-Request-Headers
+    - X-Requested-With
+  allow-credentials: true
+  max-age: 3600
 
 jwt:
-  secret: ${SECRET_KEY}
-  expiration: ${EXP}
+  secret: ${SECRET_KEY:clave_dev_local}
+  expiration: ${EXP:15m}
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+superuser:
+  name: ${SUPERUSER_NAME}
+  password: ${SUPERUSER_PASSWORD}
+  email: ${SUPERUSER_EMAIL}
+
+email:
+  user: ${EMAIL_USER}
+  password: ${EMAIL_PASSWORD}
+
+storage:
+  path: ${STORAGE_PATH:/app/media}

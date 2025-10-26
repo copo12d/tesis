@@ -61,3 +61,6 @@ superuser:
 email:
   user: ${EMAIL_USER}
   password: ${EMAIL_PASSWORD}
+
+storage:
+  path: backend/media

@@ -33,10 +33,12 @@ services:
   #     EMAIL_USER: ${EMAIL_USER}
   #     EMAIL_PASSWORD: ${EMAIL_PASSWORD}
   #     SPRING_PROFILES_ACTIVE: dev
+  #     STORAGE_PATH: /app/media
   #   ports:
   #     - "8080:8080"
   #   volumes:
   #     - ./backend:/app
+  #     - ./backend/media:/app/media
   #   depends_on:
   #     db:
   #       condition: service_healthy

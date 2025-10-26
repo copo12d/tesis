@@ -4,6 +4,7 @@ import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.setting.UniversitySetting;
 import com.tesisUrbe.backend.reportsManagerPdf.builders.*;
 import com.tesisUrbe.backend.reportsManagerPdf.registry.ReportRegistry;
+import com.tesisUrbe.backend.settingsManagement.services.FileStorageService;
 import com.tesisUrbe.backend.settingsManagement.services.SettingsService;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
@@ -20,8 +21,8 @@ public class ReportBuilderConfig {
 
 
     @Bean
-    public PdfHeaderBuilder pdfHeaderBuilder(SettingsService settingsService) {
-        return new PdfHeaderBuilder(settingsService);
+    public PdfHeaderBuilder pdfHeaderBuilder(SettingsService settingsService, FileStorageService fileStorageService) {
+        return new PdfHeaderBuilder(settingsService, fileStorageService);
     }
 
     @Bean
