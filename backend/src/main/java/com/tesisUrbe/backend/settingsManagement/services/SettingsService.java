@@ -1,6 +1,5 @@
 package com.tesisUrbe.backend.settingsManagement.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
@@ -14,13 +13,15 @@ import com.tesisUrbe.backend.settingsManagement.repository.UniversitySettingRepo
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -33,7 +34,9 @@ public class SettingsService {
     private final ApiErrorFactory errorFactory;
     private final ObjectMapper objectMapper;
 
-    private final String logoPath = "src/main/resources/static/images/logo.png";
+    @Value("${storage.path}")
+    private String storagePath;
+
     private final ReportSettingRepository reportRepo;
     private final UniversitySettingRepository universityRepo;
     private final UbicationSettingRepository ubicationRepo;
@@ -113,9 +116,9 @@ public class SettingsService {
         }
 
         try {
-            Path path = Path.of(logoPath);
+            Path path = Path.of(storagePath, "logo.png");
             Files.createDirectories(path.getParent());
-            Files.write(path, file.getBytes());
+            Files.write(path, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             log.error("Error al guardar logo", e);
             return errorFactory.build(HttpStatus.INTERNAL_SERVER_ERROR, List.of(

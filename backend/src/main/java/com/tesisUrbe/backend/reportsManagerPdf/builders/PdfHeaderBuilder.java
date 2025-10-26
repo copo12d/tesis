@@ -6,8 +6,10 @@ import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
+import com.tesisUrbe.backend.settingsManagement.services.FileStorageService;
 import com.tesisUrbe.backend.settingsManagement.services.SettingsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.Date;
 public class PdfHeaderBuilder {
 
     private final SettingsService settingsService;
+    private final FileStorageService fileStorageService;
 
     public void build(Document doc, String title, String username) throws Exception {
         PdfPTable outerTable = new PdfPTable(1);
@@ -27,9 +30,22 @@ public class PdfHeaderBuilder {
         innerTable.setWidthPercentage(100);
         innerTable.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-        Image logo = Image.getInstance(getClass().getResourceAsStream("/static" + settingsService.getUniversitySetting().data().getLogoPath()).readAllBytes());
-        logo.scaleToFit(80, 80);
-        PdfPCell logoCell = new PdfPCell(logo);
+        PdfPCell logoCell;
+        try {
+            String logoFilename = settingsService.getUniversitySetting().data().getLogoPath();
+            if (logoFilename == null || logoFilename.trim().isEmpty()) {
+                throw new IllegalArgumentException("Logo institucional no configurado.");
+            }
+
+            Resource logoResource = fileStorageService.load(logoFilename);
+            Image logo = Image.getInstance(logoResource.getInputStream().readAllBytes());
+            logo.scaleToFit(80, 80);
+            logoCell = new PdfPCell(logo);
+        } catch (Exception e) {
+            Paragraph fallback = new Paragraph("Sin logo", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8));
+            logoCell = new PdfPCell(fallback);
+        }
+
         logoCell.setBorder(Rectangle.NO_BORDER);
         logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         logoCell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -85,5 +101,4 @@ public class PdfHeaderBuilder {
             paragraph.add(new Phrase(text + "\n", font));
         }
     }
-
 }
