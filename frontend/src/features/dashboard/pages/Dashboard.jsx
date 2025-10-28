@@ -17,7 +17,7 @@ const Dashboard = () => {
       {/* Contenedor centrado para evitar excesivo espacio lateral */}
       <Box maxW="1200px" mx="auto">
         <Heading as="h2" size="lg" color="green.600" mb={6}>
-          Dashboard
+          Centro de Análisis
         </Heading>
 
         {/* Fila de métricas principales: 12 cols, cada card ocupa 4 */}
