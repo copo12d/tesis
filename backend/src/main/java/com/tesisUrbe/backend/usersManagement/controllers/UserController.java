@@ -40,8 +40,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @GetMapping("/public/idByUsername/{username}")
-    public ResponseEntity<ApiResponse<Long>> getIdByUsername(@PathVariable String username) {
+    @GetMapping("/public/idByUsername")
+    public ResponseEntity<ApiResponse<Long>> getIdByUsername(@RequestParam String username) {
         ApiResponse<Long> response = userService.getIdByUserName(username);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
