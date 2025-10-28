@@ -1,15 +1,4 @@
-import { 
-  Box, 
-  Text, 
-  Grid,
-  GridItem,
-  Button,
-  HStack,
-  Icon,
-  VStack,
-  Stack,
-  Heading
-} from "@chakra-ui/react";
+import { Box, Text, Grid, GridItem, Button, HStack, Icon, VStack, Stack, Heading } from "@chakra-ui/react";
 import { MdBusiness, MdLocationOn, MdColorLens, MdImage } from "react-icons/md";
 import { useState } from "react";
 import UniversitySettingDialog from "../components/UniversitySettingDialog";
@@ -74,11 +63,18 @@ export default function SettingsPage() {
   };
 
   return (
-    <Box p={{ base: 4, md: 8 }} bg="white" minH="100vh">
+    <Box
+      p={{ base: 4, md: 8 }}
+      bg="white"
+      minH="100vh"
+      maxH="100vh"
+      overflowY="auto"
+    >
+
       <Heading fontSize="3xl" fontWeight="bold" mb={8} color="green.600">
         Configuración Institucional
       </Heading>
-      
+
       <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={8}>
         {/* Menu lateral */}
         <GridItem>
@@ -123,8 +119,6 @@ export default function SettingsPage() {
             bg="gray.50"
             borderRadius="lg"
             p={6}
-            h="80vh"
-            overflowY="auto"
             border="1px solid"
             borderColor="gray.200"
           >
