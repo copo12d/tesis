@@ -1,4 +1,4 @@
-import { Stack, Spinner, Text, IconButton } from "@chakra-ui/react";
+import { Stack, Spinner, Text, IconButton, Button, Box } from "@chakra-ui/react";
 import { GenericTable } from "../../../components/GenericTable";
 import { useNavigate } from "react-router-dom";
 import { useContainerTypeList } from "../hooks/useContainerTypeList";
@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { LiaEditSolid, LiaTrashAltSolid } from "react-icons/lia";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { useDeleteContainerType } from "../hooks/useDeleteContainerType";
+import { Link } from "react-router-dom";
 
 const headers = [
   { key: "name", label: "Nombre" },
@@ -65,7 +66,14 @@ export function ContainerTypeList() {
   }
 
   return (
-    <Stack bg={"whiteAlpha.900"} h={"100vh"}>
+    <Stack bg={"white"} h={"100vh"}>
+      <Box pl={4} pt={4} mb={-10}>
+        <Link to="/container/list">
+          <Button variant="link" color="teal.700" size="sm">
+            Ir al listado de contenedores
+          </Button>
+        </Link>
+      </Box>
       <GenericTable
         headers={headers}
         items={items}
@@ -104,19 +112,19 @@ export function ContainerTypeList() {
                 description={`¿Seguro que deseas eliminar "${row.name}"? Esta acción no se puede deshacer.`}
                 confirmText="Eliminar"
                 cancelText="Cancelar"
-                confirmColorPalette="teal"           // Botón confirmar: teal
-                cancelColorPalette="gray"            // Botón cancelar: gris
+                confirmColorPalette="teal"
+                cancelColorPalette="gray"
                 confirmVariant="solid"
                 cancelVariant="outline"
-                contentColorPalette="teal"           // Borde y detalles: teal
-                contentBg="white"                    // Fondo del modal: blanco
-                headerBg="teal.700"                  // Header: teal oscuro
-                headerBorderColor="teal.600"         // Borde header: teal
-                footerBg="white"                     // Footer: blanco
-                backdropBg="blackAlpha.400"          // Fondo oscuro tras modal
-                titleColor="whiteAlpha.900"                // Título: teal oscuro
-                descriptionColor="gray.700"          // Descripción: gris oscuro
-                iconColor="teal.400"                 // Icono: teal claro
+                contentColorPalette="teal"
+                contentBg="white"
+                headerBg="teal.700"
+                headerBorderColor="teal.600"
+                footerBg="white"
+                backdropBg="blackAlpha.400"
+                titleColor="whiteAlpha.900"
+                descriptionColor="gray.700"
+                iconColor="teal.400"
                 loading={isDeleting}
                 onConfirm={() => handleDelete(row)}
                 trigger={
