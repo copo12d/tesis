@@ -10,6 +10,7 @@ export function ContainerCreate() {
   });
 
   return (
+    <>  
     <Box
       h="100vh"
       overflowY="auto"
@@ -27,5 +28,6 @@ export function ContainerCreate() {
         title="Registrar contenedor"
       />
     </Box>
+  </>
   );
 }

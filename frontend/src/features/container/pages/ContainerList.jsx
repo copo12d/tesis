@@ -1,4 +1,4 @@
-import { IconButton, Stack, Spinner, Text } from "@chakra-ui/react";
+import { IconButton, Stack, Spinner, Text, Box, Button, } from "@chakra-ui/react";
 import { LiaEditSolid, LiaTrashAltSolid } from "react-icons/lia";
 import { AiOutlineEye } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
@@ -6,8 +6,9 @@ import { useContainerList } from "../hooks/useContainerList";
 import { useEffect, useState } from "react";
 import { GenericTable } from "@/components/GenericTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { QrPreviewDialog } from "../components/QrpreviewDialog"; // Importa el dialog de QR
-import { useDeleteContainer } from "../hooks/useDeleteContainer"; // <-- Implementar luego
+import { QrPreviewDialog } from "../components/QrpreviewDialog";
+import { useDeleteContainer } from "../hooks/useDeleteContainer";
+import { Link } from "react-router-dom";
 
 const headers = [
   { key: "serial", label: "Serial" },
@@ -16,7 +17,7 @@ const headers = [
   { key: "capacity", label: "Capacidad (L)" },
   { key: "status", label: "Estado" },
   { key: "containerTypeName", label: "Tipo" },
-  { key: "createdAt", label: "Creado" }, // Espacio para acciones
+  { key: "createdAt", label: "Creado" },
 ];
 
 const searchMenuItems = [
@@ -60,11 +61,6 @@ export function ContainerList() {
     }
   };
 
-  // Ya no navega, ahora abre el dialog
-  // const handleView = (row) => {
-  //   navigate(`/container/view/${row.id}`);
-  // };
-
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
@@ -83,7 +79,14 @@ export function ContainerList() {
   }
 
   return (
-    <Stack bg={"whiteAlpha.900"} h={"100vh"}>
+    <Stack bg={"white"} h={"100vh"}>
+      <Box pt={5} pl={6}>
+        <Link to="/container-type/list">
+          <Button variant="link" color="teal.700" size="sm">
+            Ir a tipos de contenedores
+          </Button>
+        </Link>
+      </Box>
       <GenericTable
         headers={headers}
         items={items}
