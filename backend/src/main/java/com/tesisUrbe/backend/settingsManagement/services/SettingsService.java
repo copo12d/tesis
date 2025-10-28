@@ -1,6 +1,5 @@
 package com.tesisUrbe.backend.settingsManagement.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tesisUrbe.backend.common.exception.ApiError;
 import com.tesisUrbe.backend.common.exception.ApiErrorFactory;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
@@ -14,6 +13,7 @@ import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,15 +31,14 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class SettingsService {
 
-    private final ApiErrorFactory errorFactory;
-    private final ObjectMapper objectMapper;
-
     @Value("${storage.path}")
     private String storagePath;
 
+    private final FileStorageService fileStorageService;
     private final ReportSettingRepository reportRepo;
     private final UniversitySettingRepository universityRepo;
     private final UbicationSettingRepository ubicationRepo;
+    private final ApiErrorFactory errorFactory;
 
     public ApiResponse<ReportSetting> getReportSetting() {
         ReportSetting report = reportRepo.findById(1L).orElseGet(() -> {
@@ -120,13 +119,15 @@ public class SettingsService {
             Files.createDirectories(path.getParent());
             Files.write(path, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            log.error("Error al guardar logo", e);
             return errorFactory.build(HttpStatus.INTERNAL_SERVER_ERROR, List.of(
                     new ApiError("LOGO_SAVE_ERROR", null, "No se pudo guardar el logo")
             ));
         }
-
         return errorFactory.buildSuccess(HttpStatus.OK, "Logo actualizado correctamente");
+    }
+
+    public Resource getLogoImage() throws IOException {
+        return fileStorageService.load("logo.png");
     }
 
     public ApiResponse<UbicationSetting> getUbicationSetting() {
@@ -161,4 +162,6 @@ public class SettingsService {
     private boolean isValidCoordinate(double value) {
         return value >= -180 && value <= 180;
     }
+
+
 }
