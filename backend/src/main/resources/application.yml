@@ -4,6 +4,6 @@ spring:
 # Frontend and QR configuration
 app:
   frontend:
-    base-url: "http://192.168.1.10:5173/mobile"
+    base-url: "http://192.168.1.2:5173/mobile"
   qr:
     size: 300
