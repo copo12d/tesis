@@ -1,23 +1,27 @@
 .weekly-chart-container {
-  background: linear-gradient(135deg, #8bc34a 0%, #cddc39 100%);
+  background: #009688;
   border-radius: 12px;
   padding: 4px;
-  color: #fff;
+  color: #ffffff; /* antes: #1f2a44 */
   flex: 1;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
 .weekly-chart-title {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: #ffffff; /* antes #00695c */
+  /* línea de separación bajo el título */
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.55); /* antes #009688 */
 }
 
 .weekly-chart-subtitle {
   margin: 5px 0 15px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85); /* antes rgba(0,105,92,0.75) */
   font-size: 0.9rem;
   font-weight: 400;
 }
