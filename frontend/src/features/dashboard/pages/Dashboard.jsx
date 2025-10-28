@@ -3,19 +3,18 @@ import { Carta } from '../components/Carta';
 // import Grafica_semanal from '../components/Grafica_semanal';
 import { useDashboard } from '../hooks/useDashboard';
 import { Box, Heading, Grid, GridItem, Skeleton } from '@chakra-ui/react';
-// import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
+import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
 import { lazy, Suspense } from 'react';
 
 // Lazy: componentes pesados
 const Grafica_semanal = lazy(() => import('../components/Grafica_semanal'));
-const ActiveContainersByTypeCard = lazy(() =>
-  import('../components/ActiveContainersByTypeCard').then(m => ({ default: m.ActiveContainersByTypeCard }))
-);
+// NUEVO: gráfico múltiple en lazy
+const ChartBarMultiple = lazy(() => import('../components/ChartBarMultiple'));
 
 const Dashboard = () => {
   const { dashboardData } = useDashboard();
 
-  const card1 = dashboardData?.cardsData?.[0] ?? { value: 0 };
+  // const card1 = dashboardData?.cardsData?.[0] ?? { value: 0 };
   const card2 = dashboardData?.cardsData?.[1] ?? { value: 0 };
   const card3 = dashboardData?.cardsData?.[2] ?? { value: 0 };
 
@@ -62,6 +61,11 @@ const Dashboard = () => {
             </Suspense>
           </GridItem>
         </Grid>
+
+        {/* NUEVO: barras múltiples debajo de la semanal */}
+        <Suspense fallback={<Skeleton h="340px" borderRadius="md" mt={4} />}>
+          <ChartBarMultiple data={dashboardData?.visitorsByMonth /* opcional */} />
+        </Suspense>
       </Box>
     </Box>
   );
