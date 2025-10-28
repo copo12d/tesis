@@ -28,14 +28,9 @@ export default function LogoSettingDialog() {
   const loadCurrentLogo = async () => {
     setLoadingData(true);
     try {
-      // Intentar cargar el logo actual desde la API
-      const response = await SettingsAPI.getUniversity();
-      if (response.data.data?.logoPath) {
-        // Construir la URL completa del logo
-        const baseUrl = import.meta.env.VITE_API_URL;
-        const logoUrl = `${baseUrl}/static/images/${response.data.logoPath}`;
-        setCurrentLogo(logoUrl);
-      }
+      const response = await SettingsAPI.loadLogo();
+      const blobURL = URL.createObjectURL(response.data);
+      setCurrentLogo(blobURL);      
     } catch (error) {
       console.error("Error loading current logo:", error);
       // No mostrar error al usuario, simplemente no hay logo actual
