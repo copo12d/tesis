@@ -14,7 +14,7 @@ const ChartBarMultiple = lazy(() => import('../components/ChartBarMultiple'));
 const Dashboard = () => {
   const { dashboardData } = useDashboard();
 
-  const card1 = dashboardData?.cardsData?.[0] ?? { value: 0 };
+  // const card1 = dashboardData?.cardsData?.[0] ?? { value: 0 };
   const card2 = dashboardData?.cardsData?.[1] ?? { value: 0 };
   const card3 = dashboardData?.cardsData?.[2] ?? { value: 0 };
 
@@ -22,8 +22,8 @@ const Dashboard = () => {
     <Box as="main" p={{ base: 4, md: 6 }} bg="gray.50" h="100vh" overflowY="auto">
       {/* Contenedor centrado para evitar excesivo espacio lateral */}
       <Box maxW="1200px" mx="auto">
-        <Heading as="h2" size="lg" color="green.600" mb={6} fontSize={30}>
-          Centro de análisis de datos
+        <Heading as="h2" size="lg" color="green.600" mb={6}>
+          Centro de Análisis
         </Heading>
 
         {/* Fila de métricas principales: 12 cols, cada card ocupa 4 */}

@@ -73,7 +73,7 @@ export function UsersList() {
   }
 
   return (
-    <Stack bg={"whiteAlpha.900"} h={"100vh"}>
+    <Stack bg={"white"} h={"100vh"}>
       <GenericTable
         headers={headers}
         items={items}

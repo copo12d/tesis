@@ -94,7 +94,7 @@ export function BatchListPage() {
   }
 
   return (
-    <Stack bg={"whiteAlpha.900"} minH={"100vh"}>
+    <Stack bg={"white"} minH={"100vh"}>
       <GenericTable
         headers={headers}
         items={items}

@@ -1,7 +1,8 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useCreateContainerType } from "../hooks/useCreateContainerType";
 import { ContainerTypeForm } from "../components/ContainerTypeForm";
+import { Link } from "react-router-dom";
 
 export function ContainerTypeCreate() {
   const navigate = useNavigate();
@@ -22,6 +23,13 @@ export function ContainerTypeCreate() {
       px={4}
       py={14}
     >
+      <Box pt={4} mt={-14}>
+        <Link to="/container-type/list">
+          <Button variant="link" color="teal.700" size="sm">
+            Ir al listado de tipos de contenedores
+          </Button>
+        </Link>
+      </Box>
       <ContainerTypeForm
         initialValues={initialValues}
         loading={loading}

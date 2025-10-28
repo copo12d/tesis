@@ -198,20 +198,20 @@ export function GenericTable({
       >
         {(cardTitle || caption) && (
           <Box
-            as="header"
-            w="100%"
-            bg={cardHeaderBg}
-            color={cardHeaderColor}
-            fontSize="sm"
-            fontWeight="bold"
-            px={2}
-            py={2}
-            borderTopLeftRadius={cardRadius}
-            borderTopRightRadius={cardRadius}
+            bg="green.600"
+            color="white"
+            px={6}
+            py={4}
+            borderTopRadius="md"
+            borderBottom="1px solid"
+            borderColor="green.700"
           >
-            {cardTitle || caption}
+            <Text fontSize="xl" fontWeight="bold">
+              {cardTitle || caption}
+            </Text>
           </Box>
         )}
+
         <Flex justify="space-between" align="center" px={6} pt={3}>
           <Group w="400px" gap={"unset"}>
             <Menu.Root>
@@ -314,8 +314,8 @@ export function GenericTable({
                         color={cellColor}
                         isActive={pageObj.selected}
                         _hover={{
-                          bg: headerBg,         
-                          color: headerColor,      
+                          bg: headerBg,
+                          color: headerColor,
                         }}
                       >
                         {pageObj.value}
