@@ -3,14 +3,13 @@ import { Carta } from '../components/Carta';
 // import Grafica_semanal from '../components/Grafica_semanal';
 import { useDashboard } from '../hooks/useDashboard';
 import { Box, Heading, Grid, GridItem, Skeleton } from '@chakra-ui/react';
-// import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
+import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
 import { lazy, Suspense } from 'react';
 
 // Lazy: componentes pesados
 const Grafica_semanal = lazy(() => import('../components/Grafica_semanal'));
-const ActiveContainersByTypeCard = lazy(() =>
-  import('../components/ActiveContainersByTypeCard').then(m => ({ default: m.ActiveContainersByTypeCard }))
-);
+// NUEVO: gráfico múltiple en lazy
+const ChartBarMultiple = lazy(() => import('../components/ChartBarMultiple'));
 
 const Dashboard = () => {
   const { dashboardData } = useDashboard();
@@ -23,8 +22,8 @@ const Dashboard = () => {
     <Box as="main" p={{ base: 4, md: 6 }} bg="gray.50" h="100vh" overflowY="auto">
       {/* Contenedor centrado para evitar excesivo espacio lateral */}
       <Box maxW="1200px" mx="auto">
-        <Heading as="h2" size="lg" color="green.600" mb={6}>
-          Dashboard
+        <Heading as="h2" size="lg" color="green.600" mb={6} fontSize={30}>
+          Centro de análisis de datos
         </Heading>
 
         {/* Fila de métricas principales: 12 cols, cada card ocupa 4 */}
@@ -62,6 +61,11 @@ const Dashboard = () => {
             </Suspense>
           </GridItem>
         </Grid>
+
+        {/* NUEVO: barras múltiples debajo de la semanal */}
+        <Suspense fallback={<Skeleton h="340px" borderRadius="md" mt={4} />}>
+          <ChartBarMultiple data={dashboardData?.visitorsByMonth /* opcional */} />
+        </Suspense>
       </Box>
     </Box>
   );
