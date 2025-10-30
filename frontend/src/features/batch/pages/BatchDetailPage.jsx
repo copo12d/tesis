@@ -47,7 +47,7 @@ export function BatchDetailPage() {
     <Box
       height="100vh"
       overflowY="auto"
-      bg="#e6f4ea"
+      bg="#fff"
       p={{ base: 2, md: 6 }}
       sx={{
         "::-webkit-scrollbar": { width: "8px" },
@@ -55,7 +55,7 @@ export function BatchDetailPage() {
       }}
     >
       <Button as={RouterLink} to={-1} variant="link" mb={2} color="teal.700" fontWeight="bold">
-        ← Regresar a lotes
+        Regresar a listado de lotes
       </Button>
 
       <Heading size="lg" mb={4} color="#222">

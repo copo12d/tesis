@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import { UserForm } from "../components/UserForm";
-import { Spinner, Stack, Text, Box } from "@chakra-ui/react";
+import { Spinner, Stack, Text, Box, Button } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 export function UserEdit() {
   const { id } = useParams();
@@ -14,8 +15,15 @@ export function UserEdit() {
       overflowY="auto"
       bg="gray.50"
       px={4}
-      py={14}
+      py={3}
     >
+       <Box>
+        <Link to="/users/all">
+          <Button variant="link" color="teal.700" size="sm">
+            Volver al listado de usuarios
+          </Button>
+        </Link>
+      </Box>
       {loading ? (
         <Stack align="center" p={8}>
           <Spinner />
