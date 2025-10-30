@@ -1,10 +1,7 @@
 package com.tesisUrbe.backend.solidWasteManagement.controllers;
 
 import com.tesisUrbe.backend.common.exception.ApiResponse;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerAlertDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerUpdateDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.*;
 import com.tesisUrbe.backend.solidWasteManagement.services.ContainerService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
@@ -94,6 +91,12 @@ public class ContainerController {
     public ResponseEntity<ApiResponse<List<ContainerAlertDto>>> getFullContainerAlerts() {
         ApiResponse<List<ContainerAlertDto>> response = containerService.getFullContainerAlerts();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/public/active-summary")
+    public ResponseEntity<ApiResponse<List<ContainerTypeSummaryDto>>> getActiveContainerSummary() {
+        ApiResponse<List<ContainerTypeSummaryDto>> response = containerService.getActiveContainerCounts();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("/admin/update/{id}")

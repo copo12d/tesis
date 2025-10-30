@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.solidWasteManagement.repository;
 
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.prediction.dto.NextRecollectionProjection;
+import com.tesisUrbe.backend.solidWasteManagement.Projections.ContainerTypeCountProjection;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -76,5 +77,13 @@ public interface ContainerRepository extends JpaRepository<Container, Long> {
     Page<NextRecollectionProjection> nextRecollectionAllContainers(
             @Param("serialPattern") String serialPattern,
             Pageable pageable);
+
+    @Query("""
+    SELECT c.containerType.name AS name, COUNT(c) AS value
+    FROM Container c
+    WHERE c.deleted = false
+    GROUP BY c.containerType.name
+""")
+    List<ContainerTypeCountProjection> countActiveContainersByType();
 
 }

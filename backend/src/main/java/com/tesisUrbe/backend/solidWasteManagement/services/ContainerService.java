@@ -6,10 +6,8 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerAlertDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerRequestDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerResponseDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.ContainerUpdateDto;
+import com.tesisUrbe.backend.solidWasteManagement.Projections.ContainerTypeCountProjection;
+import com.tesisUrbe.backend.solidWasteManagement.dto.*;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -308,6 +306,20 @@ public class ContainerService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Total de contenedores activos obtenido correctamente"),
                 count,
+                null
+        );
+    }
+
+    public ApiResponse<List<ContainerTypeSummaryDto>> getActiveContainerCounts() {
+        List<ContainerTypeCountProjection> raw = containerRepository.countActiveContainersByType();
+
+        List<ContainerTypeSummaryDto> summary = raw.stream()
+                .map(p -> new ContainerTypeSummaryDto(p.getName(), p.getValue()))
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Resumen de contenedores activos por tipo"),
+                summary,
                 null
         );
     }
