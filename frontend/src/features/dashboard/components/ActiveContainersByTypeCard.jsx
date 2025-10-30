@@ -1,26 +1,28 @@
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Box } from "@chakra-ui/react"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from "recharts"
 import { DashboardCard } from "./DashboardCard"
+import { DashboardAPI } from "../api/dashboard.api"
 
 const PALETTE = ["#16a34a", "#22c55e", "#84cc16", "#65a30d", "#a3e635", "#4d7c0f"]
 
-const MOCK = [
-  { name: "Plástico", value: 12 },
-  { name: "Orgánico", value: 8 },
-  { name: "Vidrio", value: 5 },
-  { name: "Metal", value: 3 },
-]
-
 export function ActiveContainersByTypeCard({
   title = "Contenedores activos",
-  data = MOCK,
   height = 140,
 }) {
+  const [data, setData] = useState([])
+
+  useEffect(() => {
+    DashboardAPI.getActiveContainerSummary()
+      .then(res => setData(res.data?.data ?? []))
+      .catch(() => setData([]))
+  }, [])
+
   const series = useMemo(
-    () => (data || []).map((d, i) => ({ ...d, fill: d.fill || PALETTE[i % PALETTE.length] })),
+    () => data.map((d, i) => ({ ...d, fill: PALETTE[i % PALETTE.length] })),
     [data]
   )
+
   const total = useMemo(
     () => series.reduce((sum, d) => sum + (Number(d.value) || 0), 0),
     [series]
