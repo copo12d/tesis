@@ -99,6 +99,12 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/public/full-summary")
+    public ResponseEntity<ApiResponse<List<ContainerTypeSummaryDto>>> getFullContainerSummary() {
+        ApiResponse<List<ContainerTypeSummaryDto>> response = containerService.getFullContainerSummary();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PutMapping("/admin/update/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<Void>> updateContainer(

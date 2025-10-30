@@ -7,6 +7,7 @@ import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.ContainerType;
 import com.tesisUrbe.backend.solidWasteManagement.Projections.ContainerTypeCountProjection;
+import com.tesisUrbe.backend.solidWasteManagement.Projections.FullContainerCountProjection;
 import com.tesisUrbe.backend.solidWasteManagement.dto.*;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerRepository;
@@ -319,6 +320,20 @@ public class ContainerService {
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Resumen de contenedores activos por tipo"),
+                summary,
+                null
+        );
+    }
+
+    public ApiResponse<List<ContainerTypeSummaryDto>> getFullContainerSummary() {
+        List<FullContainerCountProjection> raw = containerRepository.countFullContainersByType();
+
+        List<ContainerTypeSummaryDto> summary = raw.stream()
+                .map(p -> new ContainerTypeSummaryDto(p.getName(), p.getValue()))
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Resumen de contenedores llenos por tipo"),
                 summary,
                 null
         );
