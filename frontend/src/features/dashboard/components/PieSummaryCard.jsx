@@ -3,7 +3,7 @@ import { Box } from "@chakra-ui/react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from "recharts";
 import { DashboardCard } from "./DashboardCard";
 
-const PALETTE = ["#16a34a", "#22c55e", "#84cc16", "#65a30d", "#a3e635", "#4d7c0f"];
+const PALETTE = ["#3e87e0", "#ec1414", "#16a34a", "#f59e0b", "#8b5cf6", "#0ea5e9"];
 
 export function PieSummary({ title, labelText, height = 140, fetch }) {
   const [data, setData] = useState([]);
