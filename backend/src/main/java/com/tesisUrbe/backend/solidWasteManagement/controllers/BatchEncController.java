@@ -2,6 +2,7 @@ package com.tesisUrbe.backend.solidWasteManagement.controllers;
 
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PageValidator;
+import com.tesisUrbe.backend.solidWasteManagement.dto.BatchCountDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
@@ -42,6 +43,12 @@ public class BatchEncController {
     public ResponseEntity<ApiResponse<BatchEncResponseDto>> getBatchById(@PathVariable Long id) {
         ApiResponse<BatchEncResponseDto> response = batchEncService.getBatchById(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/public/processed-summary")
+    public ResponseEntity<ApiResponse<BatchCountDto>> getProcessedBatchCount() {
+        ApiResponse<BatchCountDto> response = batchEncService.getProcessedBatchCount();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/admin/all")

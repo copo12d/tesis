@@ -53,4 +53,12 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
     List<BatchEnc> findByDeletedFalse();
 
     List<BatchEnc> findByStatusAndDeletedFalse(BatchStatus status);
+
+    @Query("""
+    SELECT COUNT(b)
+    FROM BatchEnc b
+    WHERE b.deleted = false AND b.status = com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus.PROCESSED
+""")
+    long countProcessedBatches();
+
 }
