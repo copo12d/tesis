@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from "rechar
 import { DashboardCard } from "./DashboardCard";
 
 const PALETTE = ["#3e87e0", "#ec1414", "#16a34a", "#f59e0b", "#8b5cf6", "#0ea5e9"];
+const EMPTY_COLOR = "#e2e8f0"; // gris claro para fallback
 
 export function PieSummary({ title, labelText, height = 140, fetch }) {
   const [data, setData] = useState([]);
@@ -23,8 +24,20 @@ export function PieSummary({ title, labelText, height = 140, fetch }) {
       .catch(() => setData([]));
   }, [fetch, labelText]);
 
-  const series = useMemo(() => data.map((d, i) => ({ ...d, fill: PALETTE[i % PALETTE.length] })), [data]);
-  const total = useMemo(() => series.reduce((sum, d) => sum + (Number(d.value) || 0), 0), [series]);
+  const totalReal = useMemo(
+    () => data.reduce((sum, d) => sum + (Number(d.value) || 0), 0),
+    [data]
+  );
+
+  const series = useMemo(() => {
+    const mapped = data.map((d, i) => ({
+      ...d,
+      fill: PALETTE[i % PALETTE.length],
+    }));
+    return totalReal > 0
+      ? mapped
+      : [{ name: "Sin datos", value: 1, fill: EMPTY_COLOR }];
+  }, [data, totalReal]);
 
   return (
     <DashboardCard title={title}>
@@ -50,7 +63,7 @@ export function PieSummary({ title, labelText, height = 140, fetch }) {
                     return (
                       <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
                         <tspan x={cx} y={cy} style={{ fill: "#ffffffff", fontSize: "22px", fontWeight: 700 }}>
-                          {total}
+                          {totalReal}
                         </tspan>
                         <tspan x={cx} y={cy + 16} style={{ fill: "rgba(255, 255, 255, 0.7)", fontSize: "12px" }}>
                           {labelText}
@@ -65,7 +78,7 @@ export function PieSummary({ title, labelText, height = 140, fetch }) {
             <Tooltip
               formatter={(value, _name, props) => {
                 const v = Number(value) || 0;
-                const pct = total ? ((v / total) * 100).toFixed(1) : 0;
+                const pct = totalReal > 0 ? ((v / totalReal) * 100).toFixed(1) : 0;
                 return [`${v} (${pct}%)`, props.payload.name];
               }}
             />
