@@ -6,6 +6,7 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchRegResponseDto;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchRegRepository;
+import com.tesisUrbe.backend.solidWasteManagement.repository.ContainerTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,6 +30,7 @@ public class BatchRegService {
     private final BatchEncService batchEncService;
     private final BatchRegRepository batchRegRepository;
     private final ApiErrorFactory errorFactory;
+    private final ContainerTypeRepository containerTypeRepository;
 
     @Transactional(readOnly = true)
     public ApiResponse<List<BatchRegResponseDto>> getAllBatchRegs() {
@@ -105,13 +107,24 @@ public class BatchRegService {
 
         List<BatchReg> registros = batchRegRepository.findByDeletedFalse();
 
+        List<String> tipos = containerTypeRepository.findAll()
+                .stream()
+                .map(ct -> ct.getName().toLowerCase())
+                .toList();
+
         Map<DayOfWeek, Map<String, Integer>> agrupado = new EnumMap<>(DayOfWeek.class);
+        for (DayOfWeek dia : DayOfWeek.values()) {
+            Map<String, Integer> materiales = new HashMap<>();
+            for (String tipo : tipos) {
+                materiales.put(tipo, 0);
+            }
+            agrupado.put(dia, materiales);
+        }
 
         for (BatchReg reg : registros) {
             DayOfWeek dia = reg.getCollectionDate().getDayOfWeek();
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
 
-            agrupado.putIfAbsent(dia, new HashMap<>());
             Map<String, Integer> materiales = agrupado.get(dia);
             materiales.put(tipo, materiales.getOrDefault(tipo, 0) + 1);
         }
@@ -120,7 +133,7 @@ public class BatchRegService {
                 .map(dia -> {
                     Map<String, Object> fila = new LinkedHashMap<>();
                     fila.put("day", dia.getDisplayName(TextStyle.FULL, new Locale("es")));
-                    Map<String, Integer> materiales = agrupado.getOrDefault(dia, new HashMap<>());
+                    Map<String, Integer> materiales = agrupado.get(dia);
                     materiales.forEach(fila::put);
                     return fila;
                 })

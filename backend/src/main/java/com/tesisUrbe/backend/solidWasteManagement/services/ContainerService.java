@@ -314,12 +314,26 @@ public class ContainerService {
     public ApiResponse<List<ContainerTypeSummaryDto>> getActiveContainerCounts() {
         List<ContainerTypeCountProjection> raw = containerRepository.countActiveContainersByType();
 
-        List<ContainerTypeSummaryDto> summary = raw.stream()
-                .map(p -> new ContainerTypeSummaryDto(p.getName(), p.getValue()))
+        Map<String, Long> conteoReal = raw.stream()
+                .collect(Collectors.toMap(
+                        p -> p.getName().toLowerCase(),
+                        ContainerTypeCountProjection::getValue
+                ));
+
+        ApiResponse<List<ContainerTypeResponseDto>> tiposResponse = containerTypeService.getAllContainerTypes();
+        List<String> todosLosTipos = tiposResponse.data() != null
+                ? tiposResponse.data().stream().map(ct -> ct.getName().toLowerCase()).toList()
+                : List.of();
+
+        List<ContainerTypeSummaryDto> summary = todosLosTipos.stream()
+                .map(tipo -> new ContainerTypeSummaryDto(tipo, conteoReal.getOrDefault(tipo, 0L)))
                 .toList();
 
+        long total = summary.stream().mapToLong(ContainerTypeSummaryDto::value).sum();
+        String mensaje = "Resumen de contenedores activos por tipo. Total: " + total;
+
         return new ApiResponse<>(
-                errorFactory.buildMeta(HttpStatus.OK, "Resumen de contenedores activos por tipo"),
+                errorFactory.buildMeta(HttpStatus.OK, mensaje),
                 summary,
                 null
         );
@@ -328,12 +342,26 @@ public class ContainerService {
     public ApiResponse<List<ContainerTypeSummaryDto>> getFullContainerSummary() {
         List<FullContainerCountProjection> raw = containerRepository.countFullContainersByType();
 
-        List<ContainerTypeSummaryDto> summary = raw.stream()
-                .map(p -> new ContainerTypeSummaryDto(p.getName(), p.getValue()))
+        Map<String, Long> conteoReal = raw.stream()
+                .collect(Collectors.toMap(
+                        p -> p.getName().toLowerCase(),
+                        FullContainerCountProjection::getValue
+                ));
+
+        ApiResponse<List<ContainerTypeResponseDto>> tiposResponse = containerTypeService.getAllContainerTypes();
+        List<String> todosLosTipos = tiposResponse.data() != null
+                ? tiposResponse.data().stream().map(ct -> ct.getName().toLowerCase()).toList()
+                : List.of();
+
+        List<ContainerTypeSummaryDto> summary = todosLosTipos.stream()
+                .map(tipo -> new ContainerTypeSummaryDto(tipo, conteoReal.getOrDefault(tipo, 0L)))
                 .toList();
 
+        long total = summary.stream().mapToLong(ContainerTypeSummaryDto::value).sum();
+        String mensaje = "Resumen de contenedores llenos por tipo. Total: " + total;
+
         return new ApiResponse<>(
-                errorFactory.buildMeta(HttpStatus.OK, "Resumen de contenedores llenos por tipo"),
+                errorFactory.buildMeta(HttpStatus.OK, mensaje),
                 summary,
                 null
         );
