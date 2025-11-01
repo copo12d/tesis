@@ -58,4 +58,10 @@ public class BatchRegController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
+    @GetMapping("/public/weekly-summary")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getWeeklyContainerSummary() {
+        ApiResponse<List<Map<String, Object>>> response = batchRegService.getWeeklyContainerSummary();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 }
