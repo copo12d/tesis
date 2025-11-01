@@ -7,4 +7,5 @@ export const DashboardAPI = {
   ContainerTypeSummary: () => api.get('/container/public/full-summary'),
   ProcessedBatchSummary: () => api.get('/batch/public/processed-summary'),
   getDailyContainerSummary: () => api.get('/batch-reg/public/daily-summary'),
+  getWeeklyContainerSummary: () => api.get('/batch-reg/public/weekly-summary'),
 };

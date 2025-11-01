@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.format.TextStyle;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Service
@@ -114,6 +116,11 @@ public class BatchRegService {
 
         Set<String> tiposActivos = new HashSet<>(tipos);
 
+        LocalDate hoy = LocalDate.now();
+        DayOfWeek primerDiaSemana = DayOfWeek.MONDAY;
+        LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(primerDiaSemana));
+        LocalDate finSemana = inicioSemana.plusDays(6);
+
         Map<DayOfWeek, Map<String, Integer>> agrupado = new EnumMap<>(DayOfWeek.class);
         for (DayOfWeek dia : DayOfWeek.values()) {
             Map<String, Integer> materiales = new HashMap<>();
@@ -124,10 +131,13 @@ public class BatchRegService {
         }
 
         for (BatchReg reg : registros) {
+            LocalDate fecha = reg.getCollectionDate().toLocalDate();
+            if (fecha.isBefore(inicioSemana) || fecha.isAfter(finSemana)) continue;
+
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
             if (!tiposActivos.contains(tipo)) continue;
 
-            DayOfWeek dia = reg.getCollectionDate().getDayOfWeek();
+            DayOfWeek dia = fecha.getDayOfWeek();
             Map<String, Integer> materiales = agrupado.get(dia);
             materiales.put(tipo, materiales.get(tipo) + 1);
         }
@@ -166,7 +176,10 @@ public class BatchRegService {
 
         Set<String> tiposActivos = new HashSet<>(tipos);
 
-        // Inicializar estructura por semana
+        LocalDate hoy = LocalDate.now();
+        Month mesActual = hoy.getMonth();
+        int anioActual = hoy.getYear();
+
         Map<Integer, Map<String, Integer>> agrupado = new LinkedHashMap<>();
         for (int semana = 1; semana <= 5; semana++) {
             Map<String, Integer> materiales = new HashMap<>();
@@ -177,12 +190,13 @@ public class BatchRegService {
         }
 
         for (BatchReg reg : registros) {
+            LocalDate fecha = reg.getCollectionDate().toLocalDate();
+            if (!fecha.getMonth().equals(mesActual) || fecha.getYear() != anioActual) continue;
+
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
             if (!tiposActivos.contains(tipo)) continue;
 
-            LocalDate fecha = reg.getCollectionDate().toLocalDate();
             int semanaDelMes = (fecha.getDayOfMonth() - 1) / 7 + 1;
-
             Map<String, Integer> materiales = agrupado.get(semanaDelMes);
             materiales.put(tipo, materiales.get(tipo) + 1);
         }
@@ -190,7 +204,7 @@ public class BatchRegService {
         List<Map<String, Object>> resultado = agrupado.entrySet().stream()
                 .map(entry -> {
                     Map<String, Object> fila = new LinkedHashMap<>();
-                    fila.put("month", "Semana " + entry.getKey());
+                    fila.put("week", "Semana " + entry.getKey());
                     entry.getValue().forEach(fila::put);
                     return fila;
                 })
