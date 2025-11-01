@@ -1,7 +1,7 @@
+version: '3.8'
 services:
   db:
     image: postgres:17
-    #hostname: db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -18,63 +18,64 @@ services:
     networks:
       - tesis-network
 
-  # backend:
-  #   build: ./backend
-  #   environment:
-  #     DOMAIN: ${DOMAIN}
-  #     DB_USER: ${DB_USER}
-  #     DB_PASSWORD: ${DB_PASSWORD}
-  #     DB_NAME: ${DB_NAME}
-  #     SECRET_KEY: ${SECRET_KEY}
-  #     EXP: ${EXP}
-  #     SUPERUSER_NAME: ${SUPERUSER_NAME}
-  #     SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
-  #     SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
-  #     EMAIL_USER: ${EMAIL_USER}
-  #     EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-  #     SPRING_PROFILES_ACTIVE: dev
-  #     STORAGE_PATH: /app/media
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./backend:/app
-  #     - ./backend/media:/app/media
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   networks:
-  #     - tesis-network
+  backend:
+    build: ./backend
+    environment:
+      DOMAIN: ${DOMAIN}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      EXP: ${EXP}
+      SUPERUSER_NAME: ${SUPERUSER_NAME}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
+      SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+      STORAGE_PATH: /app/media
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - ./backend/media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - tesis-network
 
-  # frontend:
-  #   build: ./frontend
-  #   ports:
-  #     - "5173:5173"
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   environment:
-  #     - VITE_API_URL=/api
-  #   networks:
-  #     - tesis-network
 
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: pgadmin4_container
-  #   ports:
-  #     - "5050:80"
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-  #     PGADMIN_SETUP_SERVER_NAME: db
-  #     PGADMIN_SETUP_SERVER_HOST: db
-  #     PGADMIN_SETUP_SERVER_PORT: 5432
-  #     PGADMIN_SETUP_SERVER_DB: ${DB_NAME}
-  #     PGADMIN_SETUP_SERVER_USERNAME: ${DB_USER}
-  #     PGADMIN_SETUP_SERVER_PASSWORD: ${DB_PASSWORD}
-  #   networks:
-  #     - tesis-network
-  #   depends_on:
-  #     - db
+    # frontend:
+    #   build: ./frontend
+    #   ports:
+    #     - "5173:5173"
+    #   volumes:
+    #     - ./frontend:/app
+    #     - /app/node_modules
+    #   environment:
+    #     - VITE_API_URL=/api
+    #   networks:
+    #     - tesis-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_SETUP_SERVER_NAME: db
+      PGADMIN_SETUP_SERVER_HOST: db
+      PGADMIN_SETUP_SERVER_PORT: 5432
+      PGADMIN_SETUP_SERVER_DB: ${DB_NAME}
+      PGADMIN_SETUP_SERVER_USERNAME: ${DB_USER}
+      PGADMIN_SETUP_SERVER_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - tesis-network
 
 networks:
   tesis-network:

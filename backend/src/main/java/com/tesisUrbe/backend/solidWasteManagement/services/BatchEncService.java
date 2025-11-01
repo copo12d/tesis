@@ -7,6 +7,7 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
+import com.tesisUrbe.backend.solidWasteManagement.dto.BatchCountDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
@@ -146,6 +147,16 @@ public class BatchEncService {
             throw new AccessDeniedException("No estás autenticado");
         }
         return batchRepository.existsByIdAndDeletedFalse(batchEncId);
+    }
+
+    public ApiResponse<BatchCountDto> getProcessedBatchCount() {
+        long count = batchRepository.countProcessedBatches();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Cantidad de lotes procesados"),
+                new BatchCountDto(count),
+                null
+        );
     }
 
     @Transactional(readOnly = true)
