@@ -1,32 +1,28 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { Box } from "@chakra-ui/react"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from "recharts"
 import { DashboardCard } from "./DashboardCard"
 import { DashboardAPI } from "../api/dashboard.api"
 
-const PALETTE = ["#16a34a", "#22c55e", "#84cc16", "#65a30d", "#a3e635", "#4d7c0f"]
+const PALETTE = ["#16a34a"]
 
 export function ProcessedBatchSummary({
   title = "Lotes Procesados",
   height = 140,
 }) {
-  const [data, setData] = useState([])
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
-    DashboardAPI.ProcessedBatchSummary() // Asegúrate de que este endpoint exista
-      .then(res => setData(res.data?.data ?? []))
-      .catch(() => setData([]))
+    DashboardAPI.ProcessedBatchSummary()
+      .then(res => setCount(res.data?.data?.processedBatchCount ?? 0))
+      .catch(() => setCount(0))
   }, [])
 
-  const series = useMemo(
-    () => data.map((d, i) => ({ ...d, fill: PALETTE[i % PALETTE.length] })),
-    [data]
-  )
-
-  const total = useMemo(
-    () => series.reduce((sum, d) => sum + (Number(d.value) || 0), 0),
-    [series]
-  )
+  const series = useMemo(() => {
+    return count > 0
+      ? [{ name: "Procesados", value: count, fill: PALETTE[0] }]
+      : []
+  }, [count])
 
   return (
     <DashboardCard title={title}>
@@ -53,10 +49,10 @@ export function ProcessedBatchSummary({
                     return (
                       <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
                         <tspan x={cx} y={cy} style={{ fill: "#0f172a", fontSize: "22px", fontWeight: 700 }}>
-                          {total}
+                          {count}
                         </tspan>
                         <tspan x={cx} y={cy + 16} style={{ fill: "rgba(15,23,42,0.7)", fontSize: "12px" }}>
-                          Lotes
+                          Procesados
                         </tspan>
                       </text>
                     )
@@ -68,8 +64,7 @@ export function ProcessedBatchSummary({
             <Tooltip
               formatter={(value, _name, props) => {
                 const v = Number(value) || 0
-                const pct = total ? ((v / total) * 100).toFixed(1) : 0
-                return [`${v} (${pct}%)`, props.payload.name]
+                return [`${v}`, props.payload.name]
               }}
             />
           </PieChart>
