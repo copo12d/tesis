@@ -149,6 +149,60 @@ public class BatchRegService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<List<Map<String, Object>>> getWeeklyContainerSummary() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        List<BatchReg> registros = batchRegRepository.findByDeletedFalse();
+
+        List<String> tipos = containerTypeRepository.findAllActive()
+                .stream()
+                .map(ct -> ct.getName().toLowerCase())
+                .toList();
+
+        Set<String> tiposActivos = new HashSet<>(tipos);
+
+        // Inicializar estructura por semana
+        Map<Integer, Map<String, Integer>> agrupado = new LinkedHashMap<>();
+        for (int semana = 1; semana <= 5; semana++) {
+            Map<String, Integer> materiales = new HashMap<>();
+            for (String tipo : tipos) {
+                materiales.put(tipo, 0);
+            }
+            agrupado.put(semana, materiales);
+        }
+
+        for (BatchReg reg : registros) {
+            String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
+            if (!tiposActivos.contains(tipo)) continue;
+
+            LocalDate fecha = reg.getCollectionDate().toLocalDate();
+            int semanaDelMes = (fecha.getDayOfMonth() - 1) / 7 + 1;
+
+            Map<String, Integer> materiales = agrupado.get(semanaDelMes);
+            materiales.put(tipo, materiales.get(tipo) + 1);
+        }
+
+        List<Map<String, Object>> resultado = agrupado.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> fila = new LinkedHashMap<>();
+                    fila.put("month", "Semana " + entry.getKey());
+                    entry.getValue().forEach(fila::put);
+                    return fila;
+                })
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Resumen semanal de contenedores generado correctamente"),
+                resultado,
+                null
+        );
+    }
+
     @Transactional
     public void save(BatchReg batchReg) {
         batchRegRepository.save(batchReg);
