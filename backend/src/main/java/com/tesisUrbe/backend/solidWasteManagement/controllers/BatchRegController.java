@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,5 +51,11 @@ public class BatchRegController {
                 .body(response);
     }
 
+    @GetMapping("/public/daily-summary")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getDailyContainerSummary() {
+        ApiResponse<List<Map<String, Object>>> response = batchRegService.getDailyContainerSummary();
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
 
 }
