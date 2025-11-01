@@ -61,6 +61,7 @@ const Dashboard = () => {
               <BarSummary
                 title="Resumen diario de contenedores"
                 subtitle="Semana actual"
+                fetch={DashboardAPI.getDailyContainerSummary}
                 fallbackData={[
                   { day: "Lunes", papel: 5, vidrio: 3, plastico: 7 },
                   { day: "Martes", papel: 6, vidrio: 4, plastico: 6 },
