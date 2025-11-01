@@ -6,6 +6,7 @@ import { Box, Heading, Grid, GridItem, Skeleton } from '@chakra-ui/react';
 import { ActiveContainersByTypeCard } from '../components/ActiveContainersByTypeCard';
 import { lazy, Suspense } from 'react';
 import { FullContainerTypeSummary } from '../components/FullContainerTypeSummary';
+import { ProcessedBatchSummary } from '../components/ProcessedBatchSummary';
 
 // Lazy: componentes pesados
 const Grafica_semanal = lazy(() => import('../components/Grafica_semanal'));
@@ -49,11 +50,14 @@ const Dashboard = () => {
             </Suspense>
           </GridItem>
           
+
           <GridItem colSpan={{ base: 12, md: 4 }}>
-            <Box w="100%">
-              <Carta value={card3.value} title="Cantidad de desechos" />
-            </Box>
+            {/* Card con PieChart (lazy) */}
+            <Suspense fallback={<Skeleton h="220px" borderRadius="md" />}>
+              <ProcessedBatchSummary />
+            </Suspense>
           </GridItem>
+          
         </Grid>
 
         {/* Gráfica semanal (lazy) */}

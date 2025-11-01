@@ -5,4 +5,5 @@ export const DashboardAPI = {
   getCards: () => api.get('/dashboard/cards'),
   getActiveContainerSummary: () => api.get('/container/public/active-summary'),
   ContainerTypeSummary: () => api.get('/container/public/full-summary'),
+  ProcessedBatchSummary: () => api.get('/batch/public/processed-summary'),
 };
