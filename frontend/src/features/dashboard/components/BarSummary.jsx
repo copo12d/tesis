@@ -8,44 +8,58 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../styles/grafica-semanal.css";
 
 const PALETTE = ["#3e87e0", "#ec1414", "#16a34a", "#f59e0b", "#8b5cf6", "#0ea5e9"];
 
-const simulatedData = [
-  { month: "semana 1", papel: 12, vidrio: 8, plastico: 15, organico: 20, metal: 5, carton: 10, ddd: 7 },
-  { month: "semana 2  ", papel: 12, vidrio: 8, plastico: 15, organico: 20, metal: 5, carton: 10, ddd: 7 },
-  { month: "semana 3", papel: 12, vidrio: 8, plastico: 15, organico: 20, metal: 5, carton: 10, ddd: 7 },
-  { month: "semana 4", papel: 12, vidrio: 8, plastico: 15, organico: 20, metal: 5, carton: 10, ddd: 7 },
-];
-
-export default function ChartBarMultiple({
-  data = simulatedData,
+export function BarSummary({
   title = "Comportamiento de contenedores",
-  subtitle = "Mes de Noviembre",
+  subtitle = "",
+  fetch = null,
+  fallbackData = [],
+  labelKey = "month",
+  height = 250,
 }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    if (!fetch) {
+      setData(fallbackData);
+      return;
+    }
+
+    fetch()
+      .then(res => {
+        const raw = res.data?.data;
+        if (Array.isArray(raw)) {
+          setData(raw);
+        } else {
+          setData(fallbackData);
+        }
+      })
+      .catch(() => setData(fallbackData));
+  }, [fetch, fallbackData]);
+
   const keys = useMemo(() => {
     if (!data || data.length === 0) return [];
-    return Object.keys(data[0]).filter(k => k !== "month");
-  }, [data]);
+    return Object.keys(data[0]).filter(k => k !== labelKey);
+  }, [data, labelKey]);
 
   return (
     <div className="weekly-chart-container">
-      <h3 className="weekly-chart-title" style={{ padding: "12px 16px", color:"#fff" }}>{title}</h3>
-      <p className="weekly-chart-subtitle" style={{ padding: "5px 16px", color:"#fff" }}>{subtitle}</p>
-      <ResponsiveContainer width="100%" height={250}>
+      <h3 className="weekly-chart-title" style={{ padding: "12px 16px", color: "#fff" }}>{title}</h3>
+      <p className="weekly-chart-subtitle" style={{ padding: "5px 16px", color: "#fff" }}>{subtitle}</p>
+      <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" />
           <Tooltip />
           <XAxis
-            dataKey="month"
+            dataKey={labelKey}
             stroke="rgba(255, 255, 255, 0.8)"
             fontSize={12}
             fontWeight="500"
-            //tickFormatter={(v) => String(v).slice(0, 3)}
           />
-          
           <YAxis stroke="rgba(255, 255, 255, 0.8)" fontSize={12} fontWeight="500" />
           <Legend />
           {keys.map((key, index) => (
