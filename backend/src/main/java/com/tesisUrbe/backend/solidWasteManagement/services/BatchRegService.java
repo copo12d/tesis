@@ -107,10 +107,12 @@ public class BatchRegService {
 
         List<BatchReg> registros = batchRegRepository.findByDeletedFalse();
 
-        List<String> tipos = containerTypeRepository.findAll()
+        List<String> tipos = containerTypeRepository.findAllActive()
                 .stream()
                 .map(ct -> ct.getName().toLowerCase())
                 .toList();
+
+        Set<String> tiposActivos = new HashSet<>(tipos);
 
         Map<DayOfWeek, Map<String, Integer>> agrupado = new EnumMap<>(DayOfWeek.class);
         for (DayOfWeek dia : DayOfWeek.values()) {
@@ -122,11 +124,12 @@ public class BatchRegService {
         }
 
         for (BatchReg reg : registros) {
-            DayOfWeek dia = reg.getCollectionDate().getDayOfWeek();
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
+            if (!tiposActivos.contains(tipo)) continue;
 
+            DayOfWeek dia = reg.getCollectionDate().getDayOfWeek();
             Map<String, Integer> materiales = agrupado.get(dia);
-            materiales.put(tipo, materiales.getOrDefault(tipo, 0) + 1);
+            materiales.put(tipo, materiales.get(tipo) + 1);
         }
 
         List<Map<String, Object>> resultado = Arrays.stream(DayOfWeek.values())
