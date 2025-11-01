@@ -16,9 +16,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.format.TextStyle;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +95,43 @@ public class BatchRegService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<List<Map<String, Object>>> getDailyContainerSummary() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        List<BatchReg> registros = batchRegRepository.findByDeletedFalse();
+
+        Map<DayOfWeek, Map<String, Integer>> agrupado = new EnumMap<>(DayOfWeek.class);
+
+        for (BatchReg reg : registros) {
+            DayOfWeek dia = reg.getCollectionDate().getDayOfWeek();
+            String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
+
+            agrupado.putIfAbsent(dia, new HashMap<>());
+            Map<String, Integer> materiales = agrupado.get(dia);
+            materiales.put(tipo, materiales.getOrDefault(tipo, 0) + 1);
+        }
+
+        List<Map<String, Object>> resultado = Arrays.stream(DayOfWeek.values())
+                .map(dia -> {
+                    Map<String, Object> fila = new LinkedHashMap<>();
+                    fila.put("day", dia.getDisplayName(TextStyle.FULL, new Locale("es")));
+                    Map<String, Integer> materiales = agrupado.getOrDefault(dia, new HashMap<>());
+                    materiales.forEach(fila::put);
+                    return fila;
+                })
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Resumen diario de contenedores generado correctamente"),
+                resultado,
+                null
+        );
+    }
 
     @Transactional
     public void save(BatchReg batchReg) {

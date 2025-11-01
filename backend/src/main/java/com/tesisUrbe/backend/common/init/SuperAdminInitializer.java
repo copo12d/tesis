@@ -12,6 +12,7 @@ import com.tesisUrbe.backend.settingsManagement.repository.UniversitySettingRepo
 import com.tesisUrbe.backend.usersManagement.repository.UserRepository;
 import com.tesisUrbe.backend.usersManagement.services.RoleService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,16 +21,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class SuperAdminInitializer implements CommandLineRunner {
 
+    @Value("${superuser.name}")
+    private String superuserName;
+
+    @Value("${superuser.email}")
+    private String superuserEmail;
+
+    @Value("${superuser.password}")
+    private String superuserPassword;
+
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final ReportSettingRepository reportRepo;
     private final UniversitySettingRepository universityRepo;
     private final UbicationSettingRepository ubicationRepo;
-
-    private static final String DEFAULT_USERNAME = "superuser";
-    private static final String DEFAULT_EMAIL = "superadmin@tesis.com";
-    private static final String DEFAULT_PASSWORD = "*User1234";
 
     public SuperAdminInitializer(UserRepository userRepository,
                                  RoleService roleService,
@@ -64,16 +70,17 @@ public class SuperAdminInitializer implements CommandLineRunner {
 
             User superAdmin = new User();
             superAdmin.setFullName("Super Admin");
-            superAdmin.setUserName(DEFAULT_USERNAME);
-            superAdmin.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
-            superAdmin.setEmail(DEFAULT_EMAIL);
+            superAdmin.setUserName(superuserName);
+            superAdmin.setEmail(superuserEmail);
+            superAdmin.setPassword(passwordEncoder.encode(superuserPassword));
             superAdmin.setRole(superRole);
             superAdmin.setVerified(false);
             superAdmin.setAccountLocked(false);
             superAdmin.setUserLocked(false);
             superAdmin.setDeleted(false);
             userRepository.save(superAdmin);
-            log.info("✅ Superusuario inicial creado: {} / {}", DEFAULT_USERNAME, DEFAULT_PASSWORD);
+
+            log.info("✅ Superusuario inicial creado: {} / {}", superuserName, superuserPassword);
         } else {
             log.info("ℹ Ya existen usuarios, no se crea superusuario por defecto");
         }

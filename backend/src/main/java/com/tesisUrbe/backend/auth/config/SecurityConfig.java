@@ -52,7 +52,8 @@ public class SecurityConfig {
                                         "/api/v1/container/public/**",
                                         "/api/v1/container/report/public",
                                         "/api/v1/waste/admin/register",
-                                        "/api/v1/container/public/report"
+                                        "/api/v1/container/public/report",
+                                        "/api/v1/batch-reg/public/**"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
