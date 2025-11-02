@@ -96,12 +96,25 @@ function App() {
 
           {/* Móviles (puedes dejar fallback={null}) */}
           <Route
+            path="/mobile/containers/:id"
+            element={
+              <PublicRoute>
+                <MobileRoute>
+                  <Suspense fallback={null}>
+                     <MobileReportPage />
+                  </Suspense>
+                </MobileRoute>
+              </PublicRoute>
+            }
+          />
+
+          <Route
             path="/mobile/containers/collect/"
             element={
               <PrivateRoute>
                 <MobileRoute>
                   <Suspense fallback={null}>
-                    <MobileCollectorPage />
+                     <MobileCollectorPage />
                   </Suspense>
                 </MobileRoute>
               </PrivateRoute>

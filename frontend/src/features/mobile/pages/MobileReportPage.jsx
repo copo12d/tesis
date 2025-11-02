@@ -3,13 +3,17 @@ import { MdQrCodeScanner } from "react-icons/md";
 import { useMobileContainer } from "../hooks/useMobileContainer";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useReportContainer } from "../hooks/useReportContainer";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import AuthContext from "@/context/AuthContext";
+import { useContext, useEffect } from "react";
 
 export default function MobileReportPage() {
   const { container, loading, error } = useMobileContainer();
   const { reportContainer, loading: reportingLoading } = useReportContainer();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { user, sessionExpired } = useContext(AuthContext) || {};
+  const isAuthenticated = !!user && sessionExpired === false;
 
   // Guarda el containerId en localStorage cuando esté disponible
   useEffect(() => {
@@ -18,12 +22,24 @@ export default function MobileReportPage() {
     }
   }, [container?.id]);
 
+  // Fija el contenedor actual en localStorage al abrir el reporte
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem("mobile.containerId", String(id));
+    }
+  }, [id]);
+
   const handleReport = async () => {
     if (!container?.serial) return;
     const ok = await reportContainer(container.serial);
     if (ok) {
       navigate("/mobile/thanks");
     }
+  };
+
+  const handleCollect = () => {
+    // No redirige automáticamente; solo al hacer clic
+    navigate("/mobile/containers/collect/");
   };
 
   return (
@@ -87,6 +103,12 @@ export default function MobileReportPage() {
             onConfirm={handleReport}
             loading={reportingLoading}
           />
+
+          {isAuthenticated && (
+            <Button colorPalette="teal" w="100%" mt={0} onClick={handleCollect}>
+              Recolectar
+            </Button>
+          )}
 
           <Text
             fontSize="sm"
