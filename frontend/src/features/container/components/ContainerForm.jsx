@@ -2,7 +2,7 @@ import { Stack, Button, Text, Field, Box, Spinner, } from "@chakra-ui/react";
 import { LiaBarcodeSolid, LiaRulerCombinedSolid } from "react-icons/lia";
 import { useContainerForm } from "../hooks/useContainerForm";
 import { useContainerTypes } from "../hooks/useContainerTypes";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap, Popup, } from "react-leaflet";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -38,11 +38,69 @@ export function ContainerForm({
   onSubmit,
   submitText = "Guardar",
   title,
+  mapMarker = null, // NUEVO: marker controlado por el padre
 }) {
   const { form, errors, setField, handleSubmit } = useContainerForm({
     initialValues,
     onSubmit,
   });
+
+  // --- NUEVO: controla la posición como en el ejemplo oficial ---
+  const [position, setPosition] = useState(null);
+  const markerRef = useRef(null);
+  const seededRef = useRef(false); // <- evita resembrar en cada render
+
+  // Sembrar posición inicial SOLO una vez (desde el form)
+  useEffect(() => {
+    if (seededRef.current) return;
+    const lat = Number(form?.latitude);
+    const lng = Number(form?.longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      setPosition([lat, lng]);
+    }
+    seededRef.current = true;
+  }, [form.latitude, form.longitude]);
+
+  // Helper: actualiza estado y form al mismo tiempo (no usar useEffect)
+  const applyCoords = useCallback((lat, lng) => {
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    setPosition([latNum, lngNum]);
+    setField("latitude", latNum);
+    setField("longitude", lngNum);
+  }, [setField]);
+
+  // Click en mapa -> mueve marcador y guarda en form
+  const onMapClick = useCallback((latlng) => {
+    applyCoords(latlng.lat, latlng.lng);
+  }, [applyCoords]);
+
+  const eventHandlers = useMemo(
+    () => ({
+      dragend() {
+        const marker = markerRef.current;
+        if (marker) {
+          const { lat, lng } = marker.getLatLng();
+          applyCoords(lat, lng);
+        }
+      },
+    }),
+    [applyCoords]
+  );
+
+  function LocationSelector() {
+    // Si el marker viene inyectado por el padre, no cambiamos coords desde el click
+    useMapEvents(
+      mapMarker
+        ? {}
+        : {
+            click(e) {
+              onMapClick(e.latlng);
+            },
+          }
+    );
+    return null;
+  }
 
   const busy = loading;
   const isEdit = !!initialValues?.id;
@@ -53,19 +111,12 @@ export function ContainerForm({
   const [mapZoom, setMapZoom] = useState(20);
   const hasCentered = useRef(false);
 
-  const [markerPosition, setMarkerPosition] = useState(
-    form.latitude && form.longitude
-      ? [Number(form.latitude), Number(form.longitude)]
-      : null
-  );
-
-  const markerRef = useRef(null);
-
   useEffect(() => {
     async function fetchMapCenter() {
       try {
         const res = await SettingsAPI.getUbication();
         const data = res.data.data || {};
+        console.log("Centro del mapa obtenido:", data);
         if (data.latitude && data.longitude) {
           setMapCenter([data.latitude, data.longitude]);
           setMapZoom(data.mapZoom ?? 20);
@@ -79,30 +130,6 @@ export function ContainerForm({
 
     fetchMapCenter();
   }, []);
-
-  const onMapClick = useCallback(
-    (latlng) => {
-      setMarkerPosition([latlng.lat, latlng.lng]);
-      setField("latitude", latlng.lat);
-      setField("longitude", latlng.lng);
-
-      setTimeout(() => {
-        if (markerRef.current) {
-          markerRef.current.openPopup();
-        }
-      }, 100);
-    },
-    [setField]
-  );
-
-  function LocationSelector() {
-    useMapEvents({
-      click(e) {
-        onMapClick(e.latlng);
-      },
-    });
-    return null;
-  }
 
   return (
     <>
@@ -175,7 +202,7 @@ export function ContainerForm({
                   w: "100%",
                   pl: 2,
                   _placeholder: { pl: 2 },
-                  type: "number",
+                  type: "text",
                 }}
               />
 
@@ -222,58 +249,35 @@ export function ContainerForm({
                         center={mapCenter}
                         zoom={mapZoom}
                         scrollWheelZoom={false}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          position: "relative",
-                        }}
+                        style={{ width: "100%", height: "100%", position: "relative" }}
                       >
                         <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          attribution='&copy; OpenStreetMap contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <LocationSelector />
-                        {markerPosition && (
-                          <Marker
-                            position={markerPosition}
-                            draggable={true}
-                            ref={markerRef}
-                            eventHandlers={{
-                              dragend: (e) => {
-                                const latlng = e.target.getLatLng();
-                                setMarkerPosition([latlng.lat, latlng.lng]);
-                                setField("latitude", latlng.lat);
-                                setField("longitude", latlng.lng);
-
-                                setTimeout(() => {
-                                  markerRef.current?.openPopup();
-                                }, 100);
-                              },
-                            }}
-                          >
-                            <Popup
-                              autoClose={false}
-                              closeOnClick={false}
-                              closeButton={false}
-                              keepInView={true}
+                        {/* NUEVO: usar el marker inyectado si existe; si no, el interno */}
+                        {mapMarker ?? (
+                          position && (
+                            <Marker
+                              position={position}
+                              draggable
+                              ref={markerRef}
+                              eventHandlers={eventHandlers}
                             >
-                              <Text fontSize="sm">
-                                Latitud: {markerPosition[0].toFixed(6)}
-                                <br />
-                                Longitud: {markerPosition[1].toFixed(6)}
-                              </Text>
-                            </Popup>
-                          </Marker>
+                              <Popup minWidth={120}>
+                                <Text fontSize="sm">
+                                  Latitud: {position[0].toFixed(6)}
+                                  <br />
+                                  Longitud: {position[1].toFixed(6)}
+                                </Text>
+                              </Popup>
+                            </Marker>
+                          )
                         )}
                       </MapContainer>
                     ) : (
-                      <Box
-                        width="100%"
-                        height="100%"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
+                      <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center">
                         <Spinner size="lg" color="green.500" />
                       </Box>
                     )}
