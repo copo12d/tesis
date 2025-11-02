@@ -1,5 +1,4 @@
 import '../styles/dashboard.css';
-import { useDashboard } from '../hooks/useDashboard';
 import { Box, Heading, Grid, GridItem, Skeleton } from '@chakra-ui/react';
 import { lazy, Suspense } from 'react';
 import { DashboardAPI } from '../api/dashboard.api';
@@ -8,7 +7,6 @@ const PieSummary = lazy(() => import('../components/PieSummaryCard').then(m => (
 const BarSummary = lazy(() => import('../components/BarSummary').then(m => ({ default: m.BarSummary })));
 
 const Dashboard = () => {
-  const { dashboardData } = useDashboard();
 
   return (
     <Box as="main" p={{ base: 4, md: 6 }} bg="gray.50" h="100vh" overflowY="auto">
