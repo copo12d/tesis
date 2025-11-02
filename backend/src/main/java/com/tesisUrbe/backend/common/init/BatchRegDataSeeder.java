@@ -80,6 +80,7 @@
 //            contenedores.add(c);
 //        }
 //
+//        // ✅ Lote en progreso
 //        BatchEnc lote = new BatchEnc();
 //        lote.setCreationDate(LocalDateTime.now().minusDays(7));
 //        lote.setTotalWeight(BigDecimal.ZERO);
@@ -91,14 +92,8 @@
 //        LocalDateTime baseDate = LocalDateTime.now().withHour(10);
 //        Random rand = new Random();
 //
-//        for (int i = 0; i < 50; i++) {
+//        for (int i = 0; i < 100; i++) {
 //            LocalDateTime fecha = baseDate.minusDays(rand.nextInt(7));
-//            DayOfWeek dia = fecha.getDayOfWeek();
-//
-//            if (dia == DayOfWeek.WEDNESDAY) {
-//                continue;
-//            }
-//
 //            BatchReg reg = new BatchReg();
 //            reg.setCollectionDate(fecha);
 //            reg.setWeight(BigDecimal.valueOf(10 + rand.nextInt(90)));
@@ -109,6 +104,44 @@
 //            batchRegRepo.save(reg);
 //        }
 //
-//        log.info("✅ Datos ficticios generados para probar el resumen diario (miércoles excluido)");
+//        BatchEnc loteCompleto = new BatchEnc();
+//        loteCompleto.setCreationDate(LocalDateTime.now().minusDays(14));
+//        loteCompleto.setTotalWeight(BigDecimal.ZERO);
+//        loteCompleto.setStatus(BatchStatus.PROCESSED);
+//        loteCompleto.setCreatedBy(creator);
+//        loteCompleto.setDeleted(false);
+//        batchEncRepo.save(loteCompleto);
+//
+//        BigDecimal totalWeight = BigDecimal.ZERO;
+//        Set<Integer> usados = new HashSet<>();
+//
+//        for (int i = 0; i < 60; i++) {
+//            LocalDateTime fecha = baseDate.minusDays(rand.nextInt(14));
+//            int index = rand.nextInt(contenedores.size());
+//            usados.add(index);
+//
+//            BatchReg reg = new BatchReg();
+//            BigDecimal peso = BigDecimal.valueOf(50 + rand.nextInt(50));
+//            reg.setCollectionDate(fecha);
+//            reg.setWeight(peso);
+//            reg.setContainer(contenedores.get(index));
+//            reg.setBatchEnc(loteCompleto);
+//            reg.setCreatedBy(creator);
+//            reg.setDeleted(false);
+//            batchRegRepo.save(reg);
+//
+//            totalWeight = totalWeight.add(peso);
+//        }
+//
+//        loteCompleto.setTotalWeight(totalWeight);
+//        batchEncRepo.save(loteCompleto);
+//
+//        for (Integer index : usados) {
+//            Container c = contenedores.get(index);
+//            c.setStatus(ContainerStatus.FULL);
+//            containerRepo.save(c);
+//        }
+//
+//        log.info("✅ Datos ficticios generados: lote en progreso, lote completado y contenedores llenos");
 //    }
 //}
