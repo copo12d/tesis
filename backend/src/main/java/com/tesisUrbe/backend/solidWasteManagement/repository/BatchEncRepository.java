@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +45,6 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
             @Param("fechaFin") LocalDate fechaFin
     );
 
-    List<BatchEnc> findByCreationDateBetweenAndDeletedFalse(LocalDate start, LocalDate end);
-
-    List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDate start);
-
-    List<BatchEnc> findByCreationDateLessThanEqualAndDeletedFalse(LocalDate end);
-
     List<BatchEnc> findByDeletedFalse();
 
     List<BatchEnc> findByStatusAndDeletedFalse(BatchStatus status);
@@ -60,5 +55,10 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
     WHERE b.deleted = false AND b.status = com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus.PROCESSED
 """)
     long countProcessedBatches();
+
+    List<BatchEnc> findByCreationDateLessThanAndDeletedFalse(LocalDateTime end);
+    List<BatchEnc> findByCreationDateBetweenAndDeletedFalse(LocalDateTime start, LocalDateTime end);
+    List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDateTime start);
+
 
 }

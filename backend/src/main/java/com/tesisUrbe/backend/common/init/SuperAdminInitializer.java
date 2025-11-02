@@ -112,7 +112,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
             university.setAddress3("Venezuela. Código Postal: 4005");
             university.setPhone("Teléfonos: +582610000000 / +582610000000");
             university.setEmail("example@universidad.edu.ve");
-            university.setLogoPath("/images/logo.png");
+            university.setLogoPath("/logo.png");
 
             universityRepo.save(university);
             log.info("✅ Datos institucionales inicializados");
