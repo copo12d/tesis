@@ -4,57 +4,26 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContainerForm } from "../components/ContainerForm";
 import { ContainerAPI } from "../api/container.api";
 import { Marker, Popup } from "react-leaflet";
+import { useContainerEdit } from "../hooks/useContainerEdit";
+import { toast } from "react-hot-toast"; // <-- añadido
 
 export function ContainerEdit() {
   const { id: idParam } = useParams();
   const id = Number(idParam);
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [container, setContainer] = useState(null);
-  const [error, setError] = useState("");
-  // NUEVO: coords controladas por el padre
-  const [coords, setCoords] = useState(null);
 
-  useEffect(() => {
-    if (!Number.isFinite(id)) {
-      setError("ID inválido.");
-      setLoading(false);
-      return;
-    }
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await ContainerAPI.getById(id);
-        const data = res?.data?.data ?? res?.data ?? null;
-        setContainer(data);
+  const {
+    loading,
+    container,
+    error,
+    coords,
+    setCoords,
+    markerHandlers,
+    makeUpdatePayload,
+  } = useContainerEdit(id);
 
-        const lat = Number(data?.latitude);
-        const lng = Number(data?.longitude);
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          setCoords([lat, lng]);
-        }
-      } catch {
-        setError("No se pudo cargar el contenedor.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [id]);
-
-  // Handlers del marker (definidos en el padre)
-  const markerHandlers = useMemo(
-    () => ({
-      dragend(e) {
-        const { lat, lng } = e.target.getLatLng();
-        setCoords([lat, lng]);
-      },
-    }),
-    []
-  );
-
-  // Texto del popup
   const popup = (
     <Popup>
       Ubicación del contenedor
@@ -87,14 +56,9 @@ export function ContainerEdit() {
             loading={updating}
             submitText="Actualizar contenedor"
             title="Editar contenedor"
-            // Inyectamos un Marker controlado por el padre (draggable y con handlers)
             mapMarker={
               coords ? (
-                <Marker
-                  position={coords}
-                  draggable
-                  eventHandlers={markerHandlers}
-                >
+                <Marker position={coords} draggable eventHandlers={markerHandlers}>
                   {popup}
                 </Marker>
               ) : null
@@ -102,15 +66,16 @@ export function ContainerEdit() {
             onSubmit={async (values) => {
               try {
                 setUpdating(true);
-                // Asegura enviar las coords actuales controladas por el padre
-                const payload = {
-                  ...values,
-                  ...(Array.isArray(coords)
-                    ? { latitude: coords[0], longitude: coords[1] }
-                    : {}),
-                };
-                const ok = await ContainerAPI.update(id, payload);
-                if (ok !== false) navigate("/container/list");
+                const payload = makeUpdatePayload(values);
+                const res = await ContainerAPI.update(id, payload); // <-- capturar respuesta
+                if (res !== false) {
+                  const msg =
+                    res?.data?.message ??
+                    res?.message ??
+                    "Contenedor actualizado correctamente";
+                  toast.success(msg); // <-- toast con mensaje del API
+                  navigate("/container/list");
+                }
               } finally {
                 setUpdating(false);
               }

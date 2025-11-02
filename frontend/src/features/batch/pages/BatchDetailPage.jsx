@@ -1,13 +1,14 @@
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { Box, Stack, Heading, Text, Badge, Button, Flex } from "@chakra-ui/react";
 import { useBatchDetails } from "../hooks/useBatchDetails";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BatchAPI } from "../api/api.batch";
 import { toast } from "react-hot-toast";
 import { GenericTable } from "@/components/GenericTable";
 import { MdInventory2 } from "react-icons/md";
 import { useBatchHeader } from "../hooks/useBatchHeader";
 import { useProcessBatch } from "../hooks/useProcessBatch";
+import { ReportsAPI } from "../../Reports/api/api.reports"; // <-- importar API de reportes
 
 export function BatchDetailPage() {
   const { id } = useParams();
@@ -27,11 +28,34 @@ export function BatchDetailPage() {
   const { header, loadingHeader, refetchHeader } = useBatchHeader(id);
   const { processBatch } = useProcessBatch();
 
+  const downloadBatchDetails = async () => {
+    try {
+      const res = await ReportsAPI.downloadBatch(Number(id));
+      const blob = res?.data instanceof Blob ? res.data : new Blob([res?.data]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${header?.description}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("No se pudo descargar el reporte de detalles.");
+    }
+  };
+
   const handleProcess = async () => {
-    const ok = await processBatch(id);
-    if (ok) {
-      refetch();
-      refetchHeader();
+    setProcessing(true);
+    try {
+      const ok = await processBatch(id);
+      if (ok) {
+        await downloadBatchDetails();   // <-- descargar reporte de detalles
+        refetch();
+        refetchHeader();
+      }
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -116,7 +140,7 @@ export function BatchDetailPage() {
           boxShadow="md"
           ml={8}
         >
-          Procesar
+          {header?.status === "Lote Procesado" ? "Procesado" : "Procesar"}
         </Button>
       </Box>
 
@@ -144,6 +168,7 @@ export function BatchDetailPage() {
           totalItems={pagination.totalElements}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
+          showAddButton={false}
         />
       </Box>
     </Box>
