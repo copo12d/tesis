@@ -5,6 +5,9 @@ export const ContainerAPI = {
   list: (params = {}) =>
     api.get("/container/admin/all", { params }),
 
+  // Obtener contenedor por ID
+  getById: (id) => api.get(`/container/admin/${id}`),
+
   // Crear contenedor
   create: (payload) => api.post("/container/admin/register", payload),
 
@@ -16,4 +19,7 @@ export const ContainerAPI = {
 
   // Eliminar contenedor
   delete: (id) => api.delete(`/container/admin/delete/${id}`),
+
+  // actualizar contenedor
+  update: (id, payload) => api.put(`/container/admin/update/${id}`, payload),
 };

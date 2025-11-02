@@ -28,6 +28,7 @@ const ReportsPage = lazy(() => import('./features/Reports/pages/ReportsPage').th
 
 const ContainerList = lazy(() => import('./features/container/pages/ContainerList').then(m => ({ default: m.ContainerList })));
 const ContainerCreate = lazy(() => import('./features/container/pages/ContainerCreate').then(m => ({ default: m.ContainerCreate })));
+const ContainerEdit = lazy(() => import('./features/container/pages/ContainerEdit').then(m => ({ default: m.ContainerEdit })));
 
 const ContainerTypeList = lazy(() => import('./features/containerType/pages/ContainerTypeList').then(m => ({ default: m.ContainerTypeList })));
 const ContainerTypeCreate = lazy(() => import('./features/containerType/pages/ContainerTypeCreate').then(m => ({ default: m.ContainerTypeCreate })));
@@ -86,6 +87,7 @@ function App() {
             <Route path="reports" element={<Suspense fallback={<PageContentSkeleton />}><ReportsPage /></Suspense>} />
             <Route path="container/list" element={<Suspense fallback={<PageContentSkeleton />}><ContainerList /></Suspense>} />
             <Route path="container/new" element={<Suspense fallback={<PageContentSkeleton />}><ContainerCreate /></Suspense>} />
+            <Route path="container/edit/:id" element={<Suspense fallback={<PageContentSkeleton />}><ContainerEdit /></Suspense>} />
             <Route path="batch/list" element={<Suspense fallback={<PageContentSkeleton />}><BatchListPage /></Suspense>} />
             <Route path="batch/create" element={<Suspense fallback={<PageContentSkeleton />}><BatchCreate /></Suspense>} />
             <Route path="batch/details/:id" element={<Suspense fallback={<PageContentSkeleton />}><BatchDetailPage /></Suspense>} />
