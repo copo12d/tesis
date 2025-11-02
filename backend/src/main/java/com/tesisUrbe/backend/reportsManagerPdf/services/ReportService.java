@@ -132,11 +132,15 @@ public class ReportService {
 
         List<BatchEnc> batches;
         if (fechaInicioDate != null && fechaFinDate != null) {
-            batches = batchEncRepository.findByCreationDateBetweenAndDeletedFalse(fechaInicioDate, fechaFinDate);
+            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
+            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay();
+            batches = batchEncRepository.findByCreationDateBetweenAndDeletedFalse(inicioDateTime, finDateTime);
         } else if (fechaInicioDate != null) {
-            batches = batchEncRepository.findByCreationDateGreaterThanEqualAndDeletedFalse(fechaInicioDate);
+            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
+            batches = batchEncRepository.findByCreationDateGreaterThanEqualAndDeletedFalse(inicioDateTime);
         } else if (fechaFinDate != null) {
-            batches = batchEncRepository.findByCreationDateLessThanEqualAndDeletedFalse(fechaFinDate);
+            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay(); // exclusivo
+            batches = batchEncRepository.findByCreationDateLessThanAndDeletedFalse(finDateTime);
         } else {
             batches = batchEncRepository.findByDeletedFalse();
         }

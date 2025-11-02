@@ -88,7 +88,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
         if (reportRepo.count() == 0) {
             ReportSetting report = new ReportSetting();
             report.setId(1L);
-            report.setTableHeaderColor("#0000FF");
+            report.setTableHeaderColor("#0c5d56");
             report.setHeaderTextColor("#FFFFFF");
             report.setRecordColor("#000000");
             reportRepo.save(report);
@@ -112,7 +112,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
             university.setAddress3("Venezuela. Código Postal: 4005");
             university.setPhone("Teléfonos: +582610000000 / +582610000000");
             university.setEmail("example@universidad.edu.ve");
-            university.setLogoPath("/images/logo.png");
+            university.setLogoPath("/logo.png");
 
             universityRepo.save(university);
             log.info("✅ Datos institucionales inicializados");
