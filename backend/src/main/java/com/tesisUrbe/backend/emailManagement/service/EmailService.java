@@ -40,9 +40,6 @@ public class EmailService implements IEmailService {
     @Value("${EMAIL_USER}")
     private String emailUser;
 
-    @Value("${api.base-path}")
-    private String apiVersion;
-
     @Value("${DOMAIN}")
     private String domain;
 
@@ -154,7 +151,7 @@ public class EmailService implements IEmailService {
     }
 
     private void sendRecoveryEmail(User user, String pathSegment, EmailList template, String token) {
-        String link = LinkBuilderUtils.buildEmailLink(domain, apiVersion, pathSegment, user.getId(), token);
+        String link = LinkBuilderUtils.buildEmailLink(domain,  pathSegment, user.getId(), token);
         MailUtils.sendEmail(mailSender, emailUser, user.getEmail(), template.getSubject(), template.getMessage(user.getUserName(), link));
     }
 
