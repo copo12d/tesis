@@ -80,13 +80,15 @@ const Dashboard = () => {
             <Suspense fallback={<Skeleton h="340px" borderRadius="md" />}>
               <BarSummary
                 title="Resumen semanal de contenedores"
-                subtitle="Semana actual"
+                subtitle="Mes actual"
+                fetch={DashboardAPI.getWeeklyContainerSummary}
                 fallbackData={[
-                  { month: "Semana 1", papel: 12, vidrio: 8, plastico: 15 },
-                  { month: "Semana 2", papel: 10, vidrio: 6, plastico: 12 },
-                  { month: "Semana 3", papel: 14, vidrio: 9, plastico: 18 },
-                  { month: "Semana 4", papel: 11, vidrio: 7, plastico: 13 },
+                  { week: "Semana 1", papel: 12, vidrio: 8, plastico: 15 },
+                  { week: "Semana 2", papel: 10, vidrio: 6, plastico: 12 },
+                  { week: "Semana 3", papel: 14, vidrio: 9, plastico: 18 },
+                  { week: "Semana 4", papel: 11, vidrio: 7, plastico: 13 },
                 ]}
+                labelKey="week"
               />
             </Suspense>
           </GridItem>
