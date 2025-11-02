@@ -65,11 +65,8 @@ export function GenericTable({
   cardRadius = "md",
   // ---- Add button props ----
   onAdd,
-  // sortDir,
-  // onToggleSortDir,
-  // sortAscLabel = "Ascendente",
-  // sortDescLabel = "Descendente",
-  // showSortButton = true,
+  showAddButton = true,        // <- NUEVO: mostrar/ocultar botón
+  addButtonText = "+ Añadir",  // <- NUEVO: texto del botón
   // ---- Pagination props ----
   pagination = true,
   page = 1,
@@ -81,9 +78,9 @@ export function GenericTable({
   menuItems = [],
   menuButtonText = "Open",
   searchTerm = "",
-  onSearchTermChange = () => { },
+  onSearchTermChange = () => {},
   searchType = "",
-  onSearchTypeChange = () => { },
+  onSearchTypeChange = () => {},
 }) {
   const paginatedItems =
     pagination && totalPages
@@ -188,7 +185,7 @@ export function GenericTable({
       <Card.Root
         w="100%"
         maxW="100%"
-        maxH="600px" // <-- Ajusta este valor según tu diseño
+        maxH="600px"
         bg={cardBg}
         borderColor={cardBorderColor}
         borderWidth="1px"
@@ -212,7 +209,12 @@ export function GenericTable({
           </Box>
         )}
 
-        <Flex justify="space-between" align="center" px={6} pt={3}>
+        <Flex
+          justify={showAddButton && onAdd ? "space-between" : "flex-start"}  // <- ajusta layout
+          align="center"
+          px={6}
+          pt={3}
+        >
           <Group w="400px" gap={"unset"}>
             <Menu.Root>
               <Menu.Trigger asChild gap={"unset"}>
@@ -285,9 +287,12 @@ export function GenericTable({
               <FaSearch />
             </IconButton>
           </Group>
-          <Button colorPalette="blue" size="sm" onClick={onAdd} px={3}>
-            + Añadir
-          </Button>
+
+          {showAddButton && onAdd && (                                      // <- condicional
+            <Button colorPalette="blue" size="sm" onClick={onAdd} px={3}>
+              {addButtonText}
+            </Button>
+          )}
         </Flex>
         <Card.Body p={6}>
           {TableContent}

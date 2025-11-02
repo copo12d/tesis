@@ -13,6 +13,8 @@ import { MdBatchPrediction } from "react-icons/md";
 import { useState } from "react";
 import { useDownloadUsersReport } from "../hooks/useDownloadUsersReport";
 import { useDownloadContainersReport } from "../hooks/useDownloadContainersReport";
+import { useDownloadBatchDetailsReport } from "../hooks/useDownloadBatchDetailsReport";
+import { useDownloadBatchesReport } from "../hooks/useDownloadBatchesReport";
 import ReportDialog from "../components/ReportDialog";
 
 function downloadFile(response, filename = "reporte.xlsx") {
@@ -29,18 +31,33 @@ function downloadFile(response, filename = "reporte.xlsx") {
 export function ReportsPage() {
   const [sortBy, setSortBy] = useState("id");
   const [sortDir, setSortDir] = useState("ASC");
+
   const { downloadUsersReport, loading: loadingUsers } = useDownloadUsersReport();
   const { downloadContainersReport, loading: loadingContainers } = useDownloadContainersReport();
 
-  const handleDownload = async (action, label, params = {}) => {
-    try {
-      const response = await action(params);
-      downloadFile(response, `${label}.pdf`);
-      toast.success(`El reporte "${label}" se ha descargado.`);
-    } catch {
-      toast.error("No se pudo descargar el reporte.");
-    }
-  };
+  // Detalle de lote (combo)
+  const {
+    downloadBatchDetails,
+    loading: loadingBatchDetails,
+    batches,
+    loadingBatches,
+  } = useDownloadBatchDetailsReport();
+  const [batchId, setBatchId] = useState("");
+
+  const batchOptions = (batches || []).map((b) => ({
+    value: b.id,
+    label: b.description || `Lote #${b.id}`,
+  }));
+
+  // Todos los lotes (rango de fechas opcional)
+  const {
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    loading: loadingAllBatches,
+    downloadBatchesReport,
+  } = useDownloadBatchesReport();
 
   const handleDownloadContainers = async ({ sortBy, sortDir }) => {
     try {
@@ -58,30 +75,67 @@ export function ReportsPage() {
       downloadFile(response, "reporte_usuarios.pdf");
       toast.success("El reporte de usuarios se ha descargado.");
     } catch {
-      // El toast de error ya lo muestra el hook
+      // manejado por el hook
+    }
+  };
+
+  const handleDownloadBatchDetails = async ({ batchId }) => {
+    const id = Number(batchId);
+    const response = await downloadBatchDetails({ batchId: id });
+    downloadFile(response, `detalle-lote-${id}.pdf`);
+    toast.success("El detalle del lote se ha descargado.");
+  };
+
+  const handleDownloadAllBatches = async ({ startDate, endDate }) => {
+    try {
+      const res = await downloadBatchesReport({ startDate, endDate });
+      const suffix =
+        (startDate ? `_${startDate}` : "") + (endDate ? `_${endDate}` : "");
+      downloadFile(res, `reporte-lotes${suffix || "_todos"}.pdf`);
+      toast.success("El reporte de lotes se ha descargado.");
+    } catch {
+      toast.error("No se pudo descargar el reporte de lotes.");
     }
   };
 
   const reports = [
     {
-      label: "Reporte de lotes",
+      label: "Reporte de lotes (todos)",
       icon: MdBatchPrediction,
       iconColor: "teal.500",
-      dialog: false,
-      onClick: () => handleDownload(ReportsAPI.downloadBatch1, "Reporte Batch 1"),
+      dialog: true,
+      onDownload: handleDownloadAllBatches,
+      loading: loadingAllBatches,
+      withDateRange: true,
+      startDate,
+      setStartDate,
+      endDate,
+      setEndDate,
+      // sin ordenamiento
+      sortByOptions: [],
+      sortDirOptions: [],
+      withSorting: false,
     },
     {
-      label: "Reporte Batch 2",
+      label: "Detalle de Lote",
       icon: MdBatchPrediction,
       iconColor: "teal.400",
-      dialog: false,
-      onClick: () => handleDownload(ReportsAPI.downloadBatch2, "Reporte Batch 2"),
+      dialog: true,
+      onDownload: handleDownloadBatchDetails,
+      loading: loadingBatchDetails || loadingBatches,
+      withBatchSelect: true,
+      batchId,
+      setBatchId,
+      batchOptions,
+      sortByOptions: [],
+      sortDirOptions: [],
+      withSorting: false,
     },
     {
       label: "Reporte de Usuarios",
       icon: FiUsers,
       iconColor: "teal.600",
-      dialog: true, // Cambia a true para usar el dialog
+      dialog: true,
       onDownload: handleDownloadUsers,
       loading: loadingUsers,
       sortByOptions: [
@@ -138,6 +192,16 @@ export function ReportsPage() {
                 setSortDir={setSortDir}
                 sortByOptions={report.sortByOptions}
                 sortDirOptions={report.sortDirOptions}
+                withBatchSelect={report.withBatchSelect}
+                batchId={report.batchId}
+                setBatchId={report.setBatchId}
+                batchOptions={report.batchOptions}
+                withDateRange={report.withDateRange}
+                startDate={report.startDate}
+                setStartDate={report.setStartDate}
+                endDate={report.endDate}
+                setEndDate={report.setEndDate}
+                withSorting={report.withSorting}
               />
             ) : (
               <Button

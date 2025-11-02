@@ -53,7 +53,35 @@ export function NotificationsManager({
           { duration: 4000, icon: <FiInfo />,}
         );
       } else {
-        toast(message || "No hay contenedores llenos", { duration: 4000, icon: <FiInfo /> });
+        const text = message || "No hay contenedores llenos";
+        toast(
+          (t) => (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ flex: 1 }}>{text}</div>
+              <button
+                type="button"
+                onClick={() => toast.dismiss(t.id)}
+                title="Cerrar"
+                aria-label="Cerrar notificación"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#334155",
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+          ),
+          { duration: 4000, icon: <FiInfo /> }
+        );
       }
     },
   });
