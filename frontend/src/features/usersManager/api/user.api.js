@@ -15,10 +15,13 @@ export const UsersAPI = {
   delete: (id) => api.delete(`/users/admin/${id}`),
   get: (id) => api.get(`/users/admin/${id}`),
   update: (id, payload) => api.put(`/users/admin/${id}`, payload),
-
+  getIdByUsername: (username) =>
+  api.get("/users/public/idByUsername", {
+    params: { username },
+  }),
   advanceSearch: ({
     searchTerm = "",
-    searchType = "username", // "username" o "name"
+    searchType = "username", 
     page = 0,
     size = 10,
     sortBy = "id",
@@ -47,8 +50,8 @@ export async function availableRolesFor(currentRole) {
     if (!Array.isArray(data?.data)) return [];
 
     return data.data.map((r) => ({
-      value: r.value, // se usa el value para el select
-      label: r.name, // se conserva tal cual viene de la BDD
+      value: r.value, 
+      label: r.name, 
     }));
   } catch (error) {
     console.error("Error al obtener roles:", error);
