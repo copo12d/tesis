@@ -88,7 +88,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
         if (reportRepo.count() == 0) {
             ReportSetting report = new ReportSetting();
             report.setId(1L);
-            report.setTableHeaderColor("#0000FF");
+            report.setTableHeaderColor("#0c5d56");
             report.setHeaderTextColor("#FFFFFF");
             report.setRecordColor("#000000");
             reportRepo.save(report);
