@@ -8,16 +8,20 @@ import {
   Stack,
   HStack,
   Spinner,
+  Field,
+  NativeSelect,
+  Input,
 } from "@chakra-ui/react";
 import MenuSelect from "./MenuSelect";
-import { useState } from "react";
+import React, { useState } from "react";
+import { StyledSelectField } from "@/components/ui/StyledSelectField"; // + import
 
 export default function ReportDialog({
   icon,
   iconColor,
   label,
   onDownload,
-  loading = false, // <-- nuevo prop
+  loading = false,
   sortBy: initialSortBy,
   setSortBy: setParentSortBy,
   sortDir: initialSortDir,
@@ -30,9 +34,21 @@ export default function ReportDialog({
     { label: "Ascendente", value: "ASC" },
     { label: "Descendente", value: "DESC" },
   ],
+  // NUEVO: mostrar/ocultar controles de orden
+  withSorting = true,
   extraFilters = [],
   onExtraFilterChange = () => {},
+  withBatchSelect = false,
+  batchId,
+  setBatchId,
+  batchOptions = [],
+  withDateRange = false,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
 }) {
+  // NUEVO: control local del diálogo
   const [open, setOpen] = useState(false);
   const [sortBy, setSortBy] = useState(initialSortBy);
   const [sortDir, setSortDir] = useState(initialSortDir);
@@ -67,7 +83,10 @@ export default function ReportDialog({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(e) => setOpen(e.open)}
+    >
       <Dialog.Trigger asChild>
         <Button
           w="100%"
@@ -128,21 +147,88 @@ export default function ReportDialog({
               </HStack>
             </Dialog.Header>
             <Dialog.Body p={4} bg="white" color={"blackAlpha.700"}>
-              <Stack spacing={4}>
-                <MenuSelect
-                  label="Ordenar por"
-                  value={sortBy}
-                  options={sortByOptions}
-                  onChange={setSortBy}
-                  icon={sortByOptions.find(opt => opt.icon)?.icon}
-                />
-                <MenuSelect
-                  label="Dirección de orden"
-                  value={sortDir}
-                  options={sortDirOptions}
-                  onChange={setSortDir}
-                  icon={sortDirOptions.find(opt => opt.icon)?.icon}
-                />
+              <Stack gap={4}>
+                {/* Rango de fechas (opcional) */}
+                {withDateRange && (
+                  <>
+                    <Field.Root>
+                      <Field.Label>Fecha inicio</Field.Label>
+                      <Input
+                        type="date"
+                        value={startDate ?? ""}
+                        onChange={(e) => setStartDate?.(e.target.value)}
+                        variant="filled"
+                        bg="teal.500"
+                        color="blackAlpha.900"
+                        borderColor="teal.300"
+                        pl={2}
+                        _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)" }}
+                        sx={{
+                          "::-webkit-calendar-picker-indicator": {
+                            filter:
+                              "invert(28%) sepia(66%) saturate(296%) hue-rotate(120deg) brightness(92%) contrast(94%)",
+                            cursor: "pointer",
+                          },
+                        }}
+                      />
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label>Fecha fin</Field.Label>
+                      <Input
+                        type="date"
+                        value={endDate ?? ""}
+                        onChange={(e) => setEndDate?.(e.target.value)}
+                        variant="filled"
+                        bg="teal.500"
+                        color="blackAlpha.900"
+                        borderColor="teal.300"
+                        pl={2}
+                        _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)" }}
+                        sx={{
+                          "::-webkit-calendar-picker-indicator": {
+                            filter:
+                              "invert(28%) sepia(66%) saturate(296%) hue-rotate(120deg) brightness(92%) contrast(94%)",
+                            cursor: "pointer",
+                          },
+                        }}
+                      />
+                    </Field.Root>
+                  </>
+                )}
+
+                {/* Selector de lote (opcional) */}
+                {withBatchSelect && (
+                  <StyledSelectField
+                    label="Lote"
+                    name="batchId"
+                    value={batchId ?? ""}
+                    onChange={(e) => setBatchId?.(Number(e.target.value) || "")}
+                    options={batchOptions} // [{ value, label }]
+                    disabled={loading}
+                    placeholder="Seleccione un lote"
+                  />
+                )}
+
+                {/* Orden (opcional por prop) */}
+                {withSorting && (
+                  <>
+                    <MenuSelect
+                      label="Ordenar por"
+                      value={sortBy}
+                      options={sortByOptions}
+                      onChange={setSortBy}
+                      icon={sortByOptions.find((opt) => opt.icon)?.icon}
+                    />
+                    <MenuSelect
+                      label="Dirección de orden"
+                      value={sortDir}
+                      options={sortDirOptions}
+                      onChange={setSortDir}
+                      icon={sortDirOptions.find((opt) => opt.icon)?.icon}
+                    />
+                  </>
+                )}
+
                 {extraFilters.map((filter) => (
                   <MenuSelect
                     key={filter.value}
@@ -166,19 +252,30 @@ export default function ReportDialog({
               <Button
                 variant="outline"
                 colorPalette="teal"
-                onClick={handleCancel}
+                onClick={() => setOpen(false)}
                 px={2}
                 disabled={loading}
               >
                 Cancelar
               </Button>
               <Button
-                colorPalette="teal"
-                onClick={handleDownload}
-                px={2}
+                onClick={async () => {
+                  const payload = {
+                    ...(withSorting ? { sortBy, sortDir } : {}),
+                    batchId,
+                    startDate,
+                    endDate,
+                    ...extraFilterValues,
+                  };
+                  try {
+                    await onDownload?.(payload);
+                  } finally {
+                    // Cierra el diálogo al terminar la descarga
+                    setOpen(false);
+                  }
+                }}
                 loading={loading}
-                loadingText="Descargando..."
-                disabled={loading}
+                colorPalette="teal"
               >
                 Descargar
               </Button>
