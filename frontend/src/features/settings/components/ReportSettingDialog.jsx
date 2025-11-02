@@ -14,7 +14,7 @@ import { toast } from "react-hot-toast";
 
 export default function ReportSettingDialog() {
   const [form, setForm] = useState({
-    tableHeaderColor: "#0000FF",
+    tableHeaderColor: "#0c5d56",
     headerTextColor: "#FFFFFF", 
     recordColor: "#000000",
   });
@@ -72,6 +72,7 @@ export default function ReportSettingDialog() {
           color="teal.700"
           borderColor="gray.300"
           pl={2}
+          disabled 
           _hover={{ borderColor: "teal.700" }}
           _focus={{ 
             borderColor: "green.600", 

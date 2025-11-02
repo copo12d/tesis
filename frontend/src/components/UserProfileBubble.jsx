@@ -1,10 +1,18 @@
-import { Avatar, Menu, Portal, Float, Circle } from "@chakra-ui/react";
+import {
+  Avatar,
+  Menu,
+  Portal,
+  Float,
+  Circle,
+  Box,
+} from "@chakra-ui/react";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
+import { LogoutDialog } from "./LogoutDialog";
 
 export function UserProfileBubble() {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   return (
@@ -41,16 +49,26 @@ export function UserProfileBubble() {
             >
               Perfil
             </Menu.Item>
-            <Menu.Item
-              value="logout"
-              _hover={{ bg: "red.50", color: "red.600" }}
-              _focus={{ bg: "red.100", color: "red.700" }}
-              color="red.600"
-              rounded="md"
-              px={3}
-            >
-              Cerrar sesión
-            </Menu.Item>
+
+            {/* ✅ LogoutDialog con trigger visual */}
+            <LogoutDialog
+              onLogout={logout}
+              trigger={
+                <Box
+                  px={3}
+                  py={2}
+                  rounded="md"
+                  _hover={{ bg: "red.50", color: "red.600" }}
+                  _focus={{ bg: "red.100", color: "red.700" }}
+                  color="red.600"
+                  fontSize="sm"
+                  fontWeight="medium"
+                  cursor="pointer"
+                >
+                  Cerrar sesión
+                </Box>
+              }
+            />
           </Menu.Content>
         </Menu.Positioner>
       </Portal>
