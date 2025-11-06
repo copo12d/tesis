@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +25,8 @@ import java.time.Month;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +54,7 @@ public class BatchRegService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Registros obtenidos correctamente"),
                 dtos,
-                null
-        );
+                null);
     }
 
     @Transactional(readOnly = true)
@@ -61,8 +63,7 @@ public class BatchRegService {
             String serial,
             LocalDate startDate,
             LocalDate endDate,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return errorFactory.build(HttpStatus.UNAUTHORIZED,
@@ -95,8 +96,7 @@ public class BatchRegService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Registros filtrados correctamente"),
                 page,
-                null
-        );
+                null);
     }
 
     @Transactional(readOnly = true)
@@ -132,10 +132,12 @@ public class BatchRegService {
 
         for (BatchReg reg : registros) {
             LocalDate fecha = reg.getCollectionDate().toLocalDate();
-            if (fecha.isBefore(inicioSemana) || fecha.isAfter(finSemana)) continue;
+            if (fecha.isBefore(inicioSemana) || fecha.isAfter(finSemana))
+                continue;
 
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
-            if (!tiposActivos.contains(tipo)) continue;
+            if (!tiposActivos.contains(tipo))
+                continue;
 
             DayOfWeek dia = fecha.getDayOfWeek();
             Map<String, Integer> materiales = agrupado.get(dia);
@@ -155,8 +157,7 @@ public class BatchRegService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Resumen diario de contenedores generado correctamente"),
                 resultado,
-                null
-        );
+                null);
     }
 
     @Transactional(readOnly = true)
@@ -191,10 +192,12 @@ public class BatchRegService {
 
         for (BatchReg reg : registros) {
             LocalDate fecha = reg.getCollectionDate().toLocalDate();
-            if (!fecha.getMonth().equals(mesActual) || fecha.getYear() != anioActual) continue;
+            if (!fecha.getMonth().equals(mesActual) || fecha.getYear() != anioActual)
+                continue;
 
             String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
-            if (!tiposActivos.contains(tipo)) continue;
+            if (!tiposActivos.contains(tipo))
+                continue;
 
             int semanaDelMes = (fecha.getDayOfMonth() - 1) / 7 + 1;
             Map<String, Integer> materiales = agrupado.get(semanaDelMes);
@@ -213,8 +216,66 @@ public class BatchRegService {
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Resumen semanal de contenedores generado correctamente"),
                 resultado,
-                null
-        );
+                null);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<Map<String, Object>>> getMontlyContainerSummary() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado")));
+        }
+
+        LocalDate hoy = LocalDate.now();
+        Month mesActual = hoy.getMonth();
+        int anioActual = hoy.getYear();
+
+        Set<String> tiposActivos = containerTypeRepository.findAllActive()
+                .stream()
+                .map(ct -> ct.getName().toLowerCase())
+                .collect(Collectors.toSet());
+
+        List<BatchReg> registros = batchRegRepository.findByDeletedFalse();
+
+        Map<Integer, Map<String, BigDecimal>> agrupadoPorSemanaYTipo = registros.stream()
+                .filter(reg -> {
+                    LocalDate fecha = reg.getCollectionDate().toLocalDate();
+                    String tipo = reg.getContainer().getContainerType().getName().toLowerCase();
+                    return fecha.getMonth().equals(mesActual)
+                            && fecha.getYear() == anioActual
+                            && tiposActivos.contains(tipo);
+                })
+                .collect(Collectors.groupingBy(
+                        reg -> (reg.getCollectionDate().toLocalDate().getDayOfMonth() - 1) / 7 + 1,
+                                                                                                    
+                        Collectors.groupingBy(
+                                reg -> reg.getContainer().getContainerType().getName().toLowerCase(),
+    
+                                Collectors.reducing(
+                                        BigDecimal.ZERO, 
+                                        BatchReg::getWeight, 
+                                        BigDecimal::add 
+                                ))));
+
+        List<Map<String, Object>> resultado = IntStream.rangeClosed(1, 5)
+                .mapToObj(semana -> {
+                    Map<String, Object> fila = new LinkedHashMap<>();
+                    fila.put("week", "Semana " + semana);
+
+                    Map<String, BigDecimal> pesosDeSemana = agrupadoPorSemanaYTipo.getOrDefault(semana,
+                            Collections.emptyMap());
+
+                    tiposActivos.forEach(tipo -> fila.put(tipo, pesosDeSemana.getOrDefault(tipo, BigDecimal.ZERO)));
+
+                    return fila;
+                })
+                .toList();
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Resumen semanal de contenedores generado correctamente"),
+                resultado,
+                null);
     }
 
     @Transactional
