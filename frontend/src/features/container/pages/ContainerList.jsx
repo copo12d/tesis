@@ -79,8 +79,8 @@ export function ContainerList() {
   }
 
   return (
-    <Stack bg={"white"} h={"100vh"}>
-      <Box pt={5} pl={6}>
+    <Stack bg={"white"} h={"100vh"} overflowY={"scroll"}>
+      <Box pt={2} pl={6}>
         <Link to="/container-type/list">
           <Button variant="link" color="teal.700" size="sm">
             Ir a tipos de contenedores

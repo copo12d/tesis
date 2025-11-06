@@ -1,7 +1,7 @@
 import { Center, Stack, Heading, Text, Box } from "@chakra-ui/react";
 import { LiaTimesCircleSolid } from "react-icons/lia";
 import { Button } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function AccountLocked() {
   const navigate = useNavigate();
@@ -26,13 +26,23 @@ export default function AccountLocked() {
             Esta cuenta está bloqueada por demasiados intentos fallidos.<br />
             Si crees que esto es un error, contacta al administrador.
           </Text>
-          <Button
-            colorScheme="teal"
-            variant="solid"
-            onClick={() => navigate("/login")}
-          >
-            Volver al inicio de sesión
-          </Button>
+          <Stack direction="column" gap={1}>
+            <Button
+              variant="solid"
+              colorPalette="teal"
+              onClick={() => navigate("/login")}
+              px={2}
+            >
+              Volver al inicio de sesión
+            </Button>
+            <Button
+              variant="link"
+              color="#009688"
+              onClick={() => navigate("/account-recovery")}
+            >
+              Recuperar cuenta
+            </Button>
+          </Stack>
         </Stack>
       </Center>
     </Box>
