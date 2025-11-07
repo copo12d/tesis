@@ -314,6 +314,7 @@ public class ReportService {
                 }
         }
 
+<<<<<<< HEAD
         @Transactional(readOnly = true)
         public ApiResponse<byte[]> generateContainerReport(
                         String serial, Long id, String sortBy, String sortDir) {
@@ -410,4 +411,302 @@ public class ReportService {
                 }
         }
 
+=======
+        LocalDate fechaInicioDate = null;
+        LocalDate fechaFinDate = null;
+
+        try {
+            if (StringUtils.hasText(fechaInicio)) {
+                fechaInicioDate = LocalDate.parse(fechaInicio, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+            if (StringUtils.hasText(fechaFin)) {
+                fechaFinDate = LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+        } catch (Exception e) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.BAD_REQUEST, "Fechas inválidas"),
+                    null,
+                    List.of(new ApiError("INVALID_DATE_FORMAT", null, "Las fechas deben tener formato yyyy-MM-dd"))
+            );
+        }
+
+        List<BatchEnc> batches;
+        if (fechaInicioDate != null && fechaFinDate != null) {
+            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
+            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay();
+            batches = batchEncRepository.findByCreationDateBetweenAndDeletedFalse(inicioDateTime, finDateTime);
+        } else if (fechaInicioDate != null) {
+            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
+            batches = batchEncRepository.findByCreationDateGreaterThanEqualAndDeletedFalse(inicioDateTime);
+        } else if (fechaFinDate != null) {
+            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay(); // exclusivo
+            batches = batchEncRepository.findByCreationDateLessThanAndDeletedFalse(finDateTime);
+        } else {
+            batches = batchEncRepository.findByDeletedFalse();
+        }
+
+        if (batches.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No se encontraron lotes"),
+                    null,
+                    List.of(new ApiError("BATCHES_NOT_FOUND", null, "No hay lotes registrados en el rango solicitado"))
+            );
+        }
+
+        List<BatchEncResponseDto> dtos = batches.stream()
+                .map(batch -> BatchEncResponseDto.builder()
+                        .id(batch.getId())
+                        .creationDate(NormalizationUtils.formatDateTime(batch.getCreationDate()))
+                        .description(batch.getDescription())
+                        .totalWeight(batch.getTotalWeight())
+                        .status(batch.getStatus().getDescription())
+                        .processedAt(NormalizationUtils.formatDateTime(batch.getProcessedAt()))
+                        .createdByUsername(batch.getCreatedBy() != null ? batch.getCreatedBy().getUserName() : "")
+                        .processedByUsername(batch.getProcessedBy() != null ? batch.getProcessedBy().getUserName() : null)
+                        .build())
+                .toList();
+
+        try {
+            List<String> columnTitles = List.of("ID", "Fecha", "Descripción", "Peso Total", "Estado", "Procesado", "Creado por", "Procesado por");
+
+            ReportBuilder<BatchEncResponseDto> builder = reportRegistry.getBuilder(BatchEncResponseDto.class);
+            byte[] pdf = builder.build("Reporte de Lotes", columnTitles, dtos, auth.getName());
+
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.OK, "Reporte PDF generado exitosamente"),
+                    pdf,
+                    null
+            );
+
+        } catch (Exception e) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el PDF"),
+                    null,
+                    List.of(new ApiError("PDF_GENERATION_ERROR", null, "Error interno al generar el reporte PDF"))
+            );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<byte[]> generateAllUsersPdf(
+            String role,
+            String verified,
+            String accountLocked,
+            String userLocked,
+            String sortBy,
+            String sortDir
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.UNAUTHORIZED, "No estás autenticado"),
+                    null,
+                    List.of(new ApiError("UNAUTHORIZED", null, "Debes iniciar sesión para generar el reporte"))
+            );
+        }
+
+        String callerRole = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        RoleList roleEnum = null;
+        if (StringUtils.hasText(role)) {
+            try {
+                roleEnum = RoleList.valueOf(role);
+            } catch (IllegalArgumentException e) {
+                return new ApiResponse<>(
+                        errorFactory.buildMeta(HttpStatus.BAD_REQUEST, "Rol inválido"),
+                        null,
+                        List.of(new ApiError("INVALID_ROLE", "role", "El rol especificado no es válido"))
+                );
+            }
+        }
+
+        Boolean verifiedBool = StringUtils.hasText(verified) ? Boolean.valueOf(verified) : null;
+        Boolean accountLockedBool = StringUtils.hasText(accountLocked) ? Boolean.valueOf(accountLocked) : null;
+        Boolean userLockedBool = StringUtils.hasText(userLocked) ? Boolean.valueOf(userLocked) : null;
+
+        List<User> users = userRepository.searchAdvancedForReport(
+                roleEnum, verifiedBool, accountLockedBool, userLockedBool
+        );
+
+        List<AdminUserDto> dtos = users.stream()
+                .filter(user -> callerRole.equals("ROLE_SUPERUSER") || user.getRole().getName() != RoleList.ROLE_SUPERUSER)
+                .map(user -> AdminUserDto.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .userName(user.getUserName())
+                        .email(user.getUserName())
+                        .role(user.getRole().getName().getDescription())
+                        .verified(user.isVerified())
+                        .accountLocked(user.isAccountLocked())
+                        .userLocked(user.isUserLocked())
+                        .build())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (dtos.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No se encontraron usuarios"),
+                    null,
+                    List.of(new ApiError("USERS_NOT_FOUND", null, "No hay usuarios que coincidan con los filtros aplicados"))
+            );
+        }
+
+        // Ordenamiento seguro
+        String sortField = StringUtils.hasText(sortBy) ? sortBy : "id";
+        String direction = StringUtils.hasText(sortDir) ? sortDir.toUpperCase() : "ASC";
+
+        Comparator<AdminUserDto> comparator = switch (sortField) {
+            case "fullName" -> Comparator.comparing(
+                    AdminUserDto::getFullName,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "userName" -> Comparator.comparing(
+                    AdminUserDto::getUserName,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "email" -> Comparator.comparing(
+                    AdminUserDto::getEmail,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "role" -> Comparator.comparing(
+                    AdminUserDto::getRole,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            default -> Comparator.comparing(AdminUserDto::getId);
+        };
+
+        if ("DESC".equals(direction)) {
+            comparator = comparator.reversed();
+        }
+
+        dtos.sort(comparator);
+
+        try {
+            List<String> columnTitles = List.of(
+                    "ID", "Nombre completo", "Usuario", "Correo", "Rol",
+                    "Verificado", "Bloqueo de cuenta", "Bloqueo de usuario"
+            );
+
+
+            ReportBuilder<AdminUserDto> builder = reportRegistry.getBuilder(AdminUserDto.class);
+            byte[] pdf = builder.build("Reporte de Usuarios Administradores", columnTitles, dtos, auth.getName());
+
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.OK, "Reporte PDF generado exitosamente"),
+                    pdf,
+                    null
+            );
+
+        } catch (Exception e) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el PDF"),
+                    null,
+                    List.of(new ApiError("PDF_GENERATION_ERROR", null, "Error interno al generar el reporte PDF"))
+            );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<byte[]> generateContainerReport(
+            String serial, Long id, String sortBy, String sortDir
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.UNAUTHORIZED, "No estás autenticado"),
+                    null,
+                    List.of(new ApiError("UNAUTHORIZED", null, "Debes iniciar sesión para generar el reporte"))
+            );
+        }
+
+        List<Container> containers;
+        if (id != null) {
+            containers = containerRepository.findAllByIdAndDeletedFalse(id);
+        } else if (StringUtils.hasText(serial)) {
+            containers = containerRepository.findAllBySerialContainingIgnoreCaseAndDeletedFalse(serial);
+        } else {
+            containers = containerRepository.findAllByDeletedFalse();
+        }
+
+        if (containers.isEmpty()) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.NOT_FOUND, "No se encontraron contenedores"),
+                    null,
+                    List.of(new ApiError("CONTAINERS_NOT_FOUND", null, "No hay contenedores que coincidan con los filtros aplicados"))
+            );
+        }
+
+        String sortField = StringUtils.hasText(sortBy) ? sortBy : "id";
+        String direction = StringUtils.hasText(sortDir) ? sortDir.toUpperCase() : "ASC";
+
+        Comparator<Container> comparator = switch (sortField) {
+            case "serial" -> Comparator.comparing(
+                    Container::getSerial,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "createdAt" -> Comparator.comparing(
+                    Container::getCreatedAt,
+                    Comparator.nullsLast(LocalDateTime::compareTo)
+            );
+            case "capacity" -> Comparator.comparing(
+                    Container::getCapacity,
+                    Comparator.nullsLast(Comparator.naturalOrder())
+            );
+            case "status" -> Comparator.comparing(
+                    container -> container.getStatus() != null ? container.getStatus().name() : null,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "containerType" -> Comparator.comparing(
+                    container -> container.getContainerType() != null ? container.getContainerType().getName() : null,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            default -> Comparator.comparing(Container::getId);
+        };
+
+        if ("DESC".equals(direction)) {
+            comparator = comparator.reversed();
+        }
+
+        containers.sort(comparator);
+
+        List<ContainerResponseDto> dtos = containers.stream()
+                .map(container -> new ContainerResponseDto(
+                        container.getId(),
+                        container.getSerial(),
+                        container.getLatitude(),
+                        container.getLongitude(),
+                        container.getCapacity(),
+                        container.getStatus().getDescription(),
+                        container.getContainerType().getName(),
+                        container.getCreatedAt()
+                ))
+                .collect(Collectors.toCollection(ArrayList::new)); // mutable para evitar errores
+
+        try {
+            List<String> columnTitles = List.of(
+                    "ID", "Serial", "Latitud", "Longitud", "Capacidad",
+                    "Estado", "Tipo de contenedor", "Creado en"
+            );
+
+            ReportBuilder<ContainerResponseDto> builder = reportRegistry.getBuilder(ContainerResponseDto.class);
+            byte[] pdf = builder.build("Reporte de Contenedores", columnTitles, dtos, auth.getName());
+
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.OK, "Reporte PDF generado exitosamente"),
+                    pdf,
+                    null
+            );
+
+        } catch (Exception e) {
+            return new ApiResponse<>(
+                    errorFactory.buildMeta(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el PDF"),
+                    null,
+                    List.of(new ApiError("PDF_GENERATION_ERROR", null, "Error interno al generar el reporte PDF"))
+            );
+        }
+    }
+
+>>>>>>> parent of 63c2f09 (Solucion de reportes de lotes)
 }
