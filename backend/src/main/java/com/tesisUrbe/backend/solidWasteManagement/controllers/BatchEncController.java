@@ -6,6 +6,7 @@ import com.tesisUrbe.backend.solidWasteManagement.dto.BatchCountDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
 import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.services.BatchEncService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,14 @@ public class BatchEncController {
     @GetMapping("/admin/dropdown/in-progress")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getInProgressBatchDropdown() {
-        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getInProgressBatchDropdown();
+        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getBatchDropdown(BatchStatus.IN_PROGRESS);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping("/admin/dropdown/process")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getProcessBatchDropdown() {
+        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getBatchDropdown(BatchStatus.PROCESSED);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
@@ -95,4 +103,6 @@ public class BatchEncController {
         ApiResponse<Void> response = batchEncService.softDeleteBatch(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
+
+
 }

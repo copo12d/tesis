@@ -121,8 +121,9 @@ public class BatchEncService {
         return batchRepository.findByIdAndDeletedFalse(id);
     }
 
-    public ApiResponse<List<BatchDropdownDto>> getInProgressBatchDropdown() {
-        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(BatchStatus.IN_PROGRESS);
+    public ApiResponse<List<BatchDropdownDto>> getBatchDropdown(BatchStatus status) {
+        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(status);
+        
 
         if (batches.isEmpty()) {
             return errorFactory.build(
@@ -135,7 +136,7 @@ public class BatchEncService {
                 .map(batch -> new BatchDropdownDto(batch.getId(), batch.getDescription()))
                 .toList();
 
-        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, "Lotes en progreso obtenidos exitosamente");
+        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, status.getDescription() +" obtenidos exitosamente");
         return new ApiResponse<>(meta, dtos, null);
     }
 
