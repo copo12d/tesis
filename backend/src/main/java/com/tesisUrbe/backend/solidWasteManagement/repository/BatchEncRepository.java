@@ -56,10 +56,6 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
 """)
     long countProcessedBatches();
 
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of 63c2f09 (Solucion de reportes de lotes)
     List<BatchEnc> findByCreationDateLessThanAndDeletedFalse(LocalDateTime end);
     List<BatchEnc> findByCreationDateBetweenAndDeletedFalse(LocalDateTime start, LocalDateTime end);
     List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDateTime start);
