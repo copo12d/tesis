@@ -698,14 +698,6 @@ public class UserService implements UserDetailsService {
         }
 
         User targetUser = targetUserOpt.get();
-
-        if(RoleList.ROLE_SUPERUSER.equals(targetUser.getRole().getName()))
-            return errorFactory.build(
-                    HttpStatus.FORBIDDEN,
-                    List.of(new ApiError("FORBIDDEN_SUPER_DELETED", null, "No se puede borrar un superusario"))
-            );
-
-
         targetUser.setDeleted(true);
 
         try {

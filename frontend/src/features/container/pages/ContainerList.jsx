@@ -1,14 +1,20 @@
-import { IconButton, Stack, Spinner, Text, Box, Button, } from "@chakra-ui/react";
+import {
+  IconButton,
+  Spinner,
+  Text,
+  Box,
+  Button,
+  Stack,
+} from "@chakra-ui/react";
 import { LiaEditSolid, LiaTrashAltSolid } from "react-icons/lia";
 import { AiOutlineEye } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useContainerList } from "../hooks/useContainerList";
 import { useEffect, useState } from "react";
 import { GenericTable } from "@/components/GenericTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { QrPreviewDialog } from "../components/QrpreviewDialog";
 import { useDeleteContainer } from "../hooks/useDeleteContainer";
-import { Link } from "react-router-dom";
 
 const headers = [
   { key: "serial", label: "Serial" },
@@ -20,9 +26,7 @@ const headers = [
   { key: "createdAt", label: "Creado" },
 ];
 
-const searchMenuItems = [
-  { value: "serial", label: "Serial" },
-];
+const searchMenuItems = [{ value: "serial", label: "Serial" }];
 
 export function ContainerList() {
   const navigate = useNavigate();
@@ -49,23 +53,18 @@ export function ContainerList() {
   });
 
   const { remove, deletingId } = useDeleteContainer();
-
-  const handleEdit = (row) => {
-    navigate(`/container/edit/${row.id}`);
-  };
-
-  const handleDelete = async (row) => {
-    const ok = await remove(row.id);
-    if (ok) {
-      refetch();
-    }
-  };
-
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     if (!loading) setHasLoaded(true);
   }, [loading]);
+
+  const handleEdit = (row) => navigate(`/container/edit/${row.id}`);
+
+  const handleDelete = async (row) => {
+    const ok = await remove(row.id);
+    if (ok) refetch();
+  };
 
   if (loading && !hasLoaded) {
     return (
@@ -79,14 +78,15 @@ export function ContainerList() {
   }
 
   return (
-    <Stack bg={"white"} h={"100vh"}>
-      <Box pt={5} pl={6}>
+    <Box bg="white" height="100vh" overflowY="auto" px={4} py={6}>
+      <Box mb={4}>
         <Link to="/container-type/list">
           <Button variant="link" color="teal.700" size="sm">
             Ir a tipos de contenedores
           </Button>
         </Link>
       </Box>
+
       <GenericTable
         headers={headers}
         items={items}
@@ -96,11 +96,8 @@ export function ContainerList() {
         onAdd={() => navigate("/container/new")}
         sizes={["lg"]}
         caption={`Lista de contenedores (${total})`}
-        cardTitle={"Lista de contenedores"}
-        onPageChange={(newPage) => {
-          setPage(newPage.page);
-        }}
-        // --- Props para barra de búsqueda ---
+        cardTitle="Lista de contenedores"
+        onPageChange={(newPage) => setPage(newPage.page)}
         menuItems={searchMenuItems}
         menuButtonText={
           searchMenuItems.find((i) => i.value === searchType)?.label ||
@@ -110,7 +107,6 @@ export function ContainerList() {
         onSearchTermChange={(e) => setSearchTerm(e.target.value)}
         searchType={searchType}
         onSearchTypeChange={setSearchType}
-        // --- Fin props búsqueda ---
         renderActions={(row) => {
           const isDeleting = deletingId === row.id;
           return (
@@ -164,6 +160,6 @@ export function ContainerList() {
           );
         }}
       />
-    </Stack>
+    </Box>
   );
 }
