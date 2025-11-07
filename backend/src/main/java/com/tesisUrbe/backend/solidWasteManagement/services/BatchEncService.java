@@ -135,7 +135,7 @@ public class BatchEncService {
                 .map(batch -> new BatchDropdownDto(batch.getId(), batch.getDescription()))
                 .toList();
 
-        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, "Lotes en progreso obtenidos exitosamente");
+        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, status.getDescription() +" obtenidos exitosamente");
         return new ApiResponse<>(meta, dtos, null);
     }
 
