@@ -57,16 +57,6 @@ public interface BatchEncRepository extends JpaRepository<BatchEnc, Long> {
     long countProcessedBatches();
 
 
-    @Query("""
-    SELECT b
-    FROM BatchEnc b
-    WHERE b.deleted = false
-        AND b.status = 'PROCESSED'
-        AND (:start IS NULL OR b.creationDate >= :start)
-        AND (:end IS NULL OR b.creationDate <= :end)
-    """)
-    List<BatchEnc> findByCreationBetweenDates(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
-
     List<BatchEnc> findByCreationDateLessThanAndDeletedFalse(LocalDateTime end);
     List<BatchEnc> findByCreationDateBetweenAndDeletedFalse(LocalDateTime start, LocalDateTime end);
     List<BatchEnc> findByCreationDateGreaterThanEqualAndDeletedFalse(LocalDateTime start);
