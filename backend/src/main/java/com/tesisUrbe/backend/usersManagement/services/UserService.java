@@ -699,7 +699,17 @@ public class UserService implements UserDetailsService {
             );
         }
 
+        
+
         User targetUser = targetUserOpt.get();
+
+        if(RoleList.ROLE_SUPERUSER.equals(targetUser.getRole().getName())){
+            return errorFactory.build(
+                    HttpStatus.FORBIDDEN,
+                    List.of(new ApiError("ATTEMPT_TO_DELETED_SUPERUSER", null, "No se puede eleminar un Super Usuario"))
+            );
+        }
+
         targetUser.setDeleted(true);
 
         try {
