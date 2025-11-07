@@ -40,8 +40,4 @@ export const ReportsAPI = {
         ...params,
       },
     }),
-
-  getProcessBatchDropdown: () =>
-    api.get("/batch/admin/dropdown/process"),
-
 };
