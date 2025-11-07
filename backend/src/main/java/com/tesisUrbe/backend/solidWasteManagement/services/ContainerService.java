@@ -238,6 +238,46 @@ public class ContainerService {
     }
 
     @Transactional(readOnly = true)
+    public ApiResponse<ContainerEditResponseDto> getContainerByIdEdit(Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorFactory.build(
+                    HttpStatus.UNAUTHORIZED,
+                    List.of(new ApiError("UNAUTHORIZED", null, "No estás autenticado"))
+            );
+        }
+
+        Optional<Container> containerOpt = containerRepository.findById(id);
+
+        if (containerOpt.isEmpty() || containerOpt.get().isDeleted()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("CONTAINER_NOT_FOUND", null, "Contenedor no encontrado o eliminado"))
+            );
+        }
+
+        Container container = containerOpt.get();
+
+        ContainerEditResponseDto dto = new ContainerEditResponseDto(
+                container.getId(),
+                container.getSerial(),
+                container.getLatitude(),
+                container.getLongitude(),
+                container.getCapacity(),
+                container.getStatus().getDescription(),
+                container.getContainerType().getId().toString(),
+                container.getCreatedAt()
+        );
+
+        return new ApiResponse<>(
+                errorFactory.buildMeta(HttpStatus.OK, "Contenedor obtenido correctamente"),
+                dto,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Container> findBySerialAndDeletedFalse(String serial) {
         if (serial == null || serial.isBlank()) {
             return Optional.empty();

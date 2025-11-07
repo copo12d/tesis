@@ -36,6 +36,13 @@ public class ContainerController {
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
+    @GetMapping("/admin/edit/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
+    public ResponseEntity<ApiResponse<ContainerEditResponseDto>> getContainerByIdEdit(@PathVariable Long id) {
+        ApiResponse<ContainerEditResponseDto> response = containerService.getContainerByIdEdit(id);
+        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
     @GetMapping("/public/{id}")
     @PermitAll
     public ResponseEntity<ApiResponse<ContainerResponseDto>> getPublicContainerById(@PathVariable Long id) {
