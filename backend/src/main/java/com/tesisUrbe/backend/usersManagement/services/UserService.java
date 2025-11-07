@@ -465,11 +465,13 @@ public class UserService implements UserDetailsService {
                 ));
     }
 
-    public void updatePassword(String encodedPassword, Long userId) {
+    public void updatePassword(String encodedPassword, Long userId, boolean unlock) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         user.setPassword(encodedPassword);
+        if(unlock) user.setUserLocked(false);
+
         userRepository.save(user);
     }
 
