@@ -470,7 +470,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         user.setPassword(encodedPassword);
-        if(unlock) user.setUserLocked(false);
+        if(unlock) user.setAccountLocked(false);
 
         userRepository.save(user);
     }
