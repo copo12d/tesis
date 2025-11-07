@@ -7,10 +7,7 @@ import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.NormalizationUtils;
 import com.tesisUrbe.backend.entities.account.User;
 import com.tesisUrbe.backend.entities.solidWaste.BatchEnc;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchCountDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchDropdownDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncRequestDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.BatchEncResponseDto;
+import com.tesisUrbe.backend.solidWasteManagement.dto.*;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.BatchEncRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
@@ -121,9 +118,8 @@ public class BatchEncService {
         return batchRepository.findByIdAndDeletedFalse(id);
     }
 
-    public ApiResponse<List<BatchDropdownDto>> getBatchDropdown(BatchStatus status) {
-        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(status);
-        
+    public ApiResponse<List<BatchDropdownDto>> getInProgressBatchDropdown() {
+        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(BatchStatus.IN_PROGRESS);
 
         if (batches.isEmpty()) {
             return errorFactory.build(
@@ -136,10 +132,27 @@ public class BatchEncService {
                 .map(batch -> new BatchDropdownDto(batch.getId(), batch.getDescription()))
                 .toList();
 
-        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, status.getDescription() +" obtenidos exitosamente");
+        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, "Lotes en progreso obtenidos exitosamente");
         return new ApiResponse<>(meta, dtos, null);
     }
 
+    public ApiResponse<List<BatchDropdownProcessDto>> getProcessBatchDropdown() {
+        List<BatchEnc> batches = batchRepository.findByStatusAndDeletedFalse(BatchStatus.PROCESSED);
+
+        if (batches.isEmpty()) {
+            return errorFactory.build(
+                    HttpStatus.NOT_FOUND,
+                    List.of(new ApiError("BATCH_NOT_FOUND", null, "Lote no encontrado"))
+            );
+        }
+
+        List<BatchDropdownProcessDto> dtos = batches.stream()
+                .map(batch -> new BatchDropdownProcessDto(batch.getId(), batch.getDescription()))
+                .toList();
+
+        ApiMeta meta = errorFactory.buildMeta(HttpStatus.OK, "Lotes en progreso obtenidos exitosamente");
+        return new ApiResponse<>(meta, dtos, null);
+    }
 
     @Transactional(readOnly = true)
     public boolean batchExists(Long batchEncId) {

@@ -3,7 +3,6 @@ package com.tesisUrbe.backend.solidWasteManagement.controllers;
 import com.tesisUrbe.backend.common.exception.ApiResponse;
 import com.tesisUrbe.backend.common.util.PageValidator;
 import com.tesisUrbe.backend.solidWasteManagement.dto.*;
-import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.services.BatchEncService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +63,7 @@ public class BatchEncController {
     @GetMapping("/admin/dropdown/in-progress")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getInProgressBatchDropdown() {
-        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getBatchDropdown(BatchStatus.IN_PROGRESS);
+        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getInProgressBatchDropdown();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
@@ -100,6 +99,4 @@ public class BatchEncController {
         ApiResponse<Void> response = batchEncService.softDeleteBatch(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
-
-
 }
