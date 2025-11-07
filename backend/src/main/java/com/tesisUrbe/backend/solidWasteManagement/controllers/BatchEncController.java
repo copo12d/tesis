@@ -63,14 +63,7 @@ public class BatchEncController {
     @GetMapping("/admin/dropdown/in-progress")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getInProgressBatchDropdown() {
-        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getBatchDropdown(BatchStatus.IN_PROGRESS);
-        return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
-    }
-
-    @GetMapping("/admin/dropdown/process")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER','ROLE_EMPLOYEE')")
-    public ResponseEntity<ApiResponse<List<BatchDropdownDto>>> getProcessBatchDropdown() {
-        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getBatchDropdown(BatchStatus.PROCESSED);
+        ApiResponse<List<BatchDropdownDto>> response = batchEncService.getInProgressBatchDropdown();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
@@ -106,6 +99,4 @@ public class BatchEncController {
         ApiResponse<Void> response = batchEncService.softDeleteBatch(id);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
-
-
 }

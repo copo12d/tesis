@@ -465,11 +465,13 @@ public class UserService implements UserDetailsService {
                 ));
     }
 
-    public void updatePassword(String encodedPassword, Long userId) {
+    public void updatePassword(String encodedPassword, Long userId, boolean unlock) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         user.setPassword(encodedPassword);
+        if(unlock) user.setUserLocked(false);
+
         userRepository.save(user);
     }
 
@@ -697,7 +699,17 @@ public class UserService implements UserDetailsService {
             );
         }
 
+        
+
         User targetUser = targetUserOpt.get();
+
+        if(RoleList.ROLE_SUPERUSER.equals(targetUser.getRole().getName())){
+            return errorFactory.build(
+                    HttpStatus.FORBIDDEN,
+                    List.of(new ApiError("ATTEMPT_TO_DELETED_SUPERUSER", null, "No se puede eleminar un Super Usuario"))
+            );
+        }
+
         targetUser.setDeleted(true);
 
         try {

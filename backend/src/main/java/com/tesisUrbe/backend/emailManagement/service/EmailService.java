@@ -68,7 +68,7 @@ public class EmailService implements IEmailService {
 
         PasswordUtils.validatePassword(newPassword);
         String encoded = PasswordUtils.encode(newPassword, userService.getPasswordEncoder());
-        userService.updatePassword(encoded, id);
+        userService.updatePassword(encoded, id, false);
 
         return errorFactory.buildSuccess(HttpStatus.OK, "Nueva contraseña para la cuenta creada exitosamente");
     }
@@ -174,7 +174,7 @@ public class EmailService implements IEmailService {
 
         PasswordUtils.validatePassword(newPassword);
         String encoded = PasswordUtils.encode(newPassword, userService.getPasswordEncoder());
-        userService.updatePassword(encoded, id);
+        userService.updatePassword(encoded, id, true);
 
         return errorFactory.buildSuccess(HttpStatus.OK, "Contraseña actualizada y cuenta recuperada exitosamente");
     }
