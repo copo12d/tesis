@@ -15,6 +15,7 @@ import { useDownloadUsersReport } from "../hooks/useDownloadUsersReport";
 import { useDownloadContainersReport } from "../hooks/useDownloadContainersReport";
 import { useDownloadBatchDetailsReport } from "../hooks/useDownloadBatchDetailsReport";
 import { useDownloadBatchesReport } from "../hooks/useDownloadBatchesReport";
+import { useProcessBatchDropdown } from "../hooks/useProcessBatchDropdown";
 import ReportDialog from "../components/ReportDialog";
 
 function downloadFile(response, filename = "reporte.xlsx") {
@@ -36,13 +37,9 @@ export function ReportsPage() {
   const { downloadContainersReport, loading: loadingContainers } = useDownloadContainersReport();
 
   // Detalle de lote (combo)
-  const {
-    downloadBatchDetails,
-    loading: loadingBatchDetails,
-    batches,
-    loadingBatches,
-  } = useDownloadBatchDetailsReport();
+  const { downloadBatchDetails, loading: loadingBatchDetails } = useDownloadBatchDetailsReport();
   const [batchId, setBatchId] = useState("");
+  const { batches, loadingBatches } = useProcessBatchDropdown();
 
   const batchOptions = (batches || []).map((b) => ({
     value: b.id,

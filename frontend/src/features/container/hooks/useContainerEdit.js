@@ -17,7 +17,7 @@ export function useContainerEdit(id) {
     (async () => {
       try {
         setLoading(true);
-        const res = await ContainerAPI.getById(id);
+        const res = await ContainerAPI.getByIdEdit(id);
         const data = res?.data?.data ?? res?.data ?? null;
         if (!alive) return;
         setContainer(data);

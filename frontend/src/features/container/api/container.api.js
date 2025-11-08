@@ -8,6 +8,9 @@ export const ContainerAPI = {
   // Obtener contenedor por ID
   getById: (id) => api.get(`/container/admin/${id}`),
 
+  // Obtener contenedor por ID para editar
+  getByIdEdit: (id) => api.get(`/container/admin/edit/${id}`),
+
   // Crear contenedor
   create: (payload) => api.post("/container/admin/register", payload),
 
