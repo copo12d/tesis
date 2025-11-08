@@ -1,9 +1,9 @@
 spring:
   profiles:
     active: dev
-# Frontend and QR configuration
+
 app:
   frontend:
-    base-url: "http://192.168.1.2:5173/mobile"
+    base-url: ${FRONTEND_BASE_URL}
   qr:
     size: 300
