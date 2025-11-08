@@ -3,9 +3,9 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:postgresql://db:5432/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -45,8 +45,8 @@ cors:
   max-age: 3600
 
 jwt:
-  secret: ${SECRET_KEY:clave_dev_local}
-  expiration: ${EXP:15m}
+  secret: ${SECRET_KEY}
+  expiration: ${EXP}
 
 logging:
   level:
@@ -64,3 +64,9 @@ email:
 
 storage:
   path: ${STORAGE_PATH:/app/media}
+
+app:
+  frontend:
+    base-url: ${FRONTEND_BASE_URL}
+  qr:
+    size: 300
