@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-export function useSetPassword(apiCall, { successRedirect = "/login", successMessage = "Contraseña establecida correctamente." } = {}) {
+export function useSetPassword(
+  apiCall,
+  { successRedirect = "/login", successMessage = "Contraseña establecida correctamente." } = {}
+) {
   const { id, token } = useParams();
   const navigate = useNavigate();
 
@@ -13,7 +16,6 @@ export function useSetPassword(apiCall, { successRedirect = "/login", successMes
   const handleSubmit = async (e) => {
     if (e?.preventDefault) e.preventDefault();
 
-    // Validación mínima en front: solo comprobar que coinciden
     if (password !== repeat) {
       toast.error("Las contraseñas no coinciden.");
       return false;
@@ -26,10 +28,11 @@ export function useSetPassword(apiCall, { successRedirect = "/login", successMes
       navigate(successRedirect, { replace: true });
       return true;
     } catch (err) {
+      // Tomar el mensaje directo del backend
       const msg =
+        err?.response?.data?.errors?.[0]?.message ||
         err?.response?.data?.meta?.message ||
         err?.response?.data?.message ||
-        err?.message ||
         "No se pudo establecer la contraseña.";
       toast.error(msg);
       return false;

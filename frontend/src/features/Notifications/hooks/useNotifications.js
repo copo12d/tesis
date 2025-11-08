@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useContext } from "react";
 import { NotificationsAPI } from "../api/api.notifications";
+import AuthContext from "@/context/AuthContext"; // añadido
 
 export function useNotifications({
   autoFetch = false,
@@ -7,6 +8,10 @@ export function useNotifications({
   onStatusChange,
   notifyOnEveryPollWhenHasItems = false, // <-- NUEVO
 } = {}) {
+  const { user } = useContext(AuthContext) || {}; // añadido
+  const isAdmin =
+    user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPERUSER"; // igual que AdminSection
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,6 +29,11 @@ export function useNotifications({
     res?.data?.meta?.message || res?.data?.message || "No hay contenedores llenos";
 
   const fetchContainersFull = useCallback(async () => {
+    // Si no es admin o superuser, no hacer la llamada ni emitir nada
+    if (!isAdmin) {
+      return { success: true, items: [], skipped: true };
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -66,7 +76,7 @@ export function useNotifications({
     } finally {
       setLoading(false);
     }
-  }, [notifyOnEveryPollWhenHasItems]); // <- estable
+  }, [notifyOnEveryPollWhenHasItems, isAdmin]); // dependencia actualizada
 
   const start = useCallback(() => {
     if (timerRef.current) return;

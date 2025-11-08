@@ -1,4 +1,4 @@
-import api from "../../../api/api";
+import api from "@/api/api";
 
 export const UsersAPI = {
   create: (payload) => api.post("/users/admin/register", payload),
@@ -16,12 +16,12 @@ export const UsersAPI = {
   get: (id) => api.get(`/users/admin/${id}`),
   update: (id, payload) => api.put(`/users/admin/${id}`, payload),
   getIdByUsername: (username) =>
-  api.get("/users/public/idByUsername", {
-    params: { username },
-  }),
+    api.get("/users/public/idByUsername", {
+      params: { username },
+    }),
   advanceSearch: ({
     searchTerm = "",
-    searchType = "username", 
+    searchType = "username",
     page = 0,
     size = 10,
     sortBy = "id",
@@ -50,8 +50,8 @@ export async function availableRolesFor(currentRole) {
     if (!Array.isArray(data?.data)) return [];
 
     return data.data.map((r) => ({
-      value: r.value, 
-      label: r.name, 
+      value: r.value,
+      label: r.name,
     }));
   } catch (error) {
     console.error("Error al obtener roles:", error);

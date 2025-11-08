@@ -1,5 +1,4 @@
 import api from '../../../api/api';
-import apiPublic from "@/api/api.public";
 
 export const AuthAPI = {
   register: (fullName, userName, password, email) =>
@@ -18,4 +17,6 @@ export const AuthAPI = {
   // Cambiado a PUT
   accountRecoverySetPassword: (id, token, data) =>
     api.put(`/email/public/account-recovery/${id}/${token}`, data),
+  refreshSession: (refreshToken) =>
+    api.post('/auth/refresh', { refreshToken }),
 };
