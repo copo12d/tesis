@@ -112,15 +112,15 @@ public class ReportService {
             );
         }
 
-        LocalDate fechaInicioDate = null;
-        LocalDate fechaFinDate = null;
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
 
         try {
             if (StringUtils.hasText(fechaInicio)) {
-                fechaInicioDate = LocalDate.parse(fechaInicio, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                startTime = LocalDate.parse(fechaInicio, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
             }
             if (StringUtils.hasText(fechaFin)) {
-                fechaFinDate = LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                endTime = LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("yyyy-MM-dd")).plusDays(1).atStartOfDay();
             }
         } catch (Exception e) {
             return new ApiResponse<>(
@@ -130,20 +130,8 @@ public class ReportService {
             );
         }
 
-        List<BatchEnc> batches;
-        if (fechaInicioDate != null && fechaFinDate != null) {
-            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
-            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay();
-            batches = batchEncRepository.findByCreationDateBetweenAndDeletedFalse(inicioDateTime, finDateTime);
-        } else if (fechaInicioDate != null) {
-            LocalDateTime inicioDateTime = fechaInicioDate.atStartOfDay();
-            batches = batchEncRepository.findByCreationDateGreaterThanEqualAndDeletedFalse(inicioDateTime);
-        } else if (fechaFinDate != null) {
-            LocalDateTime finDateTime = fechaFinDate.plusDays(1).atStartOfDay(); // exclusivo
-            batches = batchEncRepository.findByCreationDateLessThanAndDeletedFalse(finDateTime);
-        } else {
-            batches = batchEncRepository.findByDeletedFalse();
-        }
+        List<BatchEnc> batches = batchEncRepository.findByCreationBetweenDates(startTime, endTime);
+        
 
         if (batches.isEmpty()) {
             return new ApiResponse<>(

@@ -8,6 +8,9 @@ import  SettingsPage  from './features/settings/pages/SettingsPage';
 import { Login } from './features/auth/pages/Login';
 // IMPORTS DIRECTOS (antes eran lazy)
 import { Register } from './features/auth/pages/Register';
+import { AccountRecoveryRequest } from './features/auth/pages/AccountRecoveryRequest';
+import { AccountRecoverySetPassword } from './features/auth/pages/AccountRecoverySetPassword';
+import { PasswordRecoverySetPassword } from './features/auth/pages/PasswordRecoverySetPassword';
 import ForgotPassword from './features/auth/pages/ForgotPassword';
 
 import PublicRoute from './routes/PublicRoute';
@@ -54,6 +57,9 @@ function App() {
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/account-locked" element={<Suspense fallback={null}><AccountLocked /></Suspense>} />
+          <Route path="/account-recovery" element={<PublicRoute><Suspense fallback={null}><AccountRecoveryRequest /></Suspense></PublicRoute>} />
+          <Route path="/email/public/password-recovery/:id/:token" element={<PublicRoute><Suspense fallback={null}><PasswordRecoverySetPassword /></Suspense></PublicRoute>} />
+          <Route path="/email/public/account-recovery/:id/:token" element={<Suspense fallback={null}><AccountRecoverySetPassword /></Suspense>} />
 
           {/* Árbol privado con fallback agradable y sidebar skeleton */}
           <Route

@@ -125,12 +125,11 @@ export default function MobileCollectorPage() {
             <ConfirmDialog
               trigger={
                 <Button
-                  type="button"
+                  px={155}
                   colorPalette="teal"
                   size="lg"
                   loading={loadingWaste}
                   loadingText="Reportando..."
-                  alignSelf="stretch"
                   disabled={loadingWaste || loadingBatches}
                 >
                   Reportar
@@ -143,7 +142,16 @@ export default function MobileCollectorPage() {
               onConfirm={handleSubmit}
               loading={loadingWaste}
             />
-
+            <Button
+              variant="solid"
+              colorPalette="green"
+              size="lg"
+              alignSelf="stretch"
+              onClick={() => navigate(-1)}
+              disabled={loadingWaste}
+            >
+              Volver
+            </Button>
             {Object.values(errors).some((msg) => !!msg) && (
               <Text fontSize="sm" color="red.500">
                 Corrige los campos marcados.

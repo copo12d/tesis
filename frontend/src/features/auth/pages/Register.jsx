@@ -140,7 +140,7 @@ export function Register() {
                 bg="#009688"
                 color="white"
                 size="lg"
-                isLoading={loading}
+                loading={loading}
                 loadingText="Registrando..."
                 spinnerPlacement="end"
                 _hover={{ bg: "#00695c" }}

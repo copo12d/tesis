@@ -8,25 +8,9 @@ import {
   Text,
   Box,
   Icon,
-  Spinner,
 } from "@chakra-ui/react";
 import { LiaExclamationTriangleSolid } from "react-icons/lia";
 
-/**
- * Props de colores (todos con defaults actuales):
- * confirmColorPalette = "red"
- * contentColorPalette = "green"
- * descriptionColor (alias viejo colorText) = "gray.200"
- * headerBorderColor = "gray.200"
- * contentBg = "white"
- * headerBg (opcional)
- * footerBg (opcional)
- * backdropBg = "blackAlpha.400"
- * iconColor (por defecto usa confirmColorPalette.500)
- * cancelVariant = "outline"
- * cancelColorPalette = "gray"
- * confirmVariant = "solid"
- */
 export function ConfirmDialog({
   trigger,
   title = "Confirmar",
@@ -34,30 +18,49 @@ export function ConfirmDialog({
   confirmText = "Aceptar",
   cancelText = "Cancelar",
   onConfirm,
-  confirmColorPalette = "teal",           // Cambiado a teal
+  confirmColorPalette = "teal",
   loading = false,
   icon = <LiaExclamationTriangleSolid />,
   hideCloseButton = false,
 
-  // Color antiguo (compat)
-  colorText,
-  descriptionColor = colorText || "gray.700", // gris oscuro
-
-  // Nuevos props de estilo (defaults teal y grises)
+  descriptionColor = "gray.700",
   iconColor,
-  contentColorPalette = "teal",           // Cambiado a teal
-  contentBg = "white",                    // Fondo blanco
-  headerBg = "teal.700",                  // Header teal oscuro
-  headerBorderColor = "teal.600",         // Borde teal
-  footerBg = "white",                     // Footer blanco
+  contentColorPalette = "teal",
+  contentBg = "white",
+  headerBg = "teal.700",
+  headerBorderColor = "teal.600",
+  footerBg = "white",
   backdropBg = "blackAlpha.400",
-  titleColor = "WhiteAlpha.900",                // Título blanco
+  titleColor = "WhiteAlpha.900",
   cancelVariant = "outline",
   cancelColorPalette = "gray",
   cancelTextColor,
   confirmVariant = "solid",
+
+  // new: controlled open
+  isOpen: isOpenProp,
+  onOpenChange: onOpenChangeProp,
+  showCancelButton = false,
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // if parent controls open, sync
+  useEffect(() => {
+    if (typeof isOpenProp === "boolean") {
+      setInternalOpen(isOpenProp);
+    }
+  }, [isOpenProp]);
+
+  const handleOpenChange = useCallback(
+    (nextOpen) => {
+      if (typeof onOpenChangeProp === "function") {
+        onOpenChangeProp(nextOpen);
+      } else {
+        setInternalOpen(nextOpen);
+      }
+    },
+    [onOpenChangeProp]
+  );
 
   const handleConfirm = useCallback(async () => {
     if (onConfirm) {
@@ -70,25 +73,23 @@ export function ConfirmDialog({
         }
       }
     }
-    if (!loading) setOpen(false);
-  }, [onConfirm, loading]);
-
-  useEffect(() => {
-    // placeholder si quieres cerrar automáticamente al terminar
-  }, [loading]);
+    // close only if parent didn't control open
+    if (typeof onOpenChangeProp !== "function") setInternalOpen(false);
+    else onOpenChangeProp(false);
+  }, [onConfirm, onOpenChangeProp]);
 
   const resolvedIconColor = iconColor || `${confirmColorPalette}.500`;
+  const open = typeof isOpenProp === "boolean" ? isOpenProp : internalOpen;
 
   return (
-    <Dialog.Root open={open} onOpenChange={(d) => setOpen(d.open)}>
-      <Dialog.Trigger asChild>
-        <Box
-          as="span"
-          onClick={() => setOpen(true)}
-        >
-          {trigger}
-        </Box>
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={(d) => handleOpenChange(d)}>
+      {trigger ? (
+        <Dialog.Trigger asChild>
+          <Box as="span" onClick={() => handleOpenChange(true)}>
+            {trigger}
+          </Box>
+        </Dialog.Trigger>
+      ) : null}
 
       <Portal>
         <Dialog.Backdrop bg={backdropBg} />
@@ -110,11 +111,7 @@ export function ConfirmDialog({
             >
               <HStack gap="2">
                 {icon && (
-                  <Icon
-                    color={resolvedIconColor}
-                    boxSize="5"
-                    as={() => icon}
-                  />
+                  <Icon color={resolvedIconColor} boxSize="5" as={() => icon} />
                 )}
                 <Dialog.Title color={titleColor}>{title}</Dialog.Title>
               </HStack>
@@ -128,24 +125,23 @@ export function ConfirmDialog({
               )}
             </Dialog.Body>
 
-            <Dialog.Footer
-              p={4}
-              bg={footerBg}
-              borderTopWidth="0"
-            >
+            <Dialog.Footer p={4} bg={footerBg} borderTopWidth="0">
               <HStack gap="2" justify="flex-end" w="100%">
-                <Dialog.ActionTrigger asChild>
-                  <Button
-                    variant={cancelVariant}
-                    size="sm"
-                    colorPalette={cancelColorPalette}
-                    disabled={loading}
-                    color={cancelTextColor}
-                    px={2}
-                  >
-                    {cancelText}
-                  </Button>
-                </Dialog.ActionTrigger>
+                {showCancelButton && (
+                  <Dialog.ActionTrigger asChild>
+                    <Button
+                      variant={cancelVariant}
+                      size="sm"
+                      colorPalette={cancelColorPalette}
+                      disabled={loading}
+                      color={cancelTextColor}
+                      px={2}
+                      onClick={() => handleOpenChange(false)}
+                    >
+                      {cancelText}
+                    </Button>
+                  </Dialog.ActionTrigger>
+                )}
                 <Button
                   size="sm"
                   variant={confirmVariant}
