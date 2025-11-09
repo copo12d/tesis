@@ -68,7 +68,7 @@ export default function MobileCollectorPage() {
         <Box w="100%" maxW="400px">
           <Stack spacing={6} p={4} bg="white" rounded="md" boxShadow="md" w="100%">
             <Text fontSize="2xl" fontWeight="bold" mb={2} color="black">
-              Reportar desecho
+              Recolectar desechos
             </Text>
 
             {/* Peso */}
@@ -125,19 +125,20 @@ export default function MobileCollectorPage() {
             <ConfirmDialog
               trigger={
                 <Button
-                  px={155}
+                  w={"100%"}
                   colorPalette="teal"
                   size="lg"
                   loading={loadingWaste}
                   loadingText="Reportando..."
+                  alignSelf="stretch"
                   disabled={loadingWaste || loadingBatches}
                 >
-                  Reportar
+                  Recolectar
                 </Button>
               }
               title="Confirmar reporte"
               description="¿Está seguro que desea reportar este desecho?"
-              confirmText="Reportar"
+              confirmText="Confirmar"
               cancelText="Cancelar"
               onConfirm={handleSubmit}
               loading={loadingWaste}
