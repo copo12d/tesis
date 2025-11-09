@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 // import { LiaUser, LiaLockSolid } from "react-icons/lia"; // <-- lazy abajo
 import { useAuth } from "../hooks/useAuth";
-import AuthContext from "../../../context/Authcontext";
+import AuthContext from "@/context/AuthContext";
 import { IconInputField } from "@/components/ui/IconInputField";
 
 // Lazy-load de iconos para reducir JS inicial
