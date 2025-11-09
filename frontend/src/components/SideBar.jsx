@@ -17,7 +17,7 @@ import {
   FiShield,
 } from "react-icons/fi";
 import { useContext } from "react";
-import AuthContext from "../context/Authcontext";
+import AuthContext from "@/context/AuthContext";
 import AdminSection from "./AdminSection";
 import { useNavigate } from "react-router-dom";
 import { LogoutDialog } from "./LogoutDialog";
