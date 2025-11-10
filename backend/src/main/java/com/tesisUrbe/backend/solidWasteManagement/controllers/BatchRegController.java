@@ -52,7 +52,6 @@ public class BatchRegController {
     }
 
     @GetMapping("/public/daily-summary")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getDailyContainerSummary() {
         ApiResponse<List<Map<String, Object>>> response = batchRegService.getDailyContainerSummary();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
