@@ -136,12 +136,15 @@ export default function MobileCollectorPage() {
                   Recolectar
                 </Button>
               }
-              title="Confirmar reporte"
-              description="¿Está seguro que desea reportar este desecho?"
+              title="Recolectar desechos"
+              description="¿Está seguro que desea recolectar este desecho?"
               confirmText="Confirmar"
               cancelText="Cancelar"
               onConfirm={handleSubmit}
               loading={loadingWaste}
+              cancelTextColor={"blackAlpha.900"}
+              hideCloseButton={true}
+              showCancelButton={true}
             />
             <Button
               variant="solid"

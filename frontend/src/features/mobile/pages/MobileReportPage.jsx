@@ -102,6 +102,9 @@ export default function MobileReportPage() {
             cancelText="Cancelar"
             onConfirm={handleReport}
             loading={reportingLoading}
+            showCancelButton={true}
+            cancelTextColor={"blackAlpha.900"}
+            hideCloseButton={true}
           />
 
           {isAuthenticated && (
