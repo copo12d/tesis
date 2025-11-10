@@ -128,19 +128,17 @@ export function ConfirmDialog({
             <Dialog.Footer p={4} bg={footerBg} borderTopWidth="0">
               <HStack gap="2" justify="flex-end" w="100%">
                 {showCancelButton && (
-                  <Dialog.ActionTrigger asChild>
-                    <Button
-                      variant={cancelVariant}
-                      size="sm"
-                      colorPalette={cancelColorPalette}
-                      disabled={loading}
-                      color={cancelTextColor}
-                      px={2}
-                      onClick={() => handleOpenChange(false)}
-                    >
-                      {cancelText}
-                    </Button>
-                  </Dialog.ActionTrigger>
+                  <Button
+                    variant={cancelVariant}
+                    size="sm"
+                    colorPalette={cancelColorPalette}
+                    disabled={loading}
+                    color={cancelTextColor}
+                    px={2}
+                    onClick={() => handleOpenChange(false)}
+                  >
+                    {cancelText}
+                  </Button>
                 )}
                 <Button
                   size="sm"

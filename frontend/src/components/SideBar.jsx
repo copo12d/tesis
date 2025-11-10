@@ -22,14 +22,26 @@ import AdminSection from "./AdminSection";
 import { useNavigate } from "react-router-dom";
 import { LogoutDialog } from "./LogoutDialog";
 
-
-
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext); // <-- aquí obtienes logout
 
+  // Configura aquí el archivo y el nombre a descargar (ubicado en public/)
+  const MANUAL_URL = "/public/manual de usuario.pdf";
+  const MANUAL_FILENAME = "Manual-de-Usuario.pdf";
+
+  const downloadManual = (filename = MANUAL_FILENAME, url = MANUAL_URL) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   const navItems = [
-    { label: "Ayuda", icon: FiMail },
+    // Ayuda: descarga el PDF del manual (opción 2: descarga programática)
+    { label: "Ayuda", icon: FiMail, onClick: () => downloadManual() },
     { label: "Configuración", icon: FiSettings, onClick: () => navigate("/settings") },
   ];
 
