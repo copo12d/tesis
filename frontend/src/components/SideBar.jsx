@@ -30,18 +30,18 @@ const Sidebar = () => {
   const MANUAL_URL = "/public/manual de usuario.pdf";
   const MANUAL_FILENAME = "Manual-de-Usuario.pdf";
 
-  const downloadManual = (filename = MANUAL_FILENAME, url = MANUAL_URL) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
+  // const downloadManual = (filename = MANUAL_FILENAME, url = MANUAL_URL) => {
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = filename;
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   a.remove();
+  // };
 
   const navItems = [
     // Ayuda: descarga el PDF del manual (opción 2: descarga programática)
-    { label: "Ayuda", icon: FiMail, onClick: () => downloadManual() },
+    // { label: "Ayuda", icon: FiMail, onClick: () => downloadManual() },
     { label: "Configuración", icon: FiSettings, onClick: () => navigate("/settings") },
   ];
 
