@@ -9,14 +9,12 @@ import com.tesisUrbe.backend.entities.solidWaste.BatchReg;
 import com.tesisUrbe.backend.entities.solidWaste.Container;
 import com.tesisUrbe.backend.entities.solidWaste.Waste;
 import com.tesisUrbe.backend.prediction.service.ContainerFillCycleService;
-import com.tesisUrbe.backend.solidWasteManagement.dto.WasteRequestDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.WasteResponseDto;
-import com.tesisUrbe.backend.solidWasteManagement.dto.WasteWeightProyection;
-import com.tesisUrbe.backend.solidWasteManagement.dto.WasteWeightResponse;
+import com.tesisUrbe.backend.solidWasteManagement.dto.*;
 import com.tesisUrbe.backend.solidWasteManagement.enums.BatchStatus;
 import com.tesisUrbe.backend.solidWasteManagement.enums.ContainerStatus;
 import com.tesisUrbe.backend.solidWasteManagement.repository.WasteRepository;
 import com.tesisUrbe.backend.usersManagement.services.UserService;
+import io.jsonwebtoken.lang.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -209,54 +207,59 @@ public class WasteService {
     @Transactional(readOnly = true)
     public ApiResponse<List<WasteWeightResponse>> getAllWasteWeight() {
 
+        List<WasteWeightProyectionDTO> wasteData = Optional.ofNullable(wasteRepository.getAllWeightTotal())
+                .orElse(Collections.emptyList());
 
-        List<WasteWeightProyection> wasteData = wasteRepository.getAllWeightTotal();
+        Map<String, List<WasteWeightProyectionDTO>> wasteByType = wasteData.stream()
+                .collect(Collectors.groupingBy(WasteWeightProyectionDTO::getContainerType));
 
-        // 2. Agrupar la data por Tipo de Contenedor
-        Map<String, List<WasteWeightProyection>> wasteByType = wasteData.stream()
-                .collect(Collectors.groupingBy(WasteWeightProyection::getContainerType));
+        List<WasteWeightResponse> response = wasteByType.entrySet().stream().map(waste -> {
+            String containerType = waste.getKey();
+            List<WasteWeightProyectionDTO> typeData = waste.getValue();
+
+            BigDecimal weightTotal = typeData.stream()
+                    .map(dto -> Optional.ofNullable(dto.getTotalWeight()).orElse(BigDecimal.ZERO))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Map<DayOfWeek, BigDecimal> dayWeight = typeData.stream()
+                    .filter(dto -> dto.getCollectionDayOfWeek() != null)
+                    .collect(Collectors.groupingBy(
+                            dto -> DayOfWeek.of(dto.getCollectionDayOfWeek()),
+                            Collectors.reducing(BigDecimal.ZERO,
+                                    dto -> Optional.ofNullable(dto.getTotalWeight()).orElse(BigDecimal.ZERO),
+                                    BigDecimal::add)
+                    ));
+
+            Map<Month, BigDecimal> monthWeight = typeData.stream()
+                    .filter(dto -> dto.getCollectionMonth() != null)
+                    .collect(Collectors.groupingBy(
+                            dto -> Month.of(dto.getCollectionMonth()),
+                            Collectors.reducing(BigDecimal.ZERO,
+                                    dto -> Optional.ofNullable(dto.getTotalWeight()).orElse(BigDecimal.ZERO),
+                                    BigDecimal::add)
+                    ));
+
+            Map<Year, BigDecimal> yearWeight = typeData.stream()
+                    .filter(dto -> dto.getCollectionYear() != null)
+                    .collect(Collectors.groupingBy(
+                            dto -> Year.of(dto.getCollectionYear()),
+                            Collectors.reducing(BigDecimal.ZERO,
+                                    dto -> Optional.ofNullable(dto.getTotalWeight()).orElse(BigDecimal.ZERO),
+                                    BigDecimal::add)
+                    ));
+
+            return WasteWeightResponse.builder()
+                    .containerType(containerType)
+                    .weightTotal(weightTotal)
+                    .dayWeight(dayWeight)
+                    .monthWeight(monthWeight)
+                    .yearWeight(yearWeight)
+                    .build();
+        }).collect(Collectors.toList());
 
         return new ApiResponse<>(
                 errorFactory.buildMeta(HttpStatus.OK, "Residuos totales obtenidos correctamente"),
-                wasteByType.entrySet().stream().map(waste -> {
-                            String containerType = waste.getKey();
-                            List<WasteWeightProyection> typeData = waste.getValue();
-
-                            // a. Peso Total General
-                            BigDecimal weightTotal = typeData.stream()
-                                    .map(WasteWeightProyection::getWeight)
-                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                            // b. Agrupación por Día de la Semana
-                            Map<DayOfWeek, BigDecimal> dayWeight = typeData.stream()
-                                    .collect(Collectors.groupingBy(
-                                            WasteWeightProyection::getCollectionDayOfWeek,
-                                            Collectors.reducing(BigDecimal.ZERO, WasteWeightProyection::getWeight, BigDecimal::add)
-                                    ));
-
-                            // c. Agrupación por Mes
-                            Map<Month, BigDecimal> monthWeight = typeData.stream()
-                                    .collect(Collectors.groupingBy(
-                                            WasteWeightProyection::getCollectionMonth,
-                                            Collectors.reducing(BigDecimal.ZERO, WasteWeightProyection::getWeight, BigDecimal::add)
-                                    ));
-
-                            Map<Year, BigDecimal> yearWeight = typeData.stream()
-                                    .collect(Collectors.groupingBy(
-                                            WasteWeightProyection::getCollectionYear,
-                                            Collectors.reducing(BigDecimal.ZERO, WasteWeightProyection::getWeight, BigDecimal::add)
-                                    ));
-
-
-                            return WasteWeightResponse.builder()
-                                    .containerType(containerType)
-                                    .weightTotal(weightTotal)
-                                    .dayWeight(dayWeight)
-                                    .monthWeight(monthWeight)
-                                    .yearWeight(yearWeight)
-                                    .build();
-                        })
-                        .collect(Collectors.toList()),
+                response,
                 null
         );
     }
