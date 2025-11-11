@@ -25,6 +25,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.springframework.core.io.Resource;
+import java.io.IOException;
 
 @Slf4j
 @Service
@@ -163,5 +165,8 @@ public class SettingsService {
         return value >= -180 && value <= 180;
     }
 
+    public Resource getUserManual() throws IOException {
+        return fileStorageService.load("Manual de Usuario.pdf");
+    }
 
 }
