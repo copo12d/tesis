@@ -77,7 +77,7 @@ public class SettingsController {
     }
 
     @GetMapping(value = "/public/manual", produces = MediaType.APPLICATION_PDF_VALUE)
-    @PreAuthorize("permitAll()") 
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Resource> getUserManual() {
         try {
             Resource manual = settingsService.getUserManual();
