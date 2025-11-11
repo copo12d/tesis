@@ -18,43 +18,43 @@ import java.io.IOException;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("${api.base-path}/settings/admin")
+@RequestMapping("${api.base-path}/settings")
 @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_SUPERUSER')")
 public class SettingsController {
 
     private final SettingsService settingsService;
 
-    @GetMapping("/report")
+    @GetMapping("/admin/report")
     public ResponseEntity<ApiResponse<ReportSetting>> getReportSetting() {
         ApiResponse<ReportSetting> response = settingsService.getReportSetting();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @PutMapping("/report")
+    @PutMapping("/admin/report")
     public ResponseEntity<ApiResponse<Void>> updateReportSetting(@RequestBody ReportSetting report) {
         ApiResponse<Void> response = settingsService.updateReportSetting(report);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @GetMapping("/university")
+    @GetMapping("/admin/university")
     public ResponseEntity<ApiResponse<UniversitySetting>> getUniversitySetting() {
         ApiResponse<UniversitySetting> response = settingsService.getUniversitySetting();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @PutMapping("/university")
+    @PutMapping("/admin/university")
     public ResponseEntity<ApiResponse<Void>> updateUniversitySetting(@RequestBody UniversitySetting university) {
         ApiResponse<Void> response = settingsService.updateUniversitySetting(university);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @PostMapping(value = "/university/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/university/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> replaceLogo(@RequestPart("file") MultipartFile file) {
         ApiResponse<Void> response = settingsService.replaceLogo(file);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @GetMapping(value = "/university/logo", produces = MediaType.IMAGE_PNG_VALUE)
+    @GetMapping(value = "/admin/university/logo", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<Resource> getLogoImage() {
         try {
             Resource image = settingsService.getLogoImage();
@@ -64,16 +64,29 @@ public class SettingsController {
         }
     }
 
-    @GetMapping("/ubication")
+    @GetMapping("/admin/ubication")
     public ResponseEntity<ApiResponse<UbicationSetting>> getUbicationSetting() {
         ApiResponse<UbicationSetting> response = settingsService.getUbicationSetting();
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
     }
 
-    @PutMapping("/ubication")
+    @PutMapping("/admin/ubication")
     public ResponseEntity<ApiResponse<Void>> updateUbicationSetting(@RequestBody UbicationSetting ubication) {
         ApiResponse<Void> response = settingsService.updateUbicationSetting(ubication);
         return ResponseEntity.status(HttpStatus.valueOf(response.meta().status())).body(response);
+    }
+
+    @GetMapping(value = "/public/manual", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Resource> getUserManual() {
+        try {
+            Resource manual = settingsService.getUserManual();
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"Manual de Usuario.pdf\"")
+                    .body(manual);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
 }
