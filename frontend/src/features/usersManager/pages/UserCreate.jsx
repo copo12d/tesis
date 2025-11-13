@@ -1,12 +1,10 @@
 import { Box, Button } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 import { useCreateUser } from "../hooks/useCreateUser";
 import { UserForm } from "../components/UserForm";
 import { Link } from "react-router-dom";
 
 export function UserCreate() {
-  const navigate = useNavigate();
-  const { create, loading, error } = useCreateUser({
+  const { create, loading } = useCreateUser({
     redirectOnSuccess: "/users/all",
     emitToasts: true,
   });
@@ -30,7 +28,6 @@ export function UserCreate() {
         loading={loading}
         onSubmit={async (values) => {
           const ok = await create(values);
-          if (ok && error) navigate("/users/all");
         }}
         submitText="Crear usuario"
         title="Registrar usuario"
