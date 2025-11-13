@@ -9,9 +9,11 @@ import {
  Legend,
 } from "recharts";
 import { useEffect, useMemo, useState } from "react";
+import { colorForKey } from "../../../utils/colors";
 import "../styles/grafica-semanal.css";
 
-const PALETTE = ["#3e87e0", "#ec1414", "#16a34a", "#f59e0b", "#8b5cf6", "#0ea5e9"];
+// NOTE: colors now come from a shared deterministic mapper so the same
+// container type always has the same color across charts.
 
 export function BarSummary({
   title = "Comportamiento de contenedores",
@@ -74,12 +76,12 @@ export function BarSummary({
             />
             <YAxis stroke="rgba(255, 255, 255, 0.8)" fontSize={12} fontWeight="500" />
             <Legend />
-            {keys.map((key, index) => (
+            {keys.map((key) => (
               <Bar
                 key={key}
                 dataKey={key}
                 name={key.charAt(0).toUpperCase() + key.slice(1)}
-                fill={`var(--chart-${index + 1}, ${PALETTE[index % PALETTE.length]})`}
+                fill={colorForKey(key)}
                 radius={4}
               />
             ))}
