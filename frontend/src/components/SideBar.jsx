@@ -21,27 +21,50 @@ import AuthContext from "@/context/AuthContext";
 import AdminSection from "./AdminSection";
 import { useNavigate } from "react-router-dom";
 import { LogoutDialog } from "./LogoutDialog";
+import apiPublic from "@/api/api.public";
+import { ReportsAPI } from "@/features/Reports/api/api.reports";
+import { toast } from "react-hot-toast";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext); // <-- aquí obtienes logout
+  const { user, logout } = useContext(AuthContext);
 
-  // Configura aquí el archivo y el nombre a descargar (ubicado en public/)
-  const MANUAL_URL = "/public/manual de usuario.pdf";
-  const MANUAL_FILENAME = "Manual-de-Usuario.pdf";
+  // Endpoint público para descargar el manual
+  const MANUAL_ENDPOINT = "/settings/public/manual";
+  const DEFAULT_FILENAME = "Manual-de-Usuario.pdf";
 
-  // const downloadManual = (filename = MANUAL_FILENAME, url = MANUAL_URL) => {
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = filename;
-  //   document.body.appendChild(a);
-  //   a.click();
-  //   a.remove();
-  // };
+  const extractFilename = (cd) => {
+    if (!cd) return null;
+    // filename="name.pdf" o filename=name.pdf
+    const match = /filename\*?=(?:UTF-8''|")(.*?)(?:"|;|$)/i.exec(cd);
+    if (match && match[1]) return decodeURIComponent(match[1]);
+    return null;
+  };
+
+  // Helper similar a ReportsPage para descargar blobs
+  function downloadFile(response, filename = "Manual-de-Usuario.pdf") {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  const handleDownloadManual = async () => {
+    try {
+      const res = await ReportsAPI.downloadManual();
+      downloadFile(res, "Manual-de-Usuario.pdf");
+      toast.success("Manual descargado.");
+    } catch {
+      toast.error("No se pudo descargar el manual.");
+    }
+  };
 
   const navItems = [
-    // Ayuda: descarga el PDF del manual (opción 2: descarga programática)
-    // { label: "Ayuda", icon: FiMail, onClick: () => downloadManual() },
+    { label: "Ayuda", icon: FiMail, onClick: handleDownloadManual },
     { label: "Configuración", icon: FiSettings, onClick: () => navigate("/settings") },
   ];
 
@@ -131,7 +154,7 @@ const Sidebar = () => {
                   Cerrar Sesión
                 </Button>
               }
-              onLogout={logout} // <-- aquí pasas la función de logout
+              onLogout={logout}
             />
           </Box>
         </VStack>
