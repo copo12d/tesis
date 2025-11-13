@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Box } from "@chakra-ui/react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from "recharts";
 import { DashboardCard } from "./DashboardCard";
+import { colorForKey } from "../../../utils/colors";
 
-const PALETTE = ["#3e87e0", "#ec1414", "#16a34a", "#f59e0b", "#8b5cf6", "#0ea5e9"];
 const EMPTY_COLOR = "#e2e8f0"; // gris claro para fallback
 
 export function PieSummary({ title, labelText, height = 140, fetch }) {
@@ -30,9 +30,9 @@ export function PieSummary({ title, labelText, height = 140, fetch }) {
   );
 
   const series = useMemo(() => {
-    const mapped = data.map((d, i) => ({
+    const mapped = data.map((d) => ({
       ...d,
-      fill: PALETTE[i % PALETTE.length],
+      fill: colorForKey(d.name),
     }));
     return totalReal > 0
       ? mapped

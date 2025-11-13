@@ -43,5 +43,8 @@ export const ReportsAPI = {
 
   getProcessBatchDropdown: () =>
     api.get("/batch/admin/dropdown/process"),
+  
+  downloadManual: () =>
+    api.get("/settings/public/manual", { responseType: "blob" }),
 
 };
