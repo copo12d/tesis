@@ -471,7 +471,7 @@ public class UserService implements UserDetailsService {
 
         user.setPassword(encodedPassword);
         if (unlock) {
-            user.setUserLocked(false);
+            user.setAccountLocked(false);
         }
         userRepository.save(user);
     }
